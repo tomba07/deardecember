@@ -1,0 +1,18 @@
+# Generated site build
+/dist/
+
+# Dependencies
+node_modules/
+
+# Generated PDFs and temporary previews
+/output/
+/tmp/
+
+# Local environment and logs
+.env
+.env.*
+!.env.example
+*.log
+
+# macOS metadata
+.DS_Store
