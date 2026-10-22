@@ -1,26 +1,43 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Miniography archive manifest, version 1 (draft)",
+  "title": "Miniography archive manifest, version 1",
   "description": "The UTF-8 miniography.json manifest inside a ZIP-based .miniography archive. Array order is reading order.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["formatVersion", "language", "profile", "entries"],
+  "required": [
+    "formatVersion",
+    "language",
+    "profile",
+    "entries"
+  ],
   "properties": {
-    "formatVersion": { "const": 1 },
+    "formatVersion": {
+      "const": 1
+    },
     "language": {
       "type": "string",
       "pattern": "^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$",
       "description": "Language tag, such as en, de or en-GB. Full BCP 47 validity is an application check."
     },
-    "profile": { "$ref": "#/$defs/profile" },
+    "profile": {
+      "$ref": "#/$defs/profile"
+    },
     "entries": {
       "type": "array",
       "items": {
         "oneOf": [
-          { "$ref": "#/$defs/textEntry" },
-          { "$ref": "#/$defs/photoEntry" }
+          {
+            "$ref": "#/$defs/textEntry"
+          },
+          {
+            "$ref": "#/$defs/photoEntry"
+          }
         ]
       }
+    },
+    "isSample": {
+      "type": "boolean",
+      "description": "Optional marker for simulated/example content. Preserve it on import/export; omit it for a real collection."
     }
   },
   "$defs": {
@@ -37,22 +54,32 @@
     },
     "modificationDates": {
       "type": "array",
-      "items": { "$ref": "#/$defs/timestamp" },
+      "items": {
+        "$ref": "#/$defs/timestamp"
+      },
       "uniqueItems": true,
       "description": "Subsequent content-edit timestamps, oldest first; empty for an unedited entry. Ordering relative to createdAt requires application validation. These are not historical copies of the content."
     },
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "dateOfBirth", "placeOfBirth"],
+      "required": [
+        "name",
+        "dateOfBirth",
+        "placeOfBirth"
+      ],
       "properties": {
-        "name": { "$ref": "#/$defs/nonBlankText" },
+        "name": {
+          "$ref": "#/$defs/nonBlankText"
+        },
         "dateOfBirth": {
           "type": "string",
           "format": "date",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
         },
-        "placeOfBirth": { "$ref": "#/$defs/nonBlankText" },
+        "placeOfBirth": {
+          "$ref": "#/$defs/nonBlankText"
+        },
         "placesLived": {
           "type": "string",
           "description": "Optional free-form text. May include approximate dates; an empty string is also allowed."
@@ -62,17 +89,29 @@
     "textEntry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "question", "text", "createdAt", "modificationDates"],
+      "required": [
+        "type",
+        "question",
+        "text",
+        "createdAt",
+        "modificationDates"
+      ],
       "properties": {
-        "type": { "const": "text" },
+        "type": {
+          "const": "text"
+        },
         "topic": {
           "$ref": "#/$defs/nonBlankText",
           "description": "Optional snapshot of the named door or a journal topic."
         },
         "question": {
           "oneOf": [
-            { "$ref": "#/$defs/nonBlankText" },
-            { "type": "null" }
+            {
+              "$ref": "#/$defs/nonBlankText"
+            },
+            {
+              "type": "null"
+            }
           ],
           "description": "The question as shown when answered, or null for a free-form journal entry."
         },
@@ -80,16 +119,28 @@
           "$ref": "#/$defs/nonBlankText",
           "description": "The original answer or journal text, stored as plain text. Line breaks are preserved."
         },
-        "createdAt": { "$ref": "#/$defs/timestamp" },
-        "modificationDates": { "$ref": "#/$defs/modificationDates" }
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "modificationDates": {
+          "$ref": "#/$defs/modificationDates"
+        }
       }
     },
     "photoEntry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "description", "filePath", "createdAt", "modificationDates"],
+      "required": [
+        "type",
+        "description",
+        "filePath",
+        "createdAt",
+        "modificationDates"
+      ],
       "properties": {
-        "type": { "const": "photo" },
+        "type": {
+          "const": "photo"
+        },
         "description": {
           "type": "string",
           "description": "Context about who or what is pictured. Empty is allowed when no description has been written."
@@ -107,11 +158,19 @@
           "$ref": "#/$defs/timestamp",
           "description": "When the photo entry was added to Miniography, not when the photograph was taken."
         },
-        "modificationDates": { "$ref": "#/$defs/modificationDates" },
+        "modificationDates": {
+          "$ref": "#/$defs/modificationDates"
+        },
         "takenAt": {
           "oneOf": [
-            { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
-            { "$ref": "#/$defs/timestamp" }
+            {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            {
+              "$ref": "#/$defs/timestamp"
+            }
           ],
           "description": "Optional known capture date or UTC timestamp. Approximate dates belong in description; do not invent an exact date."
         }

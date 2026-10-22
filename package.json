@@ -7,10 +7,14 @@
     "build": "node scripts/build.mjs",
     "dev": "python3 -m http.server 8123 --directory src",
     "preview": "python3 -m http.server 8123 --directory dist",
-    "validate:format": "node scripts/validate-format.mjs"
+    "validate:format": "node scripts/validate-format.mjs",
+    "generate:validator": "node scripts/generate-validator.mjs",
+    "test": "npm run generate:validator && node --test tests/*.test.mjs"
   },
   "devDependencies": {
     "ajv": "^8.20.0",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "esbuild": "^0.28.2",
+    "playwright": "^1.62.1"
   }
 }

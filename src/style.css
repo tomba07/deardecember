@@ -26,3 +26,22 @@
 #residences{min-height:100px;margin-bottom:12px}#residencesLabel{margin-top:20px;font-weight:500}
 
 #questionPicker[hidden],#questionResponse[hidden]{display:none}#moreQuestions{display:block;width:100%;text-align:left;margin:20px 0 0;padding:16px 0;border-top:1px solid var(--line);font-size:13px;text-decoration:underline;text-underline-offset:4px}#answer{margin-bottom:16px}
+
+.collection-entry{display:flex;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}.collection-entry span{flex:1;overflow-wrap:anywhere}.collection-entry button{border:1px solid var(--line);border-radius:4px;padding:7px}.collection-entry button:disabled{opacity:.3;cursor:default}.photo-card label+label{display:block;margin-top:12px}#entryPhotoFields[hidden],#entryTextLabel[hidden]{display:none}
+@media print{#printSheet .print-question{font:9pt/1.5 Arial,sans-serif;color:#687360;margin-bottom:2mm}.print-photo{margin:4mm 0 7mm;break-inside:avoid}#printSheet .print-photo img{display:block;max-width:100%;width:auto;height:auto;max-height:65mm;margin:0}.print-photo figcaption{font:9pt/1.5 Arial,sans-serif;color:#687360;margin-top:2mm;white-space:pre-wrap;overflow-wrap:anywhere}}
+
+.welcome{margin-top:48px;padding:36px 0 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.welcome h2{max-width:740px;margin-bottom:16px}.welcome>p{max-width:760px;font-size:14px;line-height:1.9;color:#67765e}.welcome .welcome-privacy{font-size:12px;border-top:1px solid var(--line);padding-top:20px}.sample-journal{margin:0 0 22px}.sample-journal summary{cursor:pointer}.sample-journal .simulation-tools{margin:16px 0 0}#keepsakeReveal[hidden]{display:none}#keepsakeReveal{margin-top:24px;padding:24px;background:#e8eadf;border-radius:6px}#keepsakeReveal h3{font:25px Georgia,serif;margin:0 0 12px}#keepsakeReveal p{font-size:13px;line-height:1.85;margin-bottom:20px}
+@media(max-width:700px){.welcome{margin-top:24px;padding-top:28px}.welcome h2{font-size:34px}}
+
+.journal-storage{margin:18px 0}.journal-storage summary{cursor:pointer;font-size:12px}.journal-storage p{max-width:760px}.storage-actions{display:flex;flex-wrap:wrap;gap:12px}.storage-actions button{border:1px solid var(--line);border-radius:4px;padding:10px 14px;font-size:12px}
+
+
+#devPreview[hidden]{display:none}
+
+#devSample[hidden]{display:none}
+
+#journalNav[hidden],#miniographyReturn[hidden]{display:none}#revealDialog{text-align:center;width:560px;max-width:94vw;padding:48px 36px}#revealDialog>p{font-size:14px;line-height:1.9;color:#67765e}.reveal-cover{margin:28px auto;width:160px;min-height:200px;padding:24px 16px;background:#294f3d;color:#dfc893;border:6px double #a99260;border-radius:3px 8px 8px 3px;box-shadow:6px 7px 0 #ddd9c9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;animation:reveal-arrive .65s ease-out}.reveal-cover span{font-size:30px}.reveal-cover small{font-size:8px;letter-spacing:2px}.reveal-cover strong{font:25px/1.2 Georgia,serif;overflow-wrap:anywhere;max-width:100%}@keyframes reveal-arrive{from{opacity:0;transform:translateY(15px) rotate(-3deg)}to{opacity:1;transform:translateY(0) rotate(0)}}@media(prefers-reduced-motion:reduce){.reveal-cover{animation:none}}
+
+#introDialog{width:560px;max-width:94vw;padding:44px 36px 30px}#introDialog h2{font-size:36px;line-height:1.15;margin:16px 0 20px}#introDialog h3{font:22px Georgia,serif;margin:24px 0 12px}#introDialog>p{font-size:13px;line-height:1.85;color:#67765e}#introDialog>p.hint{font-size:11px}.intro-language{display:block;margin:0 32px 16px auto;font-size:11px;text-decoration:underline;text-underline-offset:3px}#introDialog .actions{border-top:1px solid var(--line);padding-top:20px}#introDialog .actions>button:first-child{font-size:12px}@media(max-width:700px){#introDialog{padding:28px 22px 24px}#introDialog h2{font-size:31px}}
+
+.lock-icon{display:inline-block;position:relative;width:10px;height:8px;border:1px solid currentColor;border-radius:2px;vertical-align:middle}.lock-icon::before{content:"";position:absolute;left:1px;top:-6px;width:6px;height:6px;border:1px solid currentColor;border-bottom:0;border-radius:4px 4px 0 0}.legend .lock-icon{margin:0 3px 0 2px}

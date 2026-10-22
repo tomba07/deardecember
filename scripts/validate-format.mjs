@@ -19,8 +19,11 @@ function check(name, mutate, expected) {
 }
 
 check('example manifest', () => {}, true);
+check('real collection without sample marker', doc => { delete doc.isSample; }, true);
 check('optional places lived', doc => { delete doc.profile.placesLived; }, true);
 check('empty places lived', doc => { doc.profile.placesLived = ''; }, true);
+check('sample collection marker', doc => { doc.isSample = true; }, true);
+check('sample marker must be boolean', doc => { doc.isSample = 'yes'; }, false);
 check('empty collection', doc => { doc.entries = []; }, true);
 check('photo with no written context or caption', doc => {
   doc.entries[1].description = ''; delete doc.entries[1].caption;

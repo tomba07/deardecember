@@ -53,39 +53,37 @@ const questionChoices={
 };
 let selectedQuestion=null;
 let choosingQuestion=true;
-function choicePrompt(day,index){
- if(typeof index==='string'&&index.startsWith('legacy-'))return followupQuestions[lang][day][Number(index.slice(7))];
- return index===0?question(day):index===3?(lang==='de'?'Eine eigene Erinnerung':'A memory of your own'):questionChoices[lang][day][index-1];
+function choicePrompt(day,index,language=lang){
+ return index===0?question(day,language):index===3?(language==='de'?'Eine eigene Erinnerung':'A memory of your own'):questionChoices[language][day][index-1];
 }
-function questionAnswer(day,index){
- if(typeof index==='string'&&index.startsWith('legacy-'))return state.followupAnswers[day]?.[Number(index.slice(7))]||'';
- return index===0?(state.answers[day]||''):(state.choiceAnswers?.[day]?.[index]||'');
-}
+function questionAnswer(day,index){return entryForChoice(day,index)?.text||''}
 function writeQuestionAnswer(value){
  if(selectedQuestion===null)return;
- if(typeof selectedQuestion==='string')((state.followupAnswers??={})[current]??={})[Number(selectedQuestion.slice(7))]=value;
- else if(selectedQuestion===0)state.answers[current]=value;
- else ((state.choiceAnswers??={})[current]??={})[selectedQuestion]=value;
+ let entry=entryForChoice(current,selectedQuestion);
+ if(!entry&&value.trim()){
+  if(state.entries.length>=ARCHIVE_LIMITS.entries){toast('The collection has reached its 2,000-entry limit.');return}
+  entry=addTextEntry(value,{topic:(lang==='de'?deThemes:themes)[current],question:selectedQuestion===3?null:choicePrompt(current,selectedQuestion),binding:{day:current,choice:selectedQuestion}});insertForDoor(entry,current);
+ }else if(entry)updateEntry(entry,{text:value});
  save();
 }
-function pickMoreQuestions(){choosingQuestion=true;renderQuestionChoices();$('questionChoices').querySelector('button')?.focus();editor.scrollTop=0}
+function pickMoreQuestions(){commitAndSave();choosingQuestion=true;renderQuestionChoices();$('questionChoices').querySelector('button')?.focus();editor.scrollTop=0}
 function renderQuestionChoices(){
  $('saveClose').textContent=lang==='de'?'Speichern & schließen':'Save & close';
- $('questionChoiceHint').textContent=lang==='de'?'Wähle eine Frage, die eine Erinnerung weckt. Du kannst danach weitere beantworten.':'Pick a question that sparks a memory. You can answer more afterward.';
+ $('questionChoiceHint').textContent=lang==='de'?'Wähle eine Frage, die eine Erinnerung weckt. Auch kleine Alltagsdetails sind es wert, bewahrt zu werden.':'Pick a question that sparks a memory. Small, everyday details are worth keeping.';
  $('questionPicker').hidden=!choosingQuestion;
  $('questionResponse').hidden=choosingQuestion;
  $('questionChoices').replaceChildren();
  const choices=[0,1,2,3];
- // Keep previously saved follow-up answers accessible through the same picker.
- for(const [index,answer]of Object.entries(state.followupAnswers[current]||{})){if(answer.trim())choices.push(`legacy-${index}`)}
+ // Additional imported answers remain selectable without rewriting their prompts.
+ for(const entry of dayEntries(current)){if(entryBinding(entry).choice===undefined)choices.push(entry)}
  for(const index of choices){
   const button=document.createElement('button');button.type='button';
   const answered=Boolean(questionAnswer(current,index).trim());
-  button.textContent=choicePrompt(current,index);
+  const existing=entryForChoice(current,index);button.textContent=existing?.question||(typeof index==='object'?choicePrompt(current,3):choicePrompt(current,index));
   button.setAttribute('aria-pressed',String(index===selectedQuestion));
   if(answered){button.classList.add('answered');button.setAttribute('aria-label',button.textContent+(lang==='de'?' – Antwort bearbeiten':' – Edit answer'))}
-  button.onclick=()=>{selectedQuestion=index;choosingQuestion=false;renderQuestionChoices();$('answer').focus();editor.scrollTop=0};$('questionChoices').append(button);
+  button.onclick=()=>{commitAndSave();selectedQuestion=index;choosingQuestion=false;renderQuestionChoices();renderPhotos();$('answer').focus();editor.scrollTop=0};$('questionChoices').append(button);
  }
- if(selectedQuestion!==null){$('question').textContent=choicePrompt(current,selectedQuestion);$('answer').value=questionAnswer(current,selectedQuestion)}
+ if(selectedQuestion!==null){$('question').textContent=entryForChoice(current,selectedQuestion)?.question||(typeof selectedQuestion==='object'?choicePrompt(current,3):choicePrompt(current,selectedQuestion));$('answer').value=questionAnswer(current,selectedQuestion)}
  $('moreQuestions').textContent=lang==='de'?'Ein wenig mehr von deiner Geschichte · Weitere Frage wählen':'A little more of your story · Pick another question';
 }

@@ -24,20 +24,22 @@ const simulationMemories = [
 ['I look forward to making more things, travelling with more attention and returning to places that shaped me. I would like to record more family stories while we can still tell them together.', 'Choose a few old photographs and ask someone about the day behind them.', 'People who keep learning and making things at every age inspire me.'],
 ['Pay attention to the ordinary days. Ask people about their lives, keep the photographs and write down the little stories. A beach or a snowy hill can stay with you for a lifetime.', 'My memories of Seabrook and sledding in Oakridge show how a simple place can hold lasting joy.', 'I hope they feel connected, reassured and curious about the lives that came before their own.']
 ];
-let simulationBackup = null;
+let simulationBackup=null;
 function startSimulation(){
-  if(simulationBackup)return story();
-  simulationBackup={state:structuredClone(state),preview:$('preview').checked,lang};
-  state={name:'Alex Morgan',birth:'1988',birthday:'1988-04-12',birthplace:'Brookfield, Germany',residences:'Brookfield, Germany · 1988–1991\nSeabrook, United Kingdom · 1991–1994\nOakridge, Germany · from 1994',choiceAnswers:{},answers:{},followupAnswers:{},photos:{},biography:'',message:'',simulation:true};
-  simulationMemories.forEach(([answer,...followups],day)=>{state.answers[day]=answer;state.followupAnswers[day]=Object.fromEntries(followups.map((answer,index)=>[index,answer]))});
-  lang='en';document.documentElement.lang='en';$('language').textContent='EN / DE';
-  $('preview').checked=true;$('simulationNotice').hidden=false;
-  buildStory(true);story();
+ if(!isDevelopmentHost)return;
+ if(simulationBackup)return story();
+ commitAndSave();simulationBackup={document:structuredClone(storedDocument()),preview:$('preview').checked,lang};
+ state={formatVersion:1,language:'en',isSample:true,profile:{name:'Alex Morgan',dateOfBirth:'1988-04-12',placeOfBirth:'Brookfield, Germany',placesLived:'Brookfield, Germany · 1988–1991\nSeabrook, United Kingdom · 1991–1994\nOakridge, Germany · from 1994'},entries:[]};
+ media=Object.create(null);entryBindings=new WeakMap();pendingEdits=new Map();isSimulation=true;keepsakeRevealed=false;openedDoors=[];lang='en';
+ simulationMemories.forEach(([answer,...followups],day)=>{
+  addTextEntry(answer,{topic:themes[day],question:question(day),binding:{day,choice:0}});
+  followups.forEach((answer,index)=>addTextEntry(answer,{topic:themes[day],question:followupQuestions.en[day][index],binding:{day}}));
+ });commitEdits();
+ $('preview').checked=true;$('simulationNotice').hidden=false;applyLanguage();story();
 }
 function endSimulation(){
-  if(!simulationBackup)return;
-  state=simulationBackup.state;$('preview').checked=simulationBackup.preview;
-  const previousLang=simulationBackup.lang;simulationBackup=null;
-  if(lang!==previousLang)toggleLang();
-  $('simulationNotice').hidden=true;$('printSheet')?.remove();storyDialog.close();editor.close();render();
+ if(!simulationBackup)return;
+ const backup=simulationBackup;simulationBackup=null;isSimulation=false;restoreDocument(backup.document);$('preview').checked=backup.preview;lang=backup.lang;
+ $('simulationNotice').hidden=true;$('printSheet')?.remove();storyDialog.close();$('revealDialog').close();editor.close();$('entryDialog').close();applyLanguage();
 }
+inferBindings();applyLanguage();initializeIntro();

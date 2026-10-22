@@ -1,3 +1,4 @@
+await import('./generate-validator.mjs');
 import { cp, mkdir, rm } from 'node:fs/promises';
 const source = new URL('../src/', import.meta.url);
 const output = new URL('../dist/', import.meta.url);
