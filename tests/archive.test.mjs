@@ -39,7 +39,7 @@ test('text/photo ZIP round trip preserves metadata, media bytes, profile and exa
 test('actual export/import UI preserves the collection and allows repeated arbitrary journal entries',async()=>{
  const p=await page();try{
   await p.evaluate(()=>{addTextEntry('A journal reflection.',{question:null,topic:'A personal topic'});addTextEntry('Another reflection.',{question:null,topic:'A personal topic'});commitAndSave();state.language='en-GB'});const before=await collection(p);
-  const downloaded=p.waitForEvent('download');await p.evaluate(()=>exportArchive());const file=await(await downloaded).path();p.once('dialog',dialog=>dialog.accept());await p.locator('#importFile').setInputFiles(file);await p.waitForFunction(()=>document.getElementById('toast').textContent==='Your collection has been imported.');assert.deepEqual(await collection(p),before);
+  const downloaded=p.waitForEvent('download');await p.evaluate(()=>exportArchive());const exported=await downloaded;assert.equal(exported.suggestedFilename(),'my-journal.deardecember');const file=await exported.path();p.once('dialog',dialog=>dialog.accept());await p.locator('#importFile').setInputFiles(file);await p.waitForFunction(()=>document.getElementById('toast').textContent==='Your collection has been imported.');assert.deepEqual(await collection(p),before);
   await p.evaluate(()=>story());await p.locator('#storyDialog summary').click();await p.getByRole('button',{name:'Edit entry 2',exact:true}).click();await p.locator('#entryText').fill('An edited second reflection.');await p.locator('#entryDialog .primary').click();assert.equal((await collection(p)).entries[1].text,'An edited second reflection.');assert.equal((await collection(p)).entries[1].modificationDates.length,1);assert.equal((await collection(p)).entries[0].text,'A journal reflection.');assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
@@ -104,7 +104,7 @@ test('simulation does not replace saved data and its archive is marked as sample
 test('unfinished draft recovery restores entries without inventing profile facts',async()=>{
  const p=await page();try{
   await p.evaluate(()=>{state.profile={name:'',dateOfBirth:'',placeOfBirth:'',placesLived:'Seabrook, then Oakridge'};addTextEntry('An unfinished journal draft.',{question:null});commitAndSave()});const original=await collection(p);
-  const download=p.waitForEvent('download');await p.evaluate(()=>exportDraftBackup());const file=await(await download).path();p.once('dialog',dialog=>dialog.accept());await p.locator('#importFile').setInputFiles({name:'miniography-draft-backup.json',mimeType:'application/json',buffer:await readFile(file)});await p.waitForFunction(()=>document.getElementById('toast').textContent==='Your collection has been imported.');assert.deepEqual(await collection(p),original);assert.deepEqual(p.errors,[]);
+  const download=p.waitForEvent('download');await p.evaluate(()=>exportDraftBackup());const file=await(await download).path();p.once('dialog',dialog=>dialog.accept());await p.locator('#importFile').setInputFiles({name:'dear-december-draft-backup.json',mimeType:'application/json',buffer:await readFile(file)});await p.waitForFunction(()=>document.getElementById('toast').textContent==='Your collection has been imported.');assert.deepEqual(await collection(p),original);assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
 
@@ -122,20 +122,20 @@ test('repeated prompt entries and shared image originals remain separate in exac
 
 test('welcome leads with reflection and reserves the keepsake reveal for the final door',async()=>{
  const p=await page();try{
-  assert((await p.locator('#welcomeIntro').textContent()).includes('ordinary Sunday'));assert((await p.locator('#welcomePurpose').textContent()).includes('generations'));assert.equal(await p.locator('.welcome-example,.welcome-guide').count(),0);
+  assert((await p.locator('#welcomeIntro').textContent()).includes('reflect'));assert((await p.locator('#welcomePurpose').textContent()).includes('generations'));assert.equal(await p.locator('.welcome-example,.welcome-guide').count(),0);
   assert(!(await p.locator('body').innerText()).includes('PDF'));assert(!(await p.locator('body').innerText()).includes('beautiful book'));
   assert.equal(await p.locator('#journalNav').isVisible(),false);assert.equal(await p.locator('#miniographyReturn').isVisible(),false);assert.equal(await p.locator('#printButton').isVisible(),false);
   await p.evaluate(()=>startSimulation());assert.equal(await p.locator('#printButton').isVisible(),false);await p.evaluate(()=>{storyDialog.close();openDoor(23)});await p.locator('#openMiniography').click();assert.equal(await p.locator('#printButton').isVisible(),true);assert((await p.locator('#revealText').textContent()).includes('little book'));
   await p.evaluate(()=>endSimulation());assert.equal(await p.evaluate(()=>keepsakeRevealed),false);await p.evaluate(()=>openDoor(23));await p.locator('#openMiniography').click();assert.equal(await p.locator('#printButton').isVisible(),true);await p.reload();await p.evaluate(()=>story());assert.equal(await p.locator('#printButton').isVisible(),true);
-  await p.evaluate(()=>{storyDialog.close();toggleLang()});assert((await p.locator('#welcomeIntro').textContent()).includes('Großeltern'));assert((await p.locator('#intro').textContent()).includes('Adventskalender'));assert.equal(await p.locator('#journalNav').textContent(),'Deine Miniography ↗');await p.setViewportSize({width:390,height:844});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(p.errors,[]);
+  await p.evaluate(()=>{storyDialog.close();toggleLang()});assert((await p.locator('#welcomeIntro').textContent()).includes('nachzudenken'));assert((await p.locator('#intro').textContent()).includes('Adventskalender'));assert.equal(await p.locator('#journalNav').textContent(),'Deine Miniography ↗');await p.setViewportSize({width:390,height:844});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
 
 test('the unlock-all control is localhost-only and cannot unlock the hosted calendar',async()=>{
  const context=await browser.newContext();const p=await context.newPage();try{
   await p.clock.install({time:new Date('2026-10-22T12:00:00Z')});
-  await context.route('https://miniography.test/**',async route=>{const response=await route.fetch({url:url+new URL(route.request().url()).pathname});await route.fulfill({response})});
-  await p.goto('https://miniography.test/');await p.evaluate(()=>dismissIntro());assert.equal(await p.locator('#devPreview').isVisible(),false);assert(!(await p.locator('body').innerText()).includes('Not December?'));
+  await context.route('https://dear-december.test/**',async route=>{const response=await route.fetch({url:url+new URL(route.request().url()).pathname});await route.fulfill({response})});
+  await p.goto('https://dear-december.test/');await p.evaluate(()=>dismissIntro());assert.equal(await p.locator('#devPreview').isVisible(),false);assert(!(await p.locator('body').innerText()).includes('Not December?'));
   assert.equal(await p.evaluate(()=>{document.getElementById('preview').checked=true;return unlocked(0)}),false);
   assert.equal(await p.locator('#devSample').isVisible(),false);await p.evaluate(()=>startSimulation());assert.equal(await p.evaluate(()=>isSimulation),false);assert.equal(await p.evaluate(()=>unlocked(23)),false);
  }finally{await context.close()}
@@ -143,7 +143,7 @@ test('the unlock-all control is localhost-only and cannot unlock the hosted cale
 
 test('hosted users get the miniography reveal on December 24, not an early journal preview',async()=>{
  const context=await browser.newContext({timezoneId:'UTC'});const p=await context.newPage();try{
-  await p.clock.install({time:new Date('2026-12-23T12:00:00Z')});await context.route('https://miniography.test/**',async route=>{await route.fulfill({response:await route.fetch({url:url+new URL(route.request().url()).pathname})})});await p.goto('https://miniography.test/');await p.evaluate(()=>dismissIntro());
+  await p.clock.install({time:new Date('2026-12-23T12:00:00Z')});await context.route('https://dear-december.test/**',async route=>{await route.fulfill({response:await route.fetch({url:url+new URL(route.request().url()).pathname})})});await p.goto('https://dear-december.test/');await p.evaluate(()=>dismissIntro());
   await p.evaluate(()=>{state.profile={name:'Alex',dateOfBirth:'1988-04-12',placeOfBirth:'Brookfield'};addTextEntry('Riding my bike after school.',{topic:themes[2],question:questions[2],binding:{day:2,choice:0}});commitAndSave()});
   assert.equal(await p.locator('#journalNav').isVisible(),false);assert.equal(await p.locator('#miniographyReturn').isVisible(),false);await p.evaluate(()=>{story();story(true);openDoor(23)});assert.equal(await p.locator('#storyDialog').isVisible(),false);assert.equal(await p.locator('#revealDialog').isVisible(),false);assert.equal(await p.evaluate(()=>keepsakeRevealed),false);
   await p.clock.setSystemTime(new Date('2026-12-24T00:00:01Z'));await p.evaluate(()=>render());await p.getByRole('button',{name:'Door 24',exact:true}).click();assert.equal(await p.locator('#revealDialog').isVisible(),true);assert.equal(await p.locator('#storyDialog').isVisible(),false);assert.equal(await p.locator('#revealName').textContent(),'Alex');await p.setViewportSize({width:390,height:844});const box=await p.locator('#revealDialog').boundingBox();assert(box.x>=0&&box.x+box.width<=390);await p.locator('#openMiniography').click();assert.equal(await p.locator('#printButton').isVisible(),true);assert((await p.locator('#biography').inputValue()).includes('Riding my bike'));
@@ -154,11 +154,11 @@ test('hosted users get the miniography reveal on December 24, not an early journ
 
 test('first visit intro explains local files, supports skip/close/Escape and can be reopened',async()=>{
  const context=await browser.newContext();const p=await context.newPage();try{
-  await p.goto(url);assert.equal(await p.locator('#introDialog').isVisible(),true);assert((await p.locator('#introTransfer').textContent()).includes('.miniography'));assert((await p.locator('#introStorage').textContent()).includes('this browser'));assert(!(await p.locator('#introDialog').innerText()).includes('PDF'));
+  await p.goto(url);assert.equal(await p.title(),'Dear December — A little time for you');assert(!/miniography/i.test(await p.locator('body').innerText()));assert.equal(await p.locator('#introDialog').isVisible(),true);assert((await p.locator('#introTransfer').textContent()).includes('journal file'));assert((await p.locator('#introStorage').textContent()).includes('this browser'));assert(!(await p.locator('#introDialog').innerText()).includes('PDF'));
   await p.locator('#introLanguage').click();assert((await p.locator('#introStorage').textContent()).includes('diesem Browser'));await p.locator('#introSkip').click();assert.equal(await p.locator('#introDialog').isVisible(),false);await p.reload();assert.equal(await p.locator('#introDialog').isVisible(),false);
-  await p.locator('#aboutIntro').click();assert.equal(await p.locator('#introDialog').isVisible(),true);await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.getElementById('introDialog').open);await p.reload();assert.equal(await p.locator('#introDialog').isVisible(),false);
-  await p.locator('#aboutIntro').click();await p.locator('#introDialog .close').click();assert.equal(await p.locator('#introDialog').isVisible(),false);await p.locator('#aboutIntro').click();await p.locator('#introStart').click();assert.equal(await p.locator('#introDialog').isVisible(),false);
-  await p.setViewportSize({width:390,height:844});await p.locator('#aboutIntro').click();const box=await p.locator('#introDialog').boundingBox();assert(box.x>=0&&box.x+box.width<=390);
+  await p.locator('#aboutIntro').click();assert.equal(await p.locator('#aboutDialog').isVisible(),true);await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.getElementById('aboutDialog').open);await p.reload();assert.equal(await p.locator('#introDialog').isVisible(),false);
+  await p.evaluate(()=>showIntro());await p.locator('#introDialog .close').click();assert.equal(await p.locator('#introDialog').isVisible(),false);await p.evaluate(()=>showIntro());await p.locator('#introStart').click();assert.equal(await p.locator('#introDialog').isVisible(),false);
+  await p.setViewportSize({width:390,height:844});await p.locator('#aboutIntro').click();const box=await p.locator('#aboutDialog').boundingBox();assert(box.x>=0&&box.x+box.width<=390);
  }finally{await context.close()}
 });
 
@@ -166,5 +166,45 @@ test('unopened doors conceal topic names until clicked, including accessible lab
  const p=await page();try{
   assert.equal(await p.locator('#grid small').allTextContents().then(labels=>labels.every(label=>label==='')),true);assert.equal(await p.locator('#grid button').last().getAttribute('aria-label'),'Door 24');
   await p.getByRole('button',{name:'Door 3',exact:true}).click();assert.equal(await p.locator('#title').textContent(),'Childhood treasures');await p.locator('#saveClose').click();assert.equal(await p.locator('#grid small').nth(2).textContent(),'Childhood treasures');assert.equal(await p.locator('#grid small').nth(1).textContent(),'');await p.reload();assert.equal(await p.locator('#grid small').nth(2).textContent(),'Childhood treasures');assert.equal(await p.locator('#grid button').last().getAttribute('aria-label'),'Door 24');assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
+
+test('basic facts belong to door one, save normally and do not block other doors',async()=>{
+ const context=await browser.newContext();const p=await context.newPage();try{
+  await p.goto(url);await p.evaluate(()=>{dismissIntro();document.getElementById('preview').checked=true;openDoor(2)});assert.equal(await p.locator('#questionChoices').isVisible(),true);assert.equal(await p.locator('#calendarFacts').isVisible(),false);assert.equal(await p.locator('#profileDialog').count(),0);assert.equal(await p.getByRole('button',{name:'Your profile',exact:true}).count(),0);
+  await answer(p,1,'A toy train.');await p.locator('#saveClose').click();await p.getByRole('button',{name:'Door 1',exact:true}).click();assert.equal(await p.locator('#calendarFacts').isVisible(),true);await p.locator('#name').fill('Example Person');await p.locator('#birthday').fill('2015-04-12');await p.locator('#birthplace').fill('Example town');await p.locator('#residences').fill('A few different towns');await p.locator('#saveClose').click();await p.reload();await p.evaluate(()=>{document.getElementById('preview').checked=true;openDoor(0)});assert.equal(await p.locator('#name').inputValue(),'Example Person');assert.equal(await p.locator('#birthday').inputValue(),'2015-04-12');assert.equal(await p.locator('#residences').inputValue(),'A few different towns');assert.equal(await p.evaluate(()=>factsComplete()),true);assert.equal(await p.locator('#count').textContent(),'2 of 23 memories collected');assert.equal(await p.evaluate(()=>state.entries[0].text),'A toy train.');
+ }finally{await context.close()}
+});
+
+test('main action counts down to Advent, unlocks at midnight and returns to the current door',async()=>{
+ const context=await browser.newContext({timezoneId:'UTC'});const p=await context.newPage();try{
+  await p.clock.install({time:new Date('2026-11-30T23:59:58Z')});await p.goto(url);await p.evaluate(()=>dismissIntro());assert.equal(await p.locator('#begin').isDisabled(),true);assert.equal(await p.locator('#doorCountdown').isVisible(),true);assert((await p.locator('#doorCountdown').textContent()).includes('02s'));
+  await p.clock.runFor(2000);assert.equal(await p.locator('#begin').isEnabled(),true);assert.equal(await p.locator('#doorCountdown').isVisible(),false);await p.locator('#begin').click();assert.equal(await p.evaluate(()=>current),0);await p.locator('#name').fill('Example Person');await p.locator('#birthday').fill('1990-04-12');await p.locator('#birthplace').fill('Example town');await p.locator('#saveClose').click();
+  await p.clock.setSystemTime(new Date('2026-12-05T12:00:00Z'));await p.evaluate(()=>render());assert((await p.locator('#begin').textContent()).includes('5'));await p.locator('#begin').click();assert.equal(await p.evaluate(()=>current),4);await p.locator('#saveClose').click();await p.reload();await p.locator('#begin').click();assert.equal(await p.evaluate(()=>current),4);await p.locator('#saveClose').click();
+  await p.clock.setSystemTime(new Date('2026-12-23T23:59:59Z'));await p.evaluate(()=>render());await p.clock.runFor(2000);assert((await p.locator('#begin').textContent()).includes('24'));assert.equal(await p.evaluate(()=>suggestedDoor()),23);await p.evaluate(()=>toggleLang());assert((await p.locator('#begin').textContent()).includes('heutige Türchen'));await p.locator('#begin').click();assert.equal(await p.locator('#revealDialog').isVisible(),true);
+ }finally{await context.close()}
+});
+
+test('the homepage stays focused on the calendar while About retains purpose and storage guidance',async()=>{
+ const p=await page();try{
+  assert.equal(await p.locator('main .welcome').count(),0);assert.equal(await p.locator('#welcomeTitle').isVisible(),false);assert.equal(await p.locator('#calendar').isVisible(),true);await p.locator('#aboutNav').click();assert.equal(await p.locator('#welcomeTitle').isVisible(),true);assert.equal(await p.locator('#welcomePrivacy').isVisible(),true);await p.locator('#storageTitle').click();assert.equal(await p.locator('#storageText').isVisible(),true);assert.equal(await p.locator('#downloadJournal').isVisible(),true);await p.locator('#aboutDialog .close').click();assert.equal(await p.locator('#aboutDialog').isVisible(),false);assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
+
+ test('German birthdays use day/month/year independent of the browser locale and preserve ISO archive dates',async()=>{
+ const p=await page();try{
+ await p.evaluate(()=>{toggleLang();openDoor(0)});assert.equal(await p.locator('#birthday').inputValue(),'12/04/1988');assert.equal(await p.locator('#birthday').getAttribute('placeholder'),'TT/MM/JJJJ');
+ await p.locator('#birthday').fill('29/02/2000');await p.locator('#birthday').blur();assert.equal((await collection(p)).profile.dateOfBirth,'2000-02-29');assert.equal(await p.evaluate(()=>factsComplete()),true);
+ await p.evaluate(()=>preparePrintStory());assert((await p.locator('#printSheet .print-subtitle').textContent()).includes('29/02/2000'));
+ await p.evaluate(()=>openDoor(0));await p.locator('#birthday').fill('31/02/2000');assert.equal(await p.evaluate(()=>factsComplete()),false);assert((await p.locator('#factsError').textContent()).includes('gültiges'));
+ await p.locator('#birthday').fill('5/4/1990');await p.locator('#birthday').blur();assert.equal(await p.locator('#birthday').inputValue(),'05/04/1990');await p.evaluate(()=>toggleLang());assert.equal(await p.locator('#birthday').inputValue(),'1990-04-05');await p.evaluate(()=>toggleLang());assert.equal(await p.locator('#birthday').inputValue(),'05/04/1990');assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+ });
+
+test('picking another question keeps earlier answers visible and editable',async()=>{
+ const p=await page();try{
+ await p.evaluate(()=>openDoor(2));await answer(p,1,'A wooden train.');assert.equal(await p.locator('#questionPicker').isVisible(),true);assert((await p.locator('#answeredMemories').innerText()).includes('A wooden train.'));
+ await p.locator('#questionChoices button').nth(2).click();assert((await p.locator('#answeredMemories').innerText()).includes('A wooden train.'));await p.locator('#answer').fill('I collected stones.');await p.locator('#moreQuestions').click();assert.equal(await p.locator('.answered-memory').count(),2);
+ await p.locator('.answered-memory').first().getByRole('button',{name:'Edit answer',exact:true}).click();assert.equal(await p.locator('#answer').inputValue(),'A wooden train.');assert((await p.locator('#answeredMemories').innerText()).includes('I collected stones.'));await p.locator('#answer').fill('A red wooden train.');await p.locator('#moreQuestions').click();assert((await p.locator('#answeredMemories').innerText()).includes('A red wooden train.'));assert.equal((await collection(p)).entries.length,2);assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });

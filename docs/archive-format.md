@@ -6,7 +6,7 @@ Status: implemented. The app stores ordered entries in this structure and import
 
 ## Container
 
-A `.miniography` file is an ordinary ZIP archive. Changing its extension to `.zip` makes its contents accessible with common archive tools. It contains:
+A `.miniography` file is an ordinary ZIP archive. Dear December, the advent-calendar application, uses `.deardecember` as its download extension for the same format; it also accepts earlier `.adventofyou` files, `.miniography` and `.zip`. The manifest, schema and version are identical. Changing its extension to `.zip` makes its contents accessible with common archive tools. It contains:
 
 ```text
 my-story.miniography
@@ -17,7 +17,7 @@ my-story.miniography
 
 `miniography.json` is UTF-8 JSON, preferably indented with two spaces. Original image bytes live in `media/`, not embedded as base64 in JSON. The media directory may be absent when there are no photos. An optional `README.txt` or bundled `schema.json` may help future readers; neither changes the manifest's meaning. Exporters should use standard ZIP storage or Deflate compression and avoid proprietary extensions.
 
-The schema is `schemas/miniography-v1.schema.json`. The example in `examples/format-v1/miniography.json` illustrates the manifest; the referenced childhood image is intentionally not supplied. It is a schema-valid manifest example, not a complete importable archive. Its timestamps and the journal/photo descriptions are illustrative.
+The schema is `schemas/dear-december-v1.schema.json`. The example in `examples/format-v1/journal.json` illustrates the manifest; the referenced childhood image is intentionally not supplied. It is a schema-valid manifest example, not a complete importable archive. Its timestamps and the journal/photo descriptions are illustrative.
 
 This design starts at `formatVersion: 1`. The earlier prototype used `{format: "miniography", version: 1, answers: ...}`, but that experimental structure is not the formal v1 format. The file extension stays the same; importers identify the formal format using `formatVersion`. No compatibility or migration layer for prototype archives is required.
 
@@ -29,7 +29,7 @@ This design starts at `formatVersion: 1`. The earlier prototype used `{format: "
 - `entries`: one ordered array containing text and photo entries.
 - `isSample`: optional boolean identifying simulated/example content. The simulation sets it to `true`; import/export preserves it and PDF output labels sample content.
 
-The profile belongs to the person, independently of the question catalog. Places lived are optional and never require structured city, country or date fields. Incomplete browser drafts can exist before a schema-valid archive is ready. The app offers “Backup unfinished draft” for incomplete profiles. This creates a recovery JSON file containing the collection, local media and editing metadata, rather than pretending the unfinished document is a valid portable archive. “Import archive / draft” can restore that backup; missing profile facts remain empty.
+The structured `profile` belongs to the person. In the app, its fields are filled in as part of the first calendar door, rather than through a separate profile interface. Other doors do not require those fields to be completed first. Places lived are optional and never require structured city, country or date fields. Incomplete browser drafts can exist before a schema-valid archive is ready. The app offers “Backup unfinished draft” for incomplete profiles. This creates a recovery JSON file containing the collection, local media and editing metadata, rather than pretending the unfinished document is a valid portable archive. “Import archive / draft” can restore that backup; missing profile facts remain empty.
 
 Question catalogs and application UI state do not need to be copied into the archive. Each text entry contains the actual question wording, so it can be read without the app or catalog. Topic names are optional snapshots, not database references.
 

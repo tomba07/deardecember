@@ -4,8 +4,8 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 
 const root = new URL('../', import.meta.url);
-const schema = JSON.parse(await readFile(new URL('schemas/miniography-v1.schema.json', root), 'utf8'));
-const example = JSON.parse(await readFile(new URL('examples/format-v1/miniography.json', root), 'utf8'));
+const schema = JSON.parse(await readFile(new URL('schemas/dear-december-v1.schema.json', root), 'utf8'));
+const example = JSON.parse(await readFile(new URL('examples/format-v1/journal.json', root), 'utf8'));
 const ajv = new Ajv2020({ strict: true, allErrors: true, validateFormats: true });
 addFormats(ajv);
 assert(ajv.validateSchema(schema), JSON.stringify(ajv.errors));

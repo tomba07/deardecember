@@ -1,4 +1,4 @@
-# The 24 doors of Miniography
+# The 24 doors of Dear December
 
 The calendar is one starting experience for the broader [project purpose and principles](project-principles.md). Its questions should invite ordinary facts and memories without asking people to prove that their lives are impressive.
 
@@ -6,14 +6,14 @@ This is the agreed content plan for the 24 named doors. The sequence moves from 
 
 Implementation status: the app currently uses an earlier set of 23 memory topics plus a story-reveal door. The list below is agreed, but has not yet been applied to the app. In particular, the planned door 24 includes a real question as well as the story reveal.
 
-## Permanent profile
+## Basic facts in the calendar
 
-Profile facts are separate from the doors:
+The first door, “Your beginnings”, includes the basic facts as part of the calendar experience. There is no separate profile page or popup:
 
-- Name, full birthday and birthplace are required.
+- Name, full birthday and birthplace are required for a complete portable archive. Other doors can be answered before these facts are complete.
 - Places lived is an optional free-form text field. A hint suggests places and approximate years.
 
-The profile records where and when; the questions invite memories about what those places and experiences felt like. People do not need to repeat profile facts in an answer.
+The facts record where and when; the questions invite memories about what those places and experiences felt like. People do not need to repeat facts in a written answer. For structured reuse, the archive still stores them in its `profile` object.
 
 ## Topics
 

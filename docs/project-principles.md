@@ -2,7 +2,7 @@
 
 ## A little of a life, kept
 
-Miniography helps people record the basic facts, ordinary details and memories of their lives. It is a small portrait of a person: where they came from, what they enjoyed, who mattered to them and how everyday life felt.
+Dear December helps people record the basic facts, ordinary details and memories of their lives. It is a small portrait of a person: where they came from, what they enjoyed, who mattered to them and how everyday life felt.
 
 There is no need to have led an extraordinary life, demonstrate achievements or write polished prose. This is not a book of self-praise or an exhaustive, formal biography. A favourite meal, a childhood home or a habit someone would recognise can say as much as a major milestone.
 
@@ -10,7 +10,7 @@ The collection can be useful to its author now, grow into a journal or become so
 
 ## The advent calendar is a beginning
 
-This application starts as an advent calendar: 24 named doors offer approachable questions and a reason to spend a little time remembering. People choose which questions to answer, how much to write and when to return.
+This application starts as an advent calendar for the mind: 24 named doors invite people to pause, reflect and journal a little during Advent. Small moments are the main starting point, while larger experiences and broader reflections also belong. People choose which questions to answer, how much to write and when to return.
 
 The first-use explanation invites people to keep everyday details that children or future generations might enjoy discovering: routines, food, favourite things, familiar places and small moments. It does not ask for profound lessons, a moral message or an impressive life story. Writing hints belong inside the doors; the homepage does not prescribe a model answer or provide a step-by-step walkthrough. The combined miniography and PDF are a surprise introduced when the final door is opened on December 24. Before then, people revisit their entries through the individual doors; there is no combined journal invitation or preview. The reveal presents their own miniography before opening the full collection and PDF option. Afterward, it remains available. Local developer tools can bypass the date for testing.
 
@@ -20,7 +20,7 @@ The application should make it easy to begin and easy to stop. It should not tur
 
 ## A format beyond this application
 
-The Miniography format is a generic, open format for recording personal information. It stores profile facts, original text entries, photos and their context in a portable archive. Those source materials can form the basis of a miniography, a fuller biography, a journal, a family history or another fitting project.
+Dear December is the advent-calendar application; the underlying Miniography format is a generic, open format for recording personal information. It stores profile facts, original text entries, photos and their context in a portable archive. Those source materials can form the basis of a miniography, a fuller biography, a journal, a family history or another fitting project.
 
 The format must remain useful independently of this website, its calendar and its developers. Another application should be able to read a collection, preserve its meaning and use it with the person's permission. The format specification and schema are documented in the repository; inspecting an archive does not require a proprietary service.
 
@@ -56,9 +56,9 @@ Choosing another application does not transfer these project commitments to that
 
 ## Current implementation and limits
 
-A dismissible first-visit introduction explains the purpose, local storage and portable file concept without revealing the December 24 keepsake. It can be skipped, closed or dismissed with Escape and reopened from “About Miniography”. The dismissal flag is stored only in this browser; it is not part of the personal archive or sent to a server.
+A dismissible first-visit introduction explains the purpose, local storage and portable file concept without revealing the December 24 keepsake. It can be skipped, closed or dismissed with Escape with a separate About dialog for the fuller purpose, privacy and storage explanation. The dismissal flag is stored only in this browser; it is not part of the personal archive or sent to a server.
 
-The current app stores its collection in this browser and exports a ZIP-based `.miniography` archive. There is no backend collecting entries, no account requirement and no connected AI biography service. Archive export and browser print-to-PDF are initiated by the person using the app.
+The current app stores its collection in this browser and exports a ZIP-based `.deardecember` journal file using the Miniography format. There is no account requirement or central journal collection. An optional loopback-only development server can send a text projection to OpenAI after explicit consent; its API key stays on the server. The default reveal and PDF work locally without that choice. See [generation](generation.md) for the data sent, provider retention, session-draft limits and setup. Archive export and browser print-to-PDF are initiated by the person using the app.
 
 Browser storage is not a permanent backup. It may be cleared or become unavailable, and another person with access to the same browser profile may be able to read it. Exported archives are ordinary, unencrypted ZIP files; treat them as personal documents. Local storage alone is not a claim of encryption or protection from someone who controls the device.
 
@@ -69,5 +69,6 @@ Publishing a schema does not, by itself, establish an open-source licence. The f
 ## Related documents
 
 - [The 24 topics](topics.md): the calendar's editorial plan.
+- [Miniography generation](generation.md): the editorial structure and rules for future generated drafts.
 - [Archive format](archive-format.md): the portable format and its implementation rules.
-- [JSON Schema](../schemas/miniography-v1.schema.json): the machine-readable structure.
+- [JSON Schema](../schemas/dear-december-v1.schema.json): the machine-readable structure.
