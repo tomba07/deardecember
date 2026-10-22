@@ -1,4 +1,16 @@
-const $=id=>document.getElementById(id), editor=$('editor'),storyDialog=$('storyDialog');let current=0,lang='en',state={name:'',birth:'',answers:{},followupAnswers:{},photos:{},biography:'',message:''};try{state={...state,...JSON.parse(localStorage.getItem('miniography-v1')||'{}')}}catch{};
+const $=id=>document.getElementById(id), editor=$('editor'),storyDialog=$('storyDialog');let current=0,lang='en',state={name:'',birth:'',birthday:'',birthplace:'',residences:'',choiceAnswers:{},answers:{},followupAnswers:{},photos:{},photoDescriptions:{},biography:'',message:''};try{state={...state,...JSON.parse(localStorage.getItem('miniography-v1')||'{}')}}catch{};
+// Preserve older structured residence entries as editable, free-form text.
+function residenceText(value){
+ if(typeof value==='string')return value;
+ if(!Array.isArray(value))return '';
+ return value.map(place=>{
+  const location=[place.place,place.country].filter(Boolean).join(', ');
+  const until=place.current?'present':place.to;
+  const dates=[place.from,until].filter(Boolean).join(' – ');
+  return [location,dates].filter(Boolean).join(' · ');
+ }).join('\n');
+}
+state.residences=residenceText(state.residences);
 const themes=['Your beginnings','A place called home','Childhood treasures','The people around you','Little traditions','Growing into yourself','Friendship','Learning along the way','A first adventure','Finding your own way','Meaningful connections','Turning points','The work of your hands','Places that stay with you','Everyday joy','Your kind of person','A proud moment','Through difficult times','What matters most','A perfect little day','A letter to your younger self','Dreams still unfolding','For those who come after','Your story, revealed'];
 const deThemes=['Deine Anfänge','Ein Ort namens Zuhause','Kindheitsschätze','Die Menschen um dich','Kleine Traditionen','Du selbst werden','Freundschaft','Was du gelernt hast','Ein erstes Abenteuer','Dein eigener Weg','Wichtige Verbindungen','Wendepunkte','Was du erschaffst','Unvergessliche Orte','Freude im Alltag','Deine Persönlichkeit','Ein stolzer Moment','Schwierige Zeiten','Was wirklich zählt','Ein schöner Tag','An dein jüngeres Ich','Träume für morgen','Für die Zukunft','Deine Geschichte'];
 const questions=['Where does your story begin? Tell us about when and where you were born.','What place felt like home when you were growing up?','What small childhood memory still makes you smile?','Who made you feel seen and cared for as you grew up?','What tradition, meal, or celebration holds a special place in your memory?','When did you start to feel like your own person?','Tell us about a friendship that means a lot to you.','What did you learn, in or out of a classroom, that has stayed with you?','What adventure took you beyond the familiar?','What interest or passion have you chosen to follow?','Who has made a meaningful difference in your life?','What experience or decision has influenced who you are today?','What have you enjoyed making, doing, studying, or contributing?','Which place would you like to return to, and why?','What brings you joy in an ordinary week?','What little quirks or qualities make you you?','What is something you feel proud of?','What has helped you through a difficult time?','What values guide the choices you make?','Describe a day you would love to live again.','What would you like to tell your younger self?','What are you curious about or looking forward to?','What message would you like to leave for future generations?'];
@@ -10,63 +22,81 @@ function save(){if(state.simulation){render();return}try{localStorage.setItem('m
 function unlocked(i){const d=new Date();return $('preview').checked||(d.getMonth()===11&&d.getDate()>=i+1)}
 function render(){const n=themes.slice(0,23).filter((_,day)=>dayHasAnswers(day)).length;$('count').textContent=lang==='de'?`${n} von 23 Erinnerungen gesammelt`:`${n} of 23 memories collected`;$('bar').style.width=n/23*100+'%';$('grid').replaceChildren();themes.forEach((t,i)=>{const b=document.createElement('button');b.className='door'+(dayHasAnswers(i)?' done':'')+(i===23?' reveal':'');b.innerHTML=`<span class="lock">${dayHasAnswers(i)?'✦':unlocked(i)?'':'⌑'}</span><span class="symbol">${symbols[i]}</span><span class="num">${String(i+1).padStart(2,'0')}</span><small></small>`;b.querySelector('small').textContent=(lang==='de'?deThemes:themes)[i];b.setAttribute('aria-label',`${i+1}: ${(lang==='de'?deThemes:themes)[i]}`);b.onclick=()=>openDoor(i);$('grid').append(b)})}
 function question(i){let q=(lang==='de'?deQuestions:questions)[i];let age=new Date().getFullYear()-Number(state.birth);if(i===11){q=lang==='de'?(age<30?'Welche Erfahrung oder Entscheidung hat dein heutiges Ich geprägt?':age<50?'Welche Entscheidung hat deinem Leben eine neue Richtung gegeben?':age<70?'Welche Momente haben dein Leben besonders geprägt?':'Welche Ereignisse haben im Lauf der Jahre deinen Lebensweg verändert?'):(age<30?questions[11]:age<50?'Which decision or unexpected event has most changed the direction of your life?':age<70?'Looking back, which moments or decisions have most shaped your life?':'When you think back over the years, which events changed the course of your life?')}else if(i>0&&state.birth){q+=(lang==='de'?(age<30?' Denke an deine bisherigen Erfahrungen.':age<50?' Was bedeutet dir das heute?':age<70?' Wie hat sich dein Blick darauf verändert?':' Welche Einzelheiten sind dir besonders in Erinnerung geblieben?'):(age<30?' Think about your experiences so far.':age<50?' What does that mean to you today?':age<70?' How has your perspective on this changed?':' Which details have stayed with you over the years?'))}return q}
-function openDoor(i){if(!unlocked(i)){toast(lang==='de'?`Dieses Türchen öffnet am ${i+1}. Dezember. Nutze die Vorschau zum Erkunden.`:`This door opens December ${i+1}. Turn on preview to explore.`);return}if(i>0&&(!state.birth||!validAge())){toast(lang==='de'?'Bitte beginne mit Tür 1 und deinem Geburtsjahr.':'Start with door 1 and enter your birth year.');i=0}if(i===23){story();return}current=i;$('dayLabel').textContent=`${lang==='de'?'TÜR':'DOOR'} ${String(i+1).padStart(2,'0')} · ${lang==='de'?'DEINE ERINNERUNGEN':'YOUR MEMORIES'}`;$('title').textContent=(lang==='de'?deThemes:themes)[i];$('profile').style.display=i===0?'grid':'none';$('name').value=state.name;$('birth').value=state.birth;$('birth').max=new Date().getFullYear()-18;$('question').textContent=question(i);$('answer').value=state.answers[i]||'';$('answer').placeholder=lang==='de'?'Fang einfach an. Jedes kleine Detail zählt.':'Start anywhere. A little detail can hold a whole memory…';renderFollowups();renderPhotos();if(!editor.open)editor.showModal()}
-function renderFollowups(){
-  $('followupHeading').replaceChildren();
-  $('followupHeading').append(document.createTextNode(lang==='de'?'Ein wenig mehr von deiner Geschichte ':'A little more of your story '));
-  const badge=document.createElement('span');badge.textContent=lang==='de'?'Freiwillig':'Optional';$('followupHeading').append(badge);
-  $('followupHint').textContent=lang==='de'?'Beantworte, was eine Erinnerung weckt, oder lass die Fragen für einen anderen Tag.':'Answer any that spark a memory, or leave them for another day.';
-  $('followups').replaceChildren();
-  followupQuestions[lang][current].forEach((prompt,index)=>{
-    const label=document.createElement('label');label.textContent=prompt;
-    const field=document.createElement('textarea');field.id=`followup-${index}`;
-    field.value=state.followupAnswers[current]?.[index]||'';
-    field.placeholder=lang==='de'?'Deine Antwort (freiwillig)…':'Your answer (optional)…';
-    field.oninput=()=>{(state.followupAnswers[current]??={})[index]=field.value;save()};
-    label.append(field);$('followups').append(label);
-  });
-}
-function dayHasAnswers(day){return Boolean(state.answers[day]?.trim()||Object.values(state.followupAnswers[day]||{}).some(answer=>answer.trim()))}
+function openDoor(i){if(!unlocked(i)){toast(lang==='de'?`Dieses Türchen öffnet am ${i+1}. Dezember. Nutze die Vorschau zum Erkunden.`:`This door opens December ${i+1}. Turn on preview to explore.`);return}if(!profileComplete()){openProfile(i);return}if(i===23){story();return}current=i;$('dayLabel').textContent=`${lang==='de'?'TÜR':'DOOR'} ${String(i+1).padStart(2,'0')} · ${lang==='de'?'DEINE ERINNERUNGEN':'YOUR MEMORIES'}`;$('title').textContent=(lang==='de'?deThemes:themes)[i];selectedQuestion=null;choosingQuestion=true;$('question').textContent=question(i);$('answer').value=state.answers[i]||'';$('answer').placeholder=lang==='de'?'Fang einfach an. Jedes kleine Detail zählt.':'Start anywhere. A little detail can hold a whole memory…';renderQuestionChoices();renderPhotos();if(!editor.open)editor.showModal()}
+function dayHasAnswers(day){return Boolean(state.answers[day]?.trim()||Object.values(state.followupAnswers[day]||{}).some(answer=>answer.trim())||Object.values(state.choiceAnswers?.[day]||{}).some(answer=>answer.trim())||state.photos[day]?.length)}
 function storyFromAnswers(){return themes.slice(0,23).map((_,day)=>{
   const parts=[state.answers[day]||''];
+  for(const [index,answer] of Object.entries(state.choiceAnswers?.[day]||{})){if(answer.trim())parts.push(choicePrompt(day,+index)+'\n'+answer)}
   for(const [index,answer]of Object.entries(state.followupAnswers[day]||{})){
     if(answer.trim())parts.push(followupQuestions[lang][day][index]+'\n'+answer);
   }
   return dayHasAnswers(day)?(lang==='de'?deThemes:themes)[day]+'\n\n'+parts.filter(part=>part.trim()).join('\n\n'):'';
 }).filter(Boolean).join('\n\n')}
 function validAge(){return Number.isInteger(+state.birth)&&+state.birth>=1900&&+state.birth<=new Date().getFullYear()-18}
-$('answer').oninput=()=>{state.answers[current]=$('answer').value;save()};$('name').oninput=()=>{state.name=$('name').value;save()};$('birth').oninput=()=>{state.birth=$('birth').value;save()};function nextDoor(){if(!validAge()){toast('Please enter a valid birth year (18+ by birth year).');return}save();if(current===22){editor.close();story()}else{editor.close();openDoor(current+1)}}
+$('answer').oninput=()=>writeQuestionAnswer($('answer').value);function saveAndCloseDoor(){save();editor.close();const door=$('grid').children[current];door?.focus({preventScroll:true});door?.scrollIntoView({block:'nearest',behavior:'smooth'})}
 $('photo').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>3e6){toast('Please choose a JPG, PNG or WebP under 3 MB.');return}if(Object.values(state.photos).flat().length>=3){toast('You can include up to 3 photographs.');return}const reader=new FileReader();reader.onload=()=>{(state.photos[current]??=[]).push(reader.result);save();renderPhotos()};reader.readAsDataURL(f);e.target.value=''};
-function renderPhotos(){$('photos').replaceChildren();(state.photos[current]||[]).forEach((src,i)=>{const b=document.createElement('button');b.title='Remove photograph';const img=new Image();img.src=src;img.alt='Your memory photograph';b.append(img);b.onclick=()=>{state.photos[current].splice(i,1);save();renderPhotos()};$('photos').append(b)})}
+function renderPhotos(){
+  state.photoDescriptions??={};
+  $('photos').replaceChildren();
+  (state.photos[current]||[]).forEach((src,i)=>{
+    const card=document.createElement('div');card.className='photo-card';
+    const img=new Image();img.src=src;img.alt=state.photoDescriptions[current]?.[i]||'Your memory photograph';card.append(img);
+    const label=document.createElement('label');label.textContent=lang==='de'?'Bildbeschreibung / Beschriftung (freiwillig)':'Photo context / caption (optional)';
+    const input=document.createElement('textarea');input.maxLength=500;input.rows=2;
+    input.placeholder=lang==='de'?'Wer oder was ist zu sehen? Wo und wann?':'Who or what is pictured? Where and when?';
+    input.value=state.photoDescriptions[current]?.[i]||'';
+    input.oninput=()=>{(state.photoDescriptions[current]??=[])[i]=input.value;img.alt=input.value||'Your memory photograph';save()};
+    label.append(input);card.append(label);
+    const remove=document.createElement('button');remove.textContent=lang==='de'?'Foto entfernen':'Remove photo';
+    remove.onclick=()=>{state.photos[current].splice(i,1);state.photoDescriptions[current]?.splice(i,1);save();renderPhotos()};card.append(remove);$('photos').append(card);
+  });
+}
 function buildStory(force=false){if(!state.biography||force)state.biography=storyFromAnswers();$('biography').value=state.biography;save()}
 function story(){buildStory();$('message').value=state.message||state.answers[22]||'';storyDialog.showModal()}
 $('biography').oninput=()=>{state.biography=$('biography').value;save()};$('message').oninput=()=>{state.message=$('message').value;save()};
 function preparePrintStory(){
+  storyDialog.close();editor.close();$('profileDialog').close();
   $('printSheet')?.remove();
   const sheet=document.createElement('article');sheet.id='printSheet';
   const cover=document.createElement('section');cover.className='print-cover';
   function text(parent,tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;parent.append(el);return el}
   text(cover,'p','MINIOGRAPHY · A LITTLE BOOK OF A LIFE','print-kicker');
   text(cover,'h1',state.name||'My story');
-  text(cover,'p',state.simulation?'12 April 1988 · Brookfield':'The stories that make a life','print-subtitle');
+  text(cover,'p',[profileDate(),state.birthplace].filter(Boolean).join(' · ')||'The stories that make a life','print-subtitle');
   text(cover,'p','A life, in my words.','print-dedication');
   if(state.simulation)text(cover,'p','SIMULATED EDITION\nBirth details, the moves to Seabrook (1991–1994) and Oakridge, beach memories and sledding were supplied by Alex. All other details are imagined sample answers for this preview.','print-disclaimer');
   sheet.append(cover);
-  Object.values(state.photos).flat().forEach(src=>{const img=new Image();img.src=src;sheet.append(img)});
+  if(state.residences?.trim()){const places=document.createElement('section');places.className='print-chapter print-timeline';text(places,'h2',lang==='de'?'Meine Wohnorte':'Places I have called home');const paragraph=text(places,'p',state.residences);paragraph.style.whiteSpace='pre-wrap';sheet.append(places)}
   const content=state.biography||'Your story is still unfolding.';
   // Recognise collection headings while preserving freely edited biography text.
   const lines=content.split('\n');let section=document.createElement('section');section.className='print-chapter';sheet.append(section);let paragraph=[];
   function flush(){if(paragraph.length){text(section,'p',paragraph.join('\n'));paragraph=[]}}
   for(const line of lines){if([...themes,...deThemes].includes(line.trim())){flush();if(section.childNodes.length){section=document.createElement('section');section.className='print-chapter';sheet.append(section)}text(section,'h2',line.trim())}else if(!line.trim()){flush()}else paragraph.push(line)}flush();
+  for(const [day,photos] of Object.entries(state.photos)){
+    if(!photos.length)continue;
+    const heading=(lang==='de'?deThemes:themes)[day];
+    let target=[...sheet.querySelectorAll('.print-chapter')].find(chapter=>chapter.querySelector('h2')?.textContent===heading);
+    if(!target){target=document.createElement('section');target.className='print-chapter';text(target,'h2',heading);sheet.append(target)}
+    const gallery=document.createElement('div');gallery.className='print-photos';
+    photos.forEach((src,index)=>{const figure=document.createElement('figure');const img=new Image();img.src=src;const caption=state.photoDescriptions?.[day]?.[index]||'';img.alt=caption||heading;figure.append(img);if(caption)text(figure,'figcaption',caption);gallery.append(figure)});target.append(gallery);
+  }
   if(state.message){const closing=document.createElement('section');closing.className='print-chapter print-message';text(closing,'h2','For those who come after');text(closing,'blockquote',state.message);sheet.append(closing)}
   document.body.append(sheet);return sheet;
 }
-function printStory(){preparePrintStory();setTimeout(()=>window.print(),100)}
-function toggleLang(){lang=lang==='en'?'de':'en';document.documentElement.lang=lang;$('language').textContent=lang==='de'?'DE / EN':'EN / DE';$('season').textContent=lang==='de'?'DEIN ADVENT · 1.–24. DEZEMBER':'THE ADVENT OF YOU · DECEMBER 1–24';document.querySelector('h1').innerHTML=lang==='de'?'Dein Leben.<br>Eine kleine <em>Geschichte</em><br>nach der anderen.':'Your life.<br>One little <em>story</em><br>at a time.';$('intro').textContent=lang==='de'?'24 Türchen. Ein paar ruhige Momente. Ein Leben voller Erinnerungen.':'24 doors. A few quiet moments. A lifetime of you.';$('begin').textContent=lang==='de'?'Öffne dein erstes Türchen ↗':'Open your first door ↗';$('calendarTitle').textContent=lang==='de'?'Dein Dezember voller Erinnerungen':'Your December of memories';render()}
+async function printStory(){const sheet=preparePrintStory();await Promise.all([...sheet.querySelectorAll('img')].map(img=>img.decode().catch(()=>{})));window.print()}
+function toggleLang(){lang=lang==='en'?'de':'en';document.documentElement.lang=lang;$('language').textContent=lang==='de'?'DE / EN':'EN / DE';$('season').textContent=lang==='de'?'DEIN ADVENT · 1.–24. DEZEMBER':'THE ADVENT OF YOU · DECEMBER 1–24';document.querySelector('h1').innerHTML=lang==='de'?'Dein Leben.<br>Eine kleine <em>Geschichte</em><br>nach der anderen.':'Your life.<br>One little <em>story</em><br>at a time.';$('intro').textContent=lang==='de'?'24 Türchen. Ein paar ruhige Momente. Ein Leben voller Erinnerungen.':'24 doors. A few quiet moments. A lifetime of you.';$('begin').textContent=lang==='de'?'Öffne dein erstes Türchen ↗':'Open your first door ↗';$('calendarTitle').textContent=lang==='de'?'Dein Dezember voller Erinnerungen':'Your December of memories';render();if(editor.open){$('title').textContent=(lang==='de'?deThemes:themes)[current];renderQuestionChoices();renderPhotos()}if($('profileDialog').open)renderResidences()}
 render();
-async function exportArchive(){try{const zip=new JSZip();const data=structuredClone(state);const media=[];for(const [day,photos]of Object.entries(data.photos)){data.photos[day]=photos.map((src,i)=>{const type=src.slice(5,src.indexOf(';'));const file=`media/day-${+day+1}-${i+1}.${type==='image/jpeg'?'jpg':type.split('/')[1]}`;zip.file(file,src.split(',')[1],{base64:true});media.push(file);return file})}zip.file('miniography.json',JSON.stringify({format:'miniography',version:1,exportedAt:new Date().toISOString(),language:lang,participant:{name:state.name,birthYear:state.birth},...data},null,2));zip.file('README.txt','Miniography v1\nOpen ZIP archive. miniography.json contains original answers, participant information, editable story and photo paths. Media contains original uploaded photographs.');const blob=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-story.miniography';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Archive exported. Keep it somewhere safe.')}catch{toast('Export failed. Please try again.')}}
-$('importFile').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>15e6)throw Error();const zip=await JSZip.loadAsync(f);const entry=zip.file('miniography.json');if(!entry)throw Error();const data=JSON.parse(await entry.async('string'));if(data.format!=='miniography'||data.version!==1||typeof data.answers!=='object'||!data.answers||Array.isArray(data.answers))throw Error();const incoming={name:String(data.name||'').slice(0,100),birth:String(data.birth||''),answers:{},followupAnswers:{},photos:{},biography:String(data.biography||''),message:String(data.message||'')};for(const [key,value]of Object.entries(data.answers)){if(!/^([0-9]|1[0-9]|2[0-2])$/.test(key)||typeof value!=='string')throw Error();incoming.answers[key]=value}for(const [day,answers]of Object.entries(data.followupAnswers||{})){
+async function exportArchive(){try{const zip=new JSZip();const data=structuredClone(state);const media=[];for(const [day,photos]of Object.entries(data.photos)){data.photos[day]=photos.map((src,i)=>{const type=src.slice(5,src.indexOf(';'));const file=`media/day-${+day+1}-${i+1}.${type==='image/jpeg'?'jpg':type.split('/')[1]}`;zip.file(file,src.split(',')[1],{base64:true});media.push(file);return file})}zip.file('miniography.json',JSON.stringify({format:'miniography',version:1,exportedAt:new Date().toISOString(),language:lang,participant:{name:state.name,birthYear:state.birth,birthday:state.birthday,birthplace:state.birthplace},...data},null,2));zip.file('README.txt','Miniography v1\nOpen ZIP archive. miniography.json contains original answers, participant information, editable story and photo paths. Media contains original uploaded photographs.');const blob=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-story.miniography';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Archive exported. Keep it somewhere safe.')}catch{toast('Export failed. Please try again.')}}
+$('importFile').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>15e6)throw Error();const zip=await JSZip.loadAsync(f);const entry=zip.file('miniography.json');if(!entry)throw Error();const data=JSON.parse(await entry.async('string'));if(data.format!=='miniography'||data.version!==1||typeof data.answers!=='object'||!data.answers||Array.isArray(data.answers))throw Error();const incoming={name:String(data.name||'').slice(0,100),birth:String(data.birth||''),birthday:String(data.birthday||'').slice(0,10),birthplace:String(data.birthplace||'').slice(0,150),residences:'',choiceAnswers:{},answers:{},followupAnswers:{},photos:{},photoDescriptions:{},biography:String(data.biography||''),message:String(data.message||'')};if(data.birthday&&!/^\d{4}-\d{2}-\d{2}$/.test(data.birthday))throw Error();
+if(data.residences!==undefined&&typeof data.residences!=='string'&&!Array.isArray(data.residences))throw Error();
+if(Array.isArray(data.residences))for(const place of data.residences){if(!place||typeof place!=='object'||['place','country','from','to'].some(key=>typeof place[key]!=='string')||typeof place.current!=='boolean')throw Error()}
+incoming.residences=residenceText(data.residences);
+for(const [day,answers] of Object.entries(data.choiceAnswers||{})){if(!/^([0-9]|1[0-9]|2[0-2])$/.test(day)||!answers||typeof answers!=='object'||Array.isArray(answers))throw Error();incoming.choiceAnswers[day]={};for(const [index,answer] of Object.entries(answers)){if(!/^[123]$/.test(index)||typeof answer!=='string')throw Error();incoming.choiceAnswers[day][index]=answer}}
+for(const [key,value]of Object.entries(data.answers)){if(!/^([0-9]|1[0-9]|2[0-2])$/.test(key)||typeof value!=='string')throw Error();incoming.answers[key]=value}for(const [day,answers]of Object.entries(data.followupAnswers||{})){
 if(!/^([0-9]|1[0-9]|2[0-2])$/.test(day)||!answers||typeof answers!=='object'||Array.isArray(answers))throw Error();
 incoming.followupAnswers[day]={};
 for(const [index,answer]of Object.entries(answers)){if(!/^[01]$/.test(index)||typeof answer!=='string')throw Error();incoming.followupAnswers[day][index]=answer}
+ }for(const [day,captions] of Object.entries(data.photoDescriptions||{})){
+if(!/^([0-9]|1[0-9]|2[0-2])$/.test(day)||!Array.isArray(captions)||captions.length>3||captions.some(value=>value!==null&&typeof value!=='string'))throw Error();
+incoming.photoDescriptions[day]=captions.map(value=>(value||'').slice(0,500));
 }let total=0;for(const [day,paths]of Object.entries(data.photos||{})){if(!/^([0-9]|1[0-9]|2[0-2])$/.test(day)||!Array.isArray(paths))throw Error();incoming.photos[day]=[];for(const path of paths){if(++total>3||typeof path!=='string'||!/^media\/[a-zA-Z0-9_-]+\.(png|jpg|jpeg|webp)$/.test(path))throw Error();const file=zip.file(path);if(!file)throw Error();const buffer=await file.async('uint8array');if(buffer.length>3e6)throw Error();const ext=path.split('.').pop();incoming.photos[day].push(`data:image/${ext==='jpg'?'jpeg':ext};base64,`+await file.async('base64'))}}if(themes.slice(0,23).some((_,day)=>dayHasAnswers(day))&&!confirm('Replace your current memories with this archive? Export a backup first if needed.'))return;state=incoming;save();toast('Your memories have been imported.')}catch{toast('This archive could not be imported. Please use a valid .miniography file.')}e.target.value=''};

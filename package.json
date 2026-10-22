@@ -6,6 +6,11 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "python3 -m http.server 8123 --directory src",
-    "preview": "python3 -m http.server 8123 --directory dist"
+    "preview": "python3 -m http.server 8123 --directory dist",
+    "validate:format": "node scripts/validate-format.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
   }
 }

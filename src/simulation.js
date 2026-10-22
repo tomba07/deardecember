@@ -28,7 +28,7 @@ let simulationBackup = null;
 function startSimulation(){
   if(simulationBackup)return story();
   simulationBackup={state:structuredClone(state),preview:$('preview').checked,lang};
-  state={name:'Alex Morgan',birth:'1988',answers:{},followupAnswers:{},photos:{},biography:'',message:'',simulation:true};
+  state={name:'Alex Morgan',birth:'1988',birthday:'1988-04-12',birthplace:'Brookfield, Germany',residences:'Brookfield, Germany · 1988–1991\nSeabrook, United Kingdom · 1991–1994\nOakridge, Germany · from 1994',choiceAnswers:{},answers:{},followupAnswers:{},photos:{},biography:'',message:'',simulation:true};
   simulationMemories.forEach(([answer,...followups],day)=>{state.answers[day]=answer;state.followupAnswers[day]=Object.fromEntries(followups.map((answer,index)=>[index,answer]))});
   lang='en';document.documentElement.lang='en';$('language').textContent='EN / DE';
   $('preview').checked=true;$('simulationNotice').hidden=false;
