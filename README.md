@@ -160,3 +160,5 @@ The app now uses the formal format directly. Earlier experimental archive shapes
 A sample of the new archive is available locally at `output/archive/sample-journal.deardecember`; it carries `isSample: true` and includes 69 simulated answers.
 
 On localhost, **Reset all data** in the developer controls deletes this app’s saved journal, photos, generated text and welcome preference, then reloads to a fresh start. It asks for confirmation, also clears the personal journal when a sample is active, and is unavailable on hosted pages. Downloaded backups are unaffected.
+
+Door 24 opens on or after December 24 only when doors 1–23 are completed. Its locked tooltip explains the requirement. Developer preview bypasses the date, but still requires completion; the sample journal can be used to preview the full reveal. A saved reflection completes a memory door, and saved basic facts can complete door 1.

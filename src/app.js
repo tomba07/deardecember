@@ -13,8 +13,10 @@ function save(){
 function commitAndSave(){commitEdits();return save()}
 function adventYear(){return Math.min(new Date().getFullYear(),...state.entries.map(entry=>new Date(entry.createdAt).getFullYear()).filter(Number.isFinite))}
 function developmentCalendar(){return isSimulation||(isDevelopmentHost&&$('preview').checked)}
-function unlocked(index){return developmentCalendar()||new Date()>=new Date(adventYear(),11,index+1)}
-function revealAvailable(){return keepsakeRevealed||developmentCalendar()||new Date()>=new Date(adventYear(),11,24)}
+function earlierDoorsComplete(){return themes.slice(0,23).every((_,index)=>doorComplete(index))}
+function completionHint(){return lang==='de'?'Schließe zuerst alle anderen 23 Türchen ab.':'Complete all other 23 doors first.'}
+function unlocked(index){return (index!==23||earlierDoorsComplete())&&(developmentCalendar()||new Date()>=new Date(adventYear(),11,index+1))}
+function revealAvailable(){return earlierDoorsComplete()&&(keepsakeRevealed||developmentCalendar()||new Date()>=new Date(adventYear(),11,24))}
 function suggestedDoor(){
  if(!dayHasAnswers(0))return 0;
  const date=new Date(),year=adventYear();
@@ -31,6 +33,7 @@ function refreshPrimaryAction(){
  }
  button.disabled=false;countdown.hidden=true;countdown.textContent='';
  const day=suggestedDoor(),date=new Date(),today=date.getFullYear()===adventYear()&&date.getMonth()===11&&date.getDate()<=24;
+ button.disabled=!unlocked(day);button.title=day===23&&!earlierDoorsComplete()?completionHint():'';
  button.textContent=!dayHasAnswers(0)?(lang==='de'?'Öffne dein erstes Türchen':'Open your first door'):today?(lang==='de'?`Öffne das heutige Türchen · ${day+1}`:`Open today’s door · ${day+1}`):(lang==='de'?`Weiter zu Türchen ${day+1}`:`Continue with door ${day+1}`);
  button.insertAdjacentHTML('beforeend',icons.arrowRight);
 }
@@ -61,7 +64,7 @@ function render(){
   const statusText=(lang==='de'?{locked:'Gesperrt',unopened:'Ungeöffnet',pending:'Angefangen',completed:'Abgeschlossen'}:{locked:'Locked',unopened:'Unopened',pending:'In progress',completed:'Completed'})[status];
   button.disabled=!unlocked(index);
   button.innerHTML=`<span class="lock" aria-hidden="true">${icons[status]}</span><span class="symbol">${symbols[index]}</span><span class="num">${String(index+1).padStart(2,'0')}</span><small></small><span class="door-status" id="door-status-${index}"></span>`;
-  button.querySelector('small').textContent=opened?title:'';button.querySelector('.door-status').textContent=statusText;button.title=statusText;button.setAttribute('aria-describedby',`door-status-${index}`);
+  button.querySelector('small').textContent=opened?title:'';button.querySelector('.door-status').textContent=index===23&&!earlierDoorsComplete()?completionHint():statusText;button.title=index===23&&!earlierDoorsComplete()?completionHint():statusText;button.setAttribute('aria-describedby',`door-status-${index}`);
   button.setAttribute('aria-label',`${lang==='de'?'Tür':'Door'} ${index+1}${opened?': '+title:''}`);
   button.onclick=()=>openDoor(index);$('grid').append(button);
  });
@@ -106,6 +109,7 @@ function insertForDoor(entry,day){
  state.entries.splice(last<0?state.entries.length:last+1,0,entry);
 }
 function openDoor(index){
+ if(index===23&&!earlierDoorsComplete()){toast(completionHint());return}
  if(!unlocked(index)){toast(lang==='de'?`Dieses Türchen öffnet am ${index+1}. Dezember.`:`This door opens December ${index+1}. Come back during Advent.`);return}
  $('aboutDialog').close();if(!openedDoors.includes(index)){openedDoors.push(index);save()}if(index===23){story(true);return}
  commitAndSave();current=index;selectedQuestion=dayEntries(index).find(entry=>entry.text.trim())||null;choosingQuestion=selectedQuestion===null;
@@ -145,6 +149,7 @@ function renderPhotos(){
  }
 }
 function story(reveal=false){
+ if(!earlierDoorsComplete()){toast(completionHint());return}
  if(!keepsakeRevealed&&!(reveal&&revealAvailable())&&!developmentCalendar()){toast(lang==='de'?'Am 24. Dezember wartet hier eine Überraschung auf dich.':'A little surprise is waiting for you on December 24.');return}
  keepsakeRevealed=true;commitAndSave();applyWelcomeCopy();$('revealName').textContent=state.profile.name||(lang==='de'?'dich':'you');
  if(!$('revealDialog').open){$('revealDialog').showModal();animateDoorOpening($('revealDialog'))}
