@@ -160,6 +160,7 @@ function renderCollectionEntries(){
 }
 function moveEntry(index,direction){commitEdits();const [entry]=state.entries.splice(index,1);state.entries.splice(index+direction,0,entry);save();renderCollectionEntries()}
 function openEntryEditor(entry){
+ $('entryBack').hidden=!$('aboutDialog').open;$('entryBack').textContent=lang==='de'?'← Zurück':'← Back';
  editingEntry=entry;$('entryEditorTitle').textContent=entry.type==='photo'?'Photo details':entry.question||'Journal entry';$('entryTextLabel').hidden=entry.type!=='text';$('entryPhotoFields').hidden=entry.type!=='photo';
  $('entryText').value=entry.text||'';$('entryDescription').value=entry.description||'';$('entryCaption').value=entry.caption||'';$('entryDialog').showModal();
 }

@@ -2,7 +2,7 @@ import {renderMarkdown} from './markdown.js';
 import {generationSource,generationSourceText,miniBiographyPrompt,validateGenerationSource,validateGeneratedMarkdown} from './generation-core.js';
 let generationConfig=null,preview=null,sourceEdited=false,generating=false,controller=null;
 const dialog=document.createElement('dialog');dialog.id='generationDialog';
-dialog.innerHTML=`<button class="close" aria-label="Close generation">×</button><h2 id="generationTitle">Create your mini biography</h2>
+dialog.innerHTML=`<button class="close" aria-label="Close generation">×</button><button type="button" class="dialog-back" id="generationBack">← Back</button><h2 id="generationTitle">Create your mini biography</h2>
 <p>Make a short, editable text from your entries. This sends your writing and photo context to <strong>OpenAI</strong>. Photos stay on your device. API usage is billed to the configured key.</p>
 <details><summary>Data-sharing and privacy details</summary><p>Your basic facts, questions, answers, recording dates, and photo descriptions/captions are sent through the local server. Original entries stay unchanged.</p><p>OpenAI does not train on API data by default unless you opt in. We request no response storage, but abuse-monitoring logs may retain content for up to 30 days, with exceptions. <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener noreferrer">OpenAI’s data policy</a>.</p><p id="generationModel" class="hint"></p></details>
 <details id="generationInputDetails"><summary>Review and edit what gets sent</summary><p class="hint">This copy is sent to OpenAI. Remove or change anything you like here; your original journal stays unchanged.</p><label for="generationPayload">Text to send</label><textarea id="generationPayload" spellcheck="true" maxlength="450000"></textarea><button type="button" id="generationResetInput">Reset from my journal</button></details>
@@ -11,7 +11,7 @@ dialog.innerHTML=`<button class="close" aria-label="Close generation">×</button
 <button class="primary" id="generationSubmit" disabled>Generate my text</button> <button id="generationLocal">Cancel</button><button id="generationOwnLlm">Use my own AI instead</button>
 <p id="generationStatus" role="status" aria-live="polite"></p>`;
 const textDialog=document.createElement('dialog');textDialog.id='miniographyDialog';
-textDialog.innerHTML=`<button class="close" aria-label="Close my text">×</button><h2>Your mini biography</h2><p class="hint">Saved in this browser. Read it through before keeping or sharing it; AI can make mistakes.</p><section id="generationResult" hidden><p id="generationStorage" class="hint" role="status"></p><p id="generationStale" class="hint" hidden>Your journal has changed since this text was generated.</p><label for="generationMarkdown">Your text (Markdown)</label><textarea id="generationMarkdown" spellcheck="true"></textarea><details><summary>Preview formatting</summary><div id="generationPreview" class="markdown-content"></div></details><div class="text-actions"><button class="primary" id="generationDownload">Download Markdown ↓</button><button id="generationPrint">Convert to PDF / Print ↗</button><button id="generationRegenerate">Regenerate text</button><button id="savedOwnLlm">Use my own AI</button></div><p class="hint">Keep a downloaded copy too. Journal archive downloads contain your original entries; photos follow the text when printing.</p></section>`;
+textDialog.innerHTML=`<button class="close" aria-label="Close my text">×</button><button type="button" class="dialog-back" id="savedTextBack">← Back</button><h2>Your mini biography</h2><p class="hint">Saved in this browser. Read it through before keeping or sharing it; AI can make mistakes.</p><section id="generationResult" hidden><p id="generationStorage" class="hint" role="status"></p><p id="generationStale" class="hint" hidden>Your journal has changed since this text was generated.</p><label for="generationMarkdown">Your text (Markdown)</label><textarea id="generationMarkdown" spellcheck="true"></textarea><details><summary>Preview formatting</summary><div id="generationPreview" class="markdown-content"></div></details><div class="text-actions"><button class="primary" id="generationDownload">Download Markdown ↓</button><button id="generationPrint">Convert to PDF / Print ↗</button><button id="generationRegenerate">Regenerate text</button><button id="savedOwnLlm">Use my own AI</button></div><p class="hint">Keep a downloaded copy too. Journal archive downloads contain your original entries; photos follow the text when printing.</p></section>`;
 document.body.append(dialog,textDialog);
 async function loadGenerationConfig(){
  if(!isDevelopmentHost)return;
@@ -26,7 +26,9 @@ function openGeneration(){
  if(!keepsakeRevealed&&!developmentCalendar())return;
  if(generatedDraft)openSavedText();else openGenerationConsent();
 }
+function updateDialogBackLabels(){for(const button of document.querySelectorAll('.dialog-back'))button.textContent=lang==='de'?'← Zurück':'← Back'}
 function openGenerationConsent(){
+ updateDialogBackLabels();
  if(!keepsakeRevealed&&!developmentCalendar())return;
  refreshPreview();$('generationModel').textContent=`OpenAI · ${generationConfig?.model||'not configured'}`;
  $('generationTitle').textContent=generatedDraft?'Regenerate your text':'Create your mini biography';
@@ -36,6 +38,7 @@ function openGenerationConsent(){
  textDialog.close();$('revealDialog').close();dialog.showModal();
 }
 function openSavedText(){
+ updateDialogBackLabels();
  if(!generatedDraft)return;
  dialog.close();$('revealDialog').close();renderDraft();
  $('generationStale').hidden=JSON.stringify(currentSource())===JSON.stringify(generatedDraft.journalSource||generatedDraft.source);
@@ -46,8 +49,10 @@ function openSavedText(){
 $('generationAgree').onchange=()=>{$('generationSubmit').disabled=!$('generationAgree').checked||!generationConfig?.available||generating};
 function closeGeneration(){controller?.abort();dialog.close();if(generatedDraft)openSavedText();else story()}
 function closeSavedText(){textDialog.close();story()}
+$('generationBack').onclick=closeGeneration;
 dialog.querySelector('.close').onclick=closeGeneration;$('generationLocal').onclick=closeGeneration;
 dialog.addEventListener('cancel',event=>{event.preventDefault();closeGeneration()});
+$('savedTextBack').onclick=closeSavedText;
 textDialog.querySelector('.close').onclick=closeSavedText;
 textDialog.addEventListener('cancel',event=>{event.preventDefault();closeSavedText()});
 $('generationRegenerate').onclick=openGenerationConsent;
@@ -110,7 +115,7 @@ refreshRevealGeneration();
 
 // A fully local alternative: take the same writing instructions to any chosen model.
 const ownDialog=document.createElement('dialog');ownDialog.id='ownLlmDialog';ownDialog.setAttribute('aria-labelledby','ownLlmTitle');
-ownDialog.innerHTML=`<button class="close" aria-label="Close prompt">×</button><h2 id="ownLlmTitle">Use your preferred AI</h2><p id="ownLlmIntro"></p><p class="hint" id="ownLlmLocalHint"></p><div class="text-actions"><button class="primary" id="ownLlmCopy">Copy prompt & reflections</button><button id="ownLlmDownload">Download prompt ↓</button></div><details><summary id="ownLlmSourceTitle">Review and edit the reflections</summary><label for="ownLlmSource" id="ownLlmSourceLabel">Reflections to include</label><textarea id="ownLlmSource" maxlength="450000"></textarea><button id="ownLlmReset">Reset from my journal</button></details><details><summary id="ownLlmPromptTitle">View the complete prompt</summary><textarea id="ownLlmPrompt" readonly aria-label="Complete prompt"></textarea></details><p class="hint" id="ownLlmPrivacy"></p><details><summary id="ownLlmReturnTitle">Bring your result back</summary><label for="ownLlmResult" id="ownLlmResultLabel">Paste the Markdown from your AI</label><textarea id="ownLlmResult" maxlength="100000"></textarea><p class="hint" id="ownLlmReplace" hidden></p><button class="primary" id="ownLlmSave">Save my text</button></details><p id="ownLlmStatus" role="status" aria-live="polite"></p>`;
+ownDialog.innerHTML=`<button class="close" aria-label="Close prompt">×</button><button type="button" class="dialog-back" id="ownLlmBack">← Back</button><h2 id="ownLlmTitle">Use your preferred AI</h2><p id="ownLlmIntro"></p><p class="hint" id="ownLlmLocalHint"></p><div class="text-actions"><button class="primary" id="ownLlmCopy">Copy prompt & reflections</button><button id="ownLlmDownload">Download prompt ↓</button></div><details><summary id="ownLlmSourceTitle">Review and edit the reflections</summary><label for="ownLlmSource" id="ownLlmSourceLabel">Reflections to include</label><textarea id="ownLlmSource" maxlength="450000"></textarea><button id="ownLlmReset">Reset from my journal</button></details><details><summary id="ownLlmPromptTitle">View the complete prompt</summary><textarea id="ownLlmPrompt" readonly aria-label="Complete prompt"></textarea></details><p class="hint" id="ownLlmPrivacy"></p><details><summary id="ownLlmReturnTitle">Bring your result back</summary><label for="ownLlmResult" id="ownLlmResultLabel">Paste the Markdown from your AI</label><textarea id="ownLlmResult" maxlength="100000"></textarea><p class="hint" id="ownLlmReplace" hidden></p><button class="primary" id="ownLlmSave">Save my text</button></details><p id="ownLlmStatus" role="status" aria-live="polite"></p>`;
 document.body.append(ownDialog);
 let ownOrigin='reveal',ownJournalSource=null,ownDocument=null;
 const ownLlmCopy={
@@ -119,6 +124,7 @@ const ownLlmCopy={
 };
 function refreshOwnPrompt(){$('ownLlmPrompt').value=miniBiographyPrompt($('ownLlmSource').value,ownJournalSource.language)}
 function openOwnLlm(origin='reveal'){
+ updateDialogBackLabels();
  if(!keepsakeRevealed&&!developmentCalendar())return;
  controller?.abort();ownDocument=state;ownOrigin=origin;ownJournalSource=structuredClone(origin==='generation'?preview:currentSource());
  for(const [id,text]of Object.entries(ownLlmCopy[lang]))$(id).textContent=text;
@@ -128,6 +134,7 @@ function openOwnLlm(origin='reveal'){
  dialog.close();textDialog.close();$('revealDialog').close();resetGenerationConsent();ownDialog.showModal();
 }
 function closeOwnLlm(){ownDialog.close();if(ownOrigin==='generation')dialog.showModal();else if(ownOrigin==='saved'&&generatedDraft)openSavedText();else story()}
+$('ownLlmBack').onclick=closeOwnLlm;
 ownDialog.querySelector('.close').onclick=closeOwnLlm;ownDialog.addEventListener('cancel',event=>{event.preventDefault();closeOwnLlm()});
 $('ownLlmSource').oninput=()=>{refreshOwnPrompt();$('ownLlmStatus').textContent=''};
 $('ownLlmReset').onclick=()=>{ownJournalSource=currentSource();$('ownLlmSource').value=generationSourceText(ownJournalSource);refreshOwnPrompt()};

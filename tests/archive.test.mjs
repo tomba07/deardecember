@@ -268,7 +268,7 @@ test('older multiple reflections remain stored and accessible in entry managemen
  await p.evaluate(()=>{showAbout();renderCollectionEntries()});
  await p.locator('#aboutDialog details').filter({has:p.locator('#collectionEntries')}).evaluate(element=>element.open=true);
  await p.getByRole('button',{name:'Edit entry 2',exact:true}).click();
- assert.equal(await p.locator('#entryText').inputValue(),'Earlier memory 2');assert.deepEqual(p.errors,[]);
+ assert.equal(await p.locator('#entryText').inputValue(),'Earlier memory 2');await p.locator('#entryText').fill('Edited earlier memory');await p.locator('#entryBack').click();assert.equal(await p.locator('#aboutDialog').isVisible(),true);assert.equal((await collection(p)).entries[1].text,'Edited earlier memory');assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
 

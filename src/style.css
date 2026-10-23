@@ -137,3 +137,5 @@ footer{flex-direction:column;align-items:center;justify-content:center;gap:22px;
 #ownLlmDialog{width:min(740px,calc(100vw - 32px));box-sizing:border-box}#ownLlmDialog>p{line-height:1.8}#ownLlmDialog textarea{min-height:220px;margin-top:10px}#ownLlmPrompt{font:13px/1.7 ui-monospace,monospace}#ownLlmStatus:empty{display:none}#revealOwnLlm{display:block;padding:14px 0 0;text-decoration:underline;text-underline-offset:4px}#generationOwnLlm{display:block;margin-top:18px;font-size:12px;text-decoration:underline;text-underline-offset:4px}
 
 #begin{display:inline-flex;align-items:center;justify-content:center;gap:12px}#begin>svg{width:17px;height:17px;flex:none}
+
+.dialog-back{display:block;padding:4px 0;margin:0 36px 16px 0;font-size:13px;text-align:left}.dialog-back[hidden]{display:none}

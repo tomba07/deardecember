@@ -150,3 +150,21 @@ test('clipboard copies the complete own-model prompt and has a manual fallback',
  await p.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied')}}}));await p.locator('#ownLlmCopy').click();assert((await p.locator('#ownLlmStatus').textContent()).includes('manually'));assert.equal(await p.locator('#ownLlmPrompt').isVisible(),true);
  }finally{await p.context().close()}
 });
+
+test('nested dialogs offer Back and preserve edits while returning to their parent',async()=>{
+ mode='ok';const p=await openPage();try{
+ const count=calls.length;
+ await p.locator('#generationInputDetails>summary').click();await p.locator('#generationPayload').fill('A reflection to keep while navigating.');
+ await p.locator('#generationOwnLlm').click();await p.locator('#ownLlmBack').click();
+ assert.equal(await p.locator('#generationDialog').isVisible(),true);
+ assert.equal(await p.locator('#generationPayload').inputValue(),'A reflection to keep while navigating.');
+ await p.locator('#generationBack').click();assert.equal(await p.locator('#revealDialog').isVisible(),true);assert.equal(calls.length,count);
+ await p.locator('#revealOwnLlm').click();await p.locator('#ownLlmBack').click();assert.equal(await p.locator('#revealDialog').isVisible(),true);
+ await p.locator('#revealGenerate').click();await createText(p,'A saved draft.');
+ await p.locator('#generationMarkdown').fill('My edited saved draft.');await p.locator('#generationRegenerate').click();await p.locator('#generationBack').click();
+ assert.equal(await p.locator('#generationMarkdown').inputValue(),'My edited saved draft.');
+ await p.locator('#savedOwnLlm').click();await p.locator('#ownLlmBack').click();assert.equal(await p.locator('#miniographyDialog').isVisible(),true);
+ await p.locator('#savedTextBack').click();assert.equal(await p.locator('#revealDialog').isVisible(),true);
+ await p.evaluate(()=>toggleLang());await p.locator('#revealOwnLlm').click();assert.equal(await p.locator('#ownLlmBack').textContent(),'← Zurück');
+ }finally{await p.context().close()}
+});
