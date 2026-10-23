@@ -5,16 +5,18 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "dev": "node --env-file-if-exists=.env server/dev.mjs",
+    "dev": "node --watch --env-file-if-exists=.env server/dev.mjs",
     "preview": "python3 -m http.server 8123 --directory dist",
     "validate:format": "node scripts/validate-format.mjs",
     "generate:validator": "node scripts/generate-validator.mjs",
-    "test": "npm run generate:validator && node --test tests/*.test.mjs"
+    "test": "npm run generate:validator && node scripts/generate-markdown.mjs && node --test tests/*.test.mjs"
   },
   "devDependencies": {
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
+    "dompurify": "^3.4.17",
     "esbuild": "^0.28.2",
+    "marked": "^18.1.1",
     "playwright": "^1.62.1"
   }
 }

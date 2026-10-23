@@ -1,7 +1,7 @@
 const ARCHIVE_LIMITS={compressed:25e6,expanded:30e6,manifest:2e6,image:3e6,entries:2000,members:2100};
 const IMAGE_TYPES={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp'};
 function validateCollection(collection){
- if(collection?.formatVersion!==1)throw Error('Unsupported archive format. Please use a Miniography formatVersion 1 archive.');
+ if(collection?.formatVersion!==1)throw Error('Unsupported archive format. Please use a journal archive with formatVersion 1.');
  if(!validateManifest(collection)){
   const error=validateManifest.errors[0];throw Error(`Invalid collection at ${error.instancePath||'/'}: ${error.message}.`);
  }
@@ -24,17 +24,17 @@ function inspectZip(buffer){
   if(cursor+46+nameLength+extraLength+commentLength>end)throw Error('Truncated ZIP directory.');
   const name=decoder.decode(bytes.subarray(cursor+46,cursor+46+nameLength));
   if(members.has(name))throw Error('Duplicate ZIP file names are not allowed.');
-  if(!/^(miniography\.json|README\.txt|schema\.json|media\/|media\/[A-Za-z0-9][A-Za-z0-9_-]*\.(jpg|jpeg|png|webp))$/.test(name))throw Error('The archive contains an unsupported or unsafe file path.');
+  if(!/^(miniography\.json|draft-backup\.json|README\.txt|schema\.json|media\/|media\/[A-Za-z0-9][A-Za-z0-9_-]*\.(jpg|jpeg|png|webp))$/.test(name))throw Error('The archive contains an unsupported or unsafe file path.');
   if((attributes>>>16&0xf000)===0xa000||(flags&1)||![0,8].includes(method))throw Error('Symlinks, encrypted files or unsupported compression are not allowed.');
   if(localOffset+30>offset||view.getUint32(localOffset,true)!==0x04034b50)throw Error('Invalid ZIP file header.');
   const localNameLength=view.getUint16(localOffset+26,true),localExtraLength=view.getUint16(localOffset+28,true);
   if(localOffset+30+localNameLength+localExtraLength>offset||decoder.decode(bytes.subarray(localOffset+30,localOffset+30+localNameLength))!==name||view.getUint16(localOffset+6,true)!==flags||view.getUint16(localOffset+8,true)!==method)throw Error('ZIP header names or flags do not match.');
   if(localOffset+30+localNameLength+localExtraLength+view.getUint32(cursor+20,true)>offset)throw Error('Invalid ZIP file size.');
-  const limit=name==='miniography.json'?ARCHIVE_LIMITS.manifest:name.startsWith('media/')?ARCHIVE_LIMITS.image:ARCHIVE_LIMITS.manifest;
+  const limit=['miniography.json','draft-backup.json'].includes(name)?ARCHIVE_LIMITS.manifest:name.startsWith('media/')?ARCHIVE_LIMITS.image:ARCHIVE_LIMITS.manifest;
   if(expanded>limit||(total+=expanded)>ARCHIVE_LIMITS.expanded)throw Error('The expanded archive or one of its files exceeds the supported size.');
   members.set(name,{size:expanded,crc:view.getUint32(cursor+16,true)});cursor+=46+nameLength+extraLength+commentLength;
  }
- if(cursor!==end||!members.has('miniography.json'))throw Error('The archive must contain one root miniography.json manifest.');
+ if(cursor!==end||Number(members.has('miniography.json'))+Number(members.has('draft-backup.json'))!==1)throw Error('The archive must contain exactly one journal or draft manifest.');
  return members;
 }
 async function imageIsValid(bytes,type){
@@ -60,8 +60,10 @@ function readZipMember(zip,path,member){
 }
 async function readArchive(buffer){
  const members=inspectZip(buffer);const zip=await JSZip.loadAsync(buffer);
- const manifestBytes=await readZipMember(zip,'miniography.json',members.get('miniography.json'));if(manifestBytes.length!==members.get('miniography.json').size)throw Error('The manifest size does not match the ZIP directory.');
- const collection=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(manifestBytes));validateCollection(collection);
+ const draft=members.has('draft-backup.json'),manifestPath=draft?'draft-backup.json':'miniography.json';
+ const manifestBytes=await readZipMember(zip,manifestPath,members.get(manifestPath));if(manifestBytes.length!==members.get(manifestPath).size)throw Error('The manifest size does not match the ZIP directory.');
+ const document=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(manifestBytes)),collection=draft?document.collection:document;
+ if(draft)validateDraftCollection(collection);else validateCollection(collection);
  const assets=Object.create(null);
  for(const photo of collection.entries.filter(entry=>entry.type==='photo')){
   if(Object.hasOwn(assets,photo.filePath))continue;
@@ -71,15 +73,18 @@ async function readArchive(buffer){
  }
  // Validate even unreferenced media, although only referenced originals are retained.
  for(const [path]of members){if(path.startsWith('media/')&&path!=='media/'&&!Object.hasOwn(assets,path)){const bytes=await readZipMember(zip,path,members.get(path));if(bytes.length!==members.get(path).size)throw Error('Invalid media size.');await imageIsValid(bytes,IMAGE_TYPES[path.split('.').pop()])}}
- return {collection,media:assets};
+ return draft?{collection,media:assets,generatedDraft:readGeneratedDraft(document.generatedDraft)}:{collection,media:assets};
+}
+function validateDraftCollection(collection){
+ const profile=collection?.profile;
+ if(!profile||['name','dateOfBirth','placeOfBirth'].some(key=>typeof profile[key]!=='string'))throw Error('Invalid draft profile.');
+ const candidate=structuredClone(collection);candidate.profile.name=profile.name.trim()?profile.name:'Draft';candidate.profile.dateOfBirth=profile.dateOfBirth||'1900-01-01';candidate.profile.placeOfBirth=profile.placeOfBirth.trim()?profile.placeOfBirth:'Draft';validateCollection(candidate);
 }
 async function readDraftBackup(buffer){
  if(buffer.byteLength>ARCHIVE_LIMITS.expanded)throw Error('The draft backup exceeds 30 MB.');
  const document=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(buffer));
  if(!document.collection||!document.media||typeof document.media!=='object'||Array.isArray(document.media))throw Error('Invalid draft recovery backup.');
- const collection=document.collection,profile=collection.profile;
- if(!profile||['name','dateOfBirth','placeOfBirth'].some(key=>typeof profile[key]!=='string'))throw Error('Invalid draft profile.');
- const candidate=structuredClone(collection);candidate.profile.name=profile.name.trim()?profile.name:'Draft';candidate.profile.dateOfBirth=profile.dateOfBirth||'1900-01-01';candidate.profile.placeOfBirth=profile.placeOfBirth.trim()?profile.placeOfBirth:'Draft';validateCollection(candidate);
+ const collection=document.collection;validateDraftCollection(collection);
  const assets=Object.create(null);let total=0;
  for(const photo of collection.entries.filter(entry=>entry.type==='photo')){
   if(Object.hasOwn(assets,photo.filePath))continue;
@@ -87,18 +92,18 @@ async function readDraftBackup(buffer){
   const bytes=Uint8Array.from(atob(source.split(',')[1]),value=>value.charCodeAt(0));if(bytes.length>ARCHIVE_LIMITS.image||(total+=bytes.length)>ARCHIVE_LIMITS.expanded)throw Error('Draft photos exceed the size limit.');
   const blob=await imageIsValid(bytes,IMAGE_TYPES[photo.filePath.split('.').pop()]);assets[photo.filePath]=await blobDataUrl(blob);
  }
- return {collection,media:assets};
+ return {collection,media:assets,generatedDraft:readGeneratedDraft(document.generatedDraft)};
 }
-async function createArchive(collection,assets){
- validateCollection(collection);
- const json=JSON.stringify(collection,null,2);if(new TextEncoder().encode(json).length>ARCHIVE_LIMITS.manifest)throw Error('The collection manifest exceeds 2 MB.');
- const zip=new JSZip();zip.file('miniography.json',json);let total=new TextEncoder().encode(json).length;
+async function createArchive(collection,assets,{draftDocument=null}={}){
+ if(draftDocument)validateDraftCollection(collection);else validateCollection(collection);
+ const json=JSON.stringify(draftDocument?{...draftDocument,collection,media:undefined}:collection,null,2);if(new TextEncoder().encode(json).length>ARCHIVE_LIMITS.manifest)throw Error('The collection manifest exceeds 2 MB.');
+ const zip=new JSZip();zip.file(draftDocument?'draft-backup.json':'miniography.json',json);let total=new TextEncoder().encode(json).length;
  for(const path of new Set(collection.entries.filter(entry=>entry.type==='photo').map(entry=>entry.filePath))){
   const source=assets[path];if(!source)throw Error(`Missing original photo: ${path}`);
   const bytes=Uint8Array.from(atob(source.split(',')[1]||''),value=>value.charCodeAt(0));
   if(bytes.length>ARCHIVE_LIMITS.image||(total+=bytes.length)>ARCHIVE_LIMITS.expanded)throw Error('The photos exceed the archive size limit.');
   await imageIsValid(bytes,IMAGE_TYPES[path.split('.').pop()]);zip.file(path,bytes);
  }
- zip.file('README.txt','Miniography formatVersion 1\nminiography.json contains your profile and ordered original text/photo entries.\nPhotos in media/ follow the text they illustrate. createdAt is the date added; modificationDates records later edits.\nOpen this archive with any ZIP reader.');
+ zip.file('README.txt',draftDocument?'Dear December draft backup\nOpen this ZIP in Dear December to restore unfinished entries, original photos and saved generated text.\ndraft-backup.json holds the journal data; media/ contains the image files.':'Personal journal archive, formatVersion 1\nminiography.json contains your profile and ordered original text/photo entries.\nPhotos in media/ follow the text they illustrate. createdAt is the date added; modificationDates records later edits.\nOpen this archive with any ZIP reader.');
  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});if(blob.size>ARCHIVE_LIMITS.compressed)throw Error('The archive exceeds 25 MB.');return blob;
 }

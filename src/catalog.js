@@ -66,40 +66,24 @@ function writeQuestionAnswer(value){
  }else if(entry)updateEntry(entry,{text:value});
  save();
 }
-function pickMoreQuestions(){commitAndSave();choosingQuestion=true;renderQuestionChoices();$('questionChoices').querySelector('button')?.focus({preventScroll:true})}
 function renderQuestionChoices(){
  $('saveClose').textContent=lang==='de'?'Speichern & schließen':'Save & close';
  $('questionChoiceHint').textContent=lang==='de'?'Wähle eine Frage, die eine Erinnerung weckt. Auch kleine Alltagsdetails sind es wert, bewahrt zu werden.':'Pick a question that sparks a memory. Small, everyday details are worth keeping.';
  $('questionPicker').hidden=!choosingQuestion;
  $('questionResponse').hidden=choosingQuestion;
- $('questionChoices').replaceChildren();renderAnsweredMemories();
- const choices=[0,1,2,3];
- // Additional imported answers remain selectable without rewriting their prompts.
- for(const entry of dayEntries(current)){if(entryBinding(entry).choice===undefined)choices.push(entry)}
- for(const index of choices){
-  const button=document.createElement('button');button.type='button';
-  const answered=Boolean(questionAnswer(current,index).trim());
-  const existing=entryForChoice(current,index);button.textContent=existing?.question||(typeof index==='object'?choicePrompt(current,3):choicePrompt(current,index));
-  button.setAttribute('aria-pressed',String(index===selectedQuestion));
-  if(answered){button.classList.add('answered');button.setAttribute('aria-label',button.textContent+(lang==='de'?' – Antwort bearbeiten':' – Edit answer'))}
-  button.onclick=()=>{commitAndSave();selectedQuestion=index;choosingQuestion=false;renderQuestionChoices();renderPhotos();$('answer').focus();editor.scrollTop=0};$('questionChoices').append(button);
- }
+ $('questionChoices').replaceChildren();
+ renderAvailableQuestions();
  if(selectedQuestion!==null){$('question').textContent=entryForChoice(current,selectedQuestion)?.question||(typeof selectedQuestion==='object'?choicePrompt(current,3):choicePrompt(current,selectedQuestion));$('answer').value=questionAnswer(current,selectedQuestion)}
- $('moreQuestions').textContent=lang==='de'?'Ein wenig mehr von deiner Geschichte · Weitere Frage wählen':'A little more of your story · Pick another question';
 }
 
-// Keep earlier answers in view while choosing and writing another memory.
-function renderAnsweredMemories(){
- const container=$('answeredMemories');container.replaceChildren();
- const active=choosingQuestion?null:entryForChoice(current,selectedQuestion);
- const entries=dayEntries(current).filter(entry=>entry!==active&&entry.text.trim());
- container.hidden=!entries.length;
- for(const entry of entries){
-  const card=document.createElement('article');card.className='answered-memory';
-  const heading=document.createElement('h3');heading.textContent=entry.question||(lang==='de'?'Eine eigene Erinnerung':'A memory of your own');
-  const text=document.createElement('p');text.textContent=entry.text;
-  const edit=document.createElement('button');edit.type='button';edit.textContent=lang==='de'?'Antwort bearbeiten':'Edit answer';
-  edit.onclick=()=>{commitAndSave();selectedQuestion=entryBinding(entry).choice??entry;choosingQuestion=false;renderQuestionChoices();renderPhotos();$('answer').focus()};
-  card.append(heading,text,edit);container.append(card);
+function renderAvailableQuestions(){
+ const container=$('questionChoices');
+ const choices=choosingQuestion?[0,1,2,3]:[];
+ for(const button of [...container.children])if(!choices.includes(Number(button.dataset.choice)))button.remove();
+ for(const index of choices){
+  if(container.querySelector(`[data-choice="${index}"]`))continue;
+  const button=document.createElement('button');button.type='button';button.dataset.choice=index;
+  button.textContent=choicePrompt(current,index);
+  button.onclick=()=>{commitAndSave();selectedQuestion=index;choosingQuestion=false;renderQuestionChoices();renderPhotos();$('answer').focus();editor.scrollTop=0};const next=[...container.children].find(item=>Number(item.dataset.choice)>index);container.insertBefore(button,next||null);
  }
 }

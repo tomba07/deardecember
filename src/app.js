@@ -1,4 +1,4 @@
-const $=id=>document.getElementById(id),editor=$('editor'),storyDialog=$('storyDialog');let current=0,lang=state.language.toLowerCase().startsWith('de')?'de':'en';
+const $=id=>document.getElementById(id),editor=$('editor');let current=0,lang=state.language.toLowerCase().startsWith('de')?'de':'en';
 const themes=['Your beginnings','A place called home','Childhood treasures','The people around you','Little traditions','Growing into yourself','Friendship','Learning along the way','A first adventure','Finding your own way','Meaningful connections','Turning points','The work of your hands','Places that stay with you','Everyday joy','Your kind of person','A proud moment','Through difficult times','What matters most','A perfect little day','A letter to your younger self','Dreams still unfolding','For those who come after','A moment for you'];
 const deThemes=['Deine Anfänge','Ein Ort namens Zuhause','Kindheitsschätze','Die Menschen um dich','Kleine Traditionen','Du selbst werden','Freundschaft','Was du gelernt hast','Ein erstes Abenteuer','Dein eigener Weg','Wichtige Verbindungen','Wendepunkte','Was du erschaffst','Unvergessliche Orte','Freude im Alltag','Deine Persönlichkeit','Ein stolzer Moment','Schwierige Zeiten','Was wirklich zählt','Ein schöner Tag','An dein jüngeres Ich','Träume für morgen','Für die Zukunft','Ein Moment für dich'];
 const questions=['What is one of your earliest memories?','What place felt like home when you were growing up?','What small childhood memory still makes you smile?','Who made you feel seen and cared for as you grew up?','What tradition, meal, or celebration holds a special place in your memory?','When did you start to feel like your own person?','Tell us about a friendship that means a lot to you.','What did you learn, in or out of a classroom, that has stayed with you?','What adventure took you beyond the familiar?','What interest or passion have you chosen to follow?','Who has made a meaningful difference in your life?','What experience or decision has influenced who you are today?','What have you enjoyed making, doing, studying, or contributing?','Which place would you like to return to, and why?','What brings you joy in an ordinary week?','What little quirks or qualities make you you?','What is something you feel proud of?','What has helped you through a difficult time?','What values guide the choices you make?','Describe a day you would love to live again.','What would you like to tell your younger self?','What are you curious about or looking forward to?','What message would you like to leave for future generations?'];
@@ -7,7 +7,7 @@ const followupQuestions={"en": [["Is there a story behind your name?", "What hav
 const symbols=['✳','⌂','✧','❋','❧','❀','∞','✎','✦','➶','♡','✧','❋','⌁','☼','✳','✦','❧','◇','☼','✎','✧','❦','✴'];
 function toast(message){$('toast').textContent=message;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',5000)}
 function save(){
- try{persistDocument();$('saved').textContent=lang==='de'?'Auf diesem Gerät gespeichert':'Saved on this device';render();return true}
+ try{persistDocument();$('saved').textContent='';render();return true}
  catch{$('saved').textContent='Not saved — export a backup';toast('Browser storage is full. Export an archive to save your current collection.');return false}
 }
 function commitAndSave(){commitEdits();return save()}
@@ -31,7 +31,8 @@ function refreshPrimaryAction(){
  }
  button.disabled=false;countdown.hidden=true;countdown.textContent='';
  const day=suggestedDoor(),date=new Date(),today=date.getFullYear()===adventYear()&&date.getMonth()===11&&date.getDate()<=24;
- button.textContent=!dayHasAnswers(0)?(lang==='de'?'Öffne dein erstes Türchen ↗':'Open your first door ↗'):today?(lang==='de'?`Öffne das heutige Türchen · ${day+1} ↗`:`Open today’s door · ${day+1} ↗`):(lang==='de'?`Weiter zu Türchen ${day+1} ↗`:`Continue with door ${day+1} ↗`);
+ button.textContent=!dayHasAnswers(0)?(lang==='de'?'Öffne dein erstes Türchen':'Open your first door'):today?(lang==='de'?`Öffne das heutige Türchen · ${day+1}`:`Open today’s door · ${day+1}`):(lang==='de'?`Weiter zu Türchen ${day+1}`:`Continue with door ${day+1}`);
+ button.insertAdjacentHTML('beforeend',icons.arrowRight);
 }
 function openSuggestedDoor(){if(unlocked(0))openDoor(suggestedDoor())}
 function startCalendarClock(){
@@ -39,17 +40,28 @@ function startCalendarClock(){
  setInterval(()=>{const date=new Date().toDateString();if(date!==lastDate){lastDate=date;render()}else refreshPrimaryAction()},1000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){lastDate=new Date().toDateString();render()}});
 }
+function doorComplete(index){
+ if(index===23)return keepsakeRevealed;
+ return dayEntries(index).some(entry=>entry.text.trim())||(index===0&&Object.values(state.profile).some(value=>typeof value==='string'&&value.trim()));
+}
+function doorStatus(index){
+ if(!unlocked(index))return 'locked';
+ if(doorComplete(index))return 'completed';
+ if(openedDoors.includes(index)||dayEntries(index).some(entry=>entry.text.trim())||(index===0&&Object.values(state.profile).some(value=>value?.trim())))return 'pending';
+ return 'unopened';
+}
 function render(){
  refreshPrimaryAction();
- const count=themes.slice(0,23).filter((_,day)=>dayHasAnswers(day)).length;
+ const count=themes.slice(0,23).filter((_,day)=>doorComplete(day)).length;
  $('count').textContent=lang==='de'?`${count} von 23 Erinnerungen gesammelt`:`${count} of 23 memories collected`;$('bar').style.width=count/23*100+'%';$('grid').replaceChildren();
  themes.forEach((_,index)=>{
-  const button=document.createElement('button'),answered=dayHasAnswers(index),opened=openedDoors.includes(index)||dayEntries(index).some(entry=>entry.text.trim())||(index===23&&keepsakeRevealed);
+  const button=document.createElement('button'),status=doorStatus(index),opened=openedDoors.includes(index)||dayEntries(index).some(entry=>entry.text.trim())||(index===23&&keepsakeRevealed);
   const title=(lang==='de'?deThemes:themes)[index];
-  button.className='door'+(answered?' done':'')+(index===23?' reveal':'');
+  button.className='door'+(status==='completed'?' done':'')+(index===23?' reveal':'');button.dataset.status=status;
+  const statusText=(lang==='de'?{locked:'Gesperrt',unopened:'Ungeöffnet',pending:'Angefangen',completed:'Abgeschlossen'}:{locked:'Locked',unopened:'Unopened',pending:'In progress',completed:'Completed'})[status];
   button.disabled=!unlocked(index);
-  button.innerHTML=`<span class="lock" aria-hidden="true">${answered?'✦':unlocked(index)?'':icons.lock}</span><span class="symbol">${symbols[index]}</span><span class="num">${String(index+1).padStart(2,'0')}</span><small></small>`;
-  button.querySelector('small').textContent=opened?title:'';
+  button.innerHTML=`<span class="lock" aria-hidden="true">${icons[status]}</span><span class="symbol">${symbols[index]}</span><span class="num">${String(index+1).padStart(2,'0')}</span><small></small><span class="door-status" id="door-status-${index}"></span>`;
+  button.querySelector('small').textContent=opened?title:'';button.querySelector('.door-status').textContent=statusText;button.title=statusText;button.setAttribute('aria-describedby',`door-status-${index}`);
   button.setAttribute('aria-label',`${lang==='de'?'Tür':'Door'} ${index+1}${opened?': '+title:''}`);
   button.onclick=()=>openDoor(index);$('grid').append(button);
  });
@@ -83,7 +95,7 @@ function inferBindings(){
  }
 }
 function dayEntries(day){return state.entries.filter(entry=>entry.type==='text'&&entryBinding(entry).day===day)}
-function dayHasAnswers(day){return (day===0&&factsComplete())||dayEntries(day).some(entry=>entry.text.trim())}
+function dayHasAnswers(day){return doorComplete(day)}
 function entryForChoice(day,choice){
  if(choice&&typeof choice==='object')return state.entries.includes(choice)?choice:null;
  return dayEntries(day).find(entry=>entryBinding(entry).choice===choice);
@@ -96,14 +108,15 @@ function insertForDoor(entry,day){
 function openDoor(index){
  if(!unlocked(index)){toast(lang==='de'?`Dieses Türchen öffnet am ${index+1}. Dezember.`:`This door opens December ${index+1}. Come back during Advent.`);return}
  $('aboutDialog').close();if(!openedDoors.includes(index)){openedDoors.push(index);save()}if(index===23){story(true);return}
- commitAndSave();current=index;selectedQuestion=null;choosingQuestion=true;
- $('dayLabel').textContent=`${lang==='de'?'TÜR':'DOOR'} ${String(index+1).padStart(2,'0')} · ${lang==='de'?'DEINE ERINNERUNGEN':'YOUR MEMORIES'}`;$('title').textContent=(lang==='de'?deThemes:themes)[index];
- $('answer').placeholder=lang==='de'?'Fang einfach an. Jedes kleine Detail zählt.':'Start anywhere. A little detail can hold a whole memory…';renderCalendarFacts();renderQuestionChoices();renderPhotos();if(!editor.open)editor.showModal();
+ commitAndSave();current=index;selectedQuestion=dayEntries(index).find(entry=>entry.text.trim())||null;choosingQuestion=selectedQuestion===null;
+ $('dayLabel').textContent=`${lang==='de'?'TÜR':'DOOR'} ${String(index+1).padStart(2,'0')}`;$('title').textContent=(lang==='de'?deThemes:themes)[index];
+ $('answer').placeholder=lang==='de'?'Fang einfach an. Jedes kleine Detail zählt.':'Start anywhere. A little detail can hold a whole memory…';renderCalendarFacts();renderQuestionChoices();renderPhotos();renderDoorIntroduction(index);if(!editor.open)editor.showModal();animateDoorOpening(editor);
 }
 $('answer').oninput=()=>writeQuestionAnswer($('answer').value);
 $('answer').onblur=()=>commitAndSave();
 editor.addEventListener('close',()=>commitAndSave());
-function saveAndCloseDoor(){commitAndSave();editor.close();const door=$('grid').children[current];door?.focus({preventScroll:true});door?.scrollIntoView({block:'nearest',behavior:'smooth'})}
+function saveAndCloseDoor(){const saved=commitAndSave();editor.close();const door=$('grid').children[current];door?.focus({preventScroll:true});door?.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});if(saved)showDoorMoment(current,doorComplete(current))}
+
 function selectedEntry(){return selectedQuestion===null?null:entryForChoice(current,selectedQuestion)}
 function attachedPhotos(entry){if(!entry)return [];const result=[];for(let index=state.entries.indexOf(entry)+1;state.entries[index]?.type==='photo';index++)result.push(state.entries[index]);return result}
 $('photo').onchange=async event=>{
@@ -131,17 +144,12 @@ function renderPhotos(){
   card.append(fields);const remove=document.createElement('button');remove.textContent=lang==='de'?'Foto entfernen':'Remove photo';remove.onclick=()=>{state.entries.splice(state.entries.indexOf(photo),1);pendingEdits.delete(photo);if(!state.entries.some(entry=>entry.type==='photo'&&entry.filePath===photo.filePath))delete media[photo.filePath];save();renderPhotos()};card.append(remove);$('photos').append(card);
  }
 }
-function storyFromAnswers(){return state.entries.filter(entry=>entry.type==='text').map(entry=>[entry.topic,entry.question,entry.text].filter(Boolean).join('\n\n')).join('\n\n')}
-function buildStory(){commitAndSave();$('biography').value=storyFromAnswers();renderCollectionEntries()}
 function story(reveal=false){
  if(!keepsakeRevealed&&!(reveal&&revealAvailable())&&!developmentCalendar()){toast(lang==='de'?'Am 24. Dezember wartet hier eine Überraschung auf dich.':'A little surprise is waiting for you on December 24.');return}
- if(reveal&&!keepsakeRevealed){
-  keepsakeRevealed=true;commitAndSave();applyWelcomeCopy();$('revealName').textContent=state.profile.name||'You';
-  if(storyDialog.open)storyDialog.close();if(!$('revealDialog').open)$('revealDialog').showModal();return;
- }
- buildStory();applyWelcomeCopy();if(!storyDialog.open)storyDialog.showModal();
+ keepsakeRevealed=true;commitAndSave();applyWelcomeCopy();$('revealName').textContent=state.profile.name||(lang==='de'?'dich':'you');
+ if(!$('revealDialog').open){$('revealDialog').showModal();animateDoorOpening($('revealDialog'))}
 }
-function openRevealedMiniography(){if(!keepsakeRevealed)return;$('revealDialog').close();story()}
+function downloadRevealJournal(){if(!keepsakeRevealed)return;commitAndSave();if(factsComplete())exportArchive();else exportDraftBackup()}
 let editingEntry=null;
 function renderCollectionEntries(){
  $('collectionEntries').replaceChildren();state.entries.forEach((entry,index)=>{
@@ -150,17 +158,17 @@ function renderCollectionEntries(){
   for(const [text,action,disabled]of [['Edit',()=>openEntryEditor(entry),false],['↑',()=>moveEntry(index,-1),index===0],['↓',()=>moveEntry(index,1),index===state.entries.length-1]]){const button=document.createElement('button');button.textContent=text;button.disabled=disabled;button.setAttribute('aria-label',text==='Edit'?`Edit entry ${index+1}`:`Move entry ${index+1} ${text==='↑'?'earlier':'later'}`);button.onclick=action;row.append(button)}$('collectionEntries').append(row);
  });
 }
-function moveEntry(index,direction){commitEdits();const [entry]=state.entries.splice(index,1);state.entries.splice(index+direction,0,entry);save();buildStory()}
+function moveEntry(index,direction){commitEdits();const [entry]=state.entries.splice(index,1);state.entries.splice(index+direction,0,entry);save();renderCollectionEntries()}
 function openEntryEditor(entry){
  editingEntry=entry;$('entryEditorTitle').textContent=entry.type==='photo'?'Photo details':entry.question||'Journal entry';$('entryTextLabel').hidden=entry.type!=='text';$('entryPhotoFields').hidden=entry.type!=='photo';
  $('entryText').value=entry.text||'';$('entryDescription').value=entry.description||'';$('entryCaption').value=entry.caption||'';$('entryDialog').showModal();
 }
 $('entryText').oninput=()=>{if(editingEntry){updateEntry(editingEntry,{text:$('entryText').value});save()}};
 for(const [id,key]of [['entryDescription','description'],['entryCaption','caption']])$(id).oninput=()=>{if(editingEntry){updateEntry(editingEntry,{[key]:$(id).value});save()}};
-function closeEntryEditor(){commitAndSave();$('entryDialog').close();buildStory()}
-$('entryDialog').addEventListener('close',()=>{commitAndSave();editingEntry=null;buildStory()});
+function closeEntryEditor(){commitAndSave();$('entryDialog').close();renderCollectionEntries()}
+$('entryDialog').addEventListener('close',()=>{commitAndSave();editingEntry=null;renderCollectionEntries()});
 function preparePrintStory(collection=state,assets=media){
- commitAndSave();storyDialog.close();$('revealDialog').close();editor.close();$('printSheet')?.remove();
+ commitAndSave();$('revealDialog').close();editor.close();$('printSheet')?.remove();
  const sheet=document.createElement('article');sheet.id='printSheet';
  function text(parent,tag,value,className){const element=document.createElement(tag);element.textContent=value;if(className)element.className=className;parent.append(element);return element}
  const cover=document.createElement('section');cover.className='print-cover';text(cover,'p','DEAR DECEMBER · A LITTLE BOOK OF A LIFE','print-kicker');text(cover,'h1',collection.profile.name||'My story');text(cover,'p',[profileDate(collection.profile),collection.profile.placeOfBirth].filter(Boolean).join(' · ')||'The stories that make a life','print-subtitle');text(cover,'p','A life, in my words.','print-dedication');
@@ -181,7 +189,7 @@ function preparePrintStory(collection=state,assets=media){
 async function printStory(){const sheet=preparePrintStory();await Promise.all([...sheet.querySelectorAll('img')].map(image=>image.decode().catch(()=>{})));window.print()}
 function applyLanguage(){
  document.documentElement.lang=lang;$('language').textContent=lang==='de'?'DE / EN':'EN / DE';$('calendarTitle').textContent=lang==='de'?'Dein Dezember voller Erinnerungen':'Your December of memories';applyWelcomeCopy();render();
- if(editor.open){$('title').textContent=(lang==='de'?deThemes:themes)[current];renderCalendarFacts();renderQuestionChoices();renderPhotos()}
+ if(editor.open){renderDoorIntroduction(current);$('title').textContent=(lang==='de'?deThemes:themes)[current];renderCalendarFacts();renderQuestionChoices();renderPhotos()}
 }
 function toggleLang(){commitEdits();lang=lang==='en'?'de':'en';state.language=lang;save();applyLanguage()}
 function downloadBlob(blob,name){const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000)}
@@ -189,7 +197,9 @@ async function exportArchive(){
  try{commitAndSave();const collection=structuredClone(state),assets={...media};const blob=await createArchive(collection,assets);downloadBlob(blob,collection.isSample?'sample-journal.deardecember':'my-journal.deardecember');toast('Archive exported. Keep it somewhere safe.')}
  catch(error){if(!factsComplete()){toast(lang==='de'?'Ergänze zuerst die Fakten in Türchen 1 oder sichere deinen unfertigen Entwurf.':'Add the basic facts in door 1 first, or download an unfinished-draft backup.');if(unlocked(0))openDoor(0)}else toast(error.message)}
 }
-function exportDraftBackup(){commitAndSave();downloadBlob(new Blob([JSON.stringify(storedDocument(),null,2)],{type:'application/json'}),'dear-december-draft-backup.json');toast('Draft recovery backup exported. This includes unfinished profile fields.');}
+async function exportDraftBackup(){
+ try{commitAndSave();const document=structuredClone(storedDocument());const blob=await createArchive(document.collection,document.media,{draftDocument:document});downloadBlob(blob,'dear-december-backup.zip');toast('Backup exported, including your entries, photos and saved generated text.')}catch(error){toast(`Backup failed: ${error.message}`)}
+}
 let importingArchive=false;
 $('importFile').onchange=async event=>{
  const file=event.target.files[0];event.target.value='';if(!file||importingArchive)return;importingArchive=true;
@@ -200,9 +210,9 @@ $('importFile').onchange=async event=>{
   const document={...incoming,bindings:[],pending:[]};
   // A failed storage write must leave both the active and persisted collection intact.
   localStorage.setItem(DOCUMENT_KEY,JSON.stringify(document));
-  state=incoming.collection;media=incoming.media;pendingEdits=new Map();keepsakeRevealed=false;openedDoors=[];inferBindings();
+  generatedDraft=readGeneratedDraft(incoming.generatedDraft);window.refreshSavedGeneration?.();state=incoming.collection;media=incoming.media;pendingEdits=new Map();keepsakeRevealed=false;openedDoors=[];inferBindings();
   if(isSimulation){isSimulation=false;simulationBackup=null;$('simulationNotice').hidden=true}
-  lang=state.language.toLowerCase().startsWith('de')?'de':'en';editor.close();storyDialog.close();$('revealDialog').close();$('aboutDialog').close();$('entryDialog').close();applyLanguage();save();toast('Your collection has been imported.');
+  lang=state.language.toLowerCase().startsWith('de')?'de':'en';editor.close();$('revealDialog').close();$('aboutDialog').close();$('entryDialog').close();applyLanguage();save();toast('Your collection has been imported.');
  }catch(error){toast(`Import failed: ${error.message}`)}finally{importingArchive=false}
 };
 window.addEventListener('pagehide',()=>{commitEdits();try{persistDocument()}catch{}});

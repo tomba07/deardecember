@@ -1,4 +1,4 @@
-# Miniography archive format v1
+# Personal journal archive format v1
 
 The format serves the [project purpose and privacy/ownership principles](project-principles.md). It is a generic personal-information format; the advent calendar is one application of it. An open format makes data portable, not public.
 
@@ -29,7 +29,7 @@ This design starts at `formatVersion: 1`. The earlier prototype used `{format: "
 - `entries`: one ordered array containing text and photo entries.
 - `isSample`: optional boolean identifying simulated/example content. The simulation sets it to `true`; import/export preserves it and PDF output labels sample content.
 
-The structured `profile` belongs to the person. In the app, its fields are filled in as part of the first calendar door, rather than through a separate profile interface. Other doors do not require those fields to be completed first. Places lived are optional and never require structured city, country or date fields. Incomplete browser drafts can exist before a schema-valid archive is ready. The app offers “Backup unfinished draft” for incomplete profiles. This creates a recovery JSON file containing the collection, local media and editing metadata, rather than pretending the unfinished document is a valid portable archive. “Import archive / draft” can restore that backup; missing profile facts remain empty.
+The structured `profile` belongs to the person. In the app, its fields are filled in as part of the first calendar door, rather than through a separate profile interface. Other doors do not require those fields to be completed first. Places lived are optional and never require structured city, country or date fields. Incomplete browser drafts can exist before a schema-valid archive is ready. The app offers “Backup unfinished draft” for incomplete profiles. This creates `dear-december-backup.zip`, containing a root `draft-backup.json` with the collection, editing metadata and saved generated text, plus original image files in `media/`. Unlike the complete journal archive, its profile facts may be empty. Exactly one root journal or draft manifest is allowed. “Open an existing journal” restores either ZIP format and continues to accept older JSON recovery backups with embedded media. Missing profile facts remain empty; image bytes, descriptions and captions are preserved.
 
 Question catalogs and application UI state do not need to be copied into the archive. Each text entry contains the actual question wording, so it can be read without the app or catalog. Topic names are optional snapshots, not database references.
 
@@ -48,7 +48,7 @@ Editing an existing answer changes that entry. Answering the same question again
 - `description` provides context for understanding and positioning the image. It can be empty.
 - `caption` is an optional literal label for PDF output. No caption is printed when it is missing or empty. Descriptions are not printed automatically.
 - `filePath` points to an image inside `media/`, relative to the ZIP root. It uses a portable ASCII basename and a lowercase `jpg`, `jpeg`, `png` or `webp` extension. The path is case-sensitive.
-- `createdAt` means when the photo was added to Miniography, not its capture date or the filesystem timestamp.
+- `createdAt` means when the photo was added to the journal, not its capture date or the filesystem timestamp.
 - `takenAt` is optional: either a known `YYYY-MM-DD` date or an exact UTC timestamp. Put uncertain dates such as “summer 1997” in `description`, rather than inventing precision.
 
 ## Reading order and placement

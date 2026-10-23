@@ -1,6 +1,6 @@
-# Miniography generation: editorial specification
+# Mini biography generation: editorial specification
 
-Status: editorial specification with an initial optional OpenAI API implementation for local development. The default reveal and PDF still assemble original entries locally. API generation requires a separate informed choice; see the [setup and testing instructions](../README.md#optional-api-miniography-generation).
+Status: editorial specification with an initial optional OpenAI API implementation for local development. The default reveal and PDF still assemble original entries locally. API generation requires a separate informed choice; see the [setup and testing instructions](../README.md#optional-api-mini-biography-generation).
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Create a small, readable portrait of a person's life from their own recorded mat
 
 Generation reorganises and lightly connects existing material. It does not supply missing experiences, interpret someone's personality or make their life sound more impressive. A few specific details can be a complete result.
 
-This editorial specification is separate from the [portable archive format](archive-format.md). The archive preserves original facts, answers, photos and context. A generated miniography is an editable interpretation of selected source material and must never replace it.
+This editorial specification is separate from the [portable archive format](archive-format.md). The archive preserves original facts, answers, photos and context. A generated mini biography is an editable interpretation of selected source material and must never replace it.
 
 ## Rough structure
 
@@ -49,7 +49,7 @@ Keep vague sequences vague. Avoid phrases such as “that experience led me to�
 
 ## Photos
 
-Place photographs beside passages they actually illustrate, using their source position and descriptions as context. A photo may be omitted from a particular draft if there is no fitting passage; its original remains in the archive.
+The generated response is text-only Markdown. In the current local PDF, original photographs follow the prose in archive order; Markdown does not embed image files or load remote images. Descriptions provide context for the writing, not prose to copy into the mini biography. The original photos remain in the journal archive.
 
 Only print a caption when one was supplied. A contextual description is not automatically a caption, and it must not be expanded into unrecorded visual details. Do not infer identities, relationships, feelings or events from an image. Sending image bytes to an external model is a separate disclosure from sending text and requires its own clear explanation and choice.
 
@@ -77,13 +77,13 @@ Avoid:
 
 The second passage invents friends, family circumstances, character traits, lessons and present-day values. Its fluency does not make it faithful to the source.
 
-## Draft status and source traceability
+## Draft output and editing
 
-Present generated output as an editable draft assembled from the person's entries. Explain that first-person text may have been reorganised or paraphrased and is not a verbatim account. Let the person correct, shorten or discard it before saving or printing.
+Return one Markdown document containing the mini biography itself: paragraphs and optional short headings, with ordinary Markdown emphasis or lists when they fit. Do not wrap it in JSON or a code fence, and do not include source IDs, citations, review notes or a preamble. Preserve uncertainty and conflicting memories in the prose without guessing.
 
-The initial implementation retains references from draft sections to the source entries used. Source references, unresolved conflicts and review notes belong in an editing/review layer, not in the finished prose. The archive's minimal v1 format has no generated-draft or citation structure. Drafts live only in the current page session and may be downloaded as a separate review JSON document (`draftFormatVersion: 1`), not as part of the portable journal. This document contains `provider`, `model`, `generatedAt`, `draft` (`sections` with `heading`, editable `text` and `sourceIds`, plus `reviewNotes`) and the exact `source` snapshot. The snapshot has language, profile facts and ordered source entries with request-local IDs. `profile` identifies the facts; `entry-N` identifies the Nth entry in that frozen snapshot, so reordering the live journal cannot change the meaning of its references. The downloaded review document excludes photos and paths and is not yet importable. Keep a separate journal archive for original media. References identify model-selected supporting records; they do not verify factual fidelity.
+Present the result in a dedicated saved-text dialog with one editable Markdown field, a local formatting preview, Markdown download, PDF/print, and regenerate actions. The generation consent belongs in a separate, short dialog; detailed privacy terms, model information and the editable generation input are expandable. The input is a readable plain-text copy of the journal, with a reset action. It can be redacted or rewritten without modifying source records; every input edit clears prior consent. Each opening of the consent dialog starts with a fresh journal copy. Reopening saved text bypasses consent entirely. Regenerating opens fresh consent with an explicit replacement warning, and cancelling returns to the existing saved text. There is no original-source comparison interface. The person can correct, shorten or discard the draft before saving or printing. Original entries remain authoritative and unchanged.
 
-Original entries are authoritative. Regenerating a draft must not overwrite either those entries or a previously edited draft without an explicit choice.
+Generated Markdown and edits persist in the browser’s existing journal document under `generatedDraft`, separately from the canonical collection. The stored record has `markdown`, `model`, `generatedAt`, `updatedAt` the submitted `source` text, and a separate `journalSource` snapshot used locally to detect changes to the journal since generation. The journal snapshot is never sent alongside the edited input. It stores no API key or duplicate image bytes. Older saved journals without this field still load. Saved text can be reopened and downloaded without the API server. ZIP backups (including original image files) and older recovery JSON backups preserve it; portable source archives continue to contain original entries only. Importing a different source archive clears it rather than mixing journals. Simulation drafts stay in memory and restore the personal draft on exit. Storage failures warn the person to download the Markdown copy. Downloading saves the edited Markdown as a standalone `.md` file, separate from the journal archive. It excludes original entries, source snapshots, generation metadata and photographs. Keep a journal archive separately to preserve the source material and media. Regeneration requires fresh consent and an explicit replacement warning; a failed request keeps the previous edited draft.
 
 ## Privacy and generation
 
@@ -117,8 +117,12 @@ Fluency never compensates for an unsupported claim. Tests should include sparse 
 
 ## Initial API implementation
 
-The loopback-only Node development server reads `OPENAI_API_KEY` and optional `OPENAI_MODEL` from the environment (or ignored `.env` file). The browser first fetches nonsecret availability metadata. An explicit consent action sends a validated, bounded text projection to `/api/generate`; the server calls the OpenAI Responses API with strict JSON-schema output, no tools, and `store: false`. Source data is treated as untrusted data, not prompt instructions. Responses are checked for completion, refusal and valid section source references before replacing a draft. No request/response content is logged or saved on the server. No automatic retries incur additional calls.
+The loopback-only Node development server reads `OPENAI_API_KEY` and optional `OPENAI_MODEL` from the environment (or ignored `.env` file). The browser first fetches nonsecret availability metadata. An explicit consent action sends the current edited input text and collection language to `/api/generate`, in a validated, bounded source envelope containing one text record and no profile fields. Recording timestamps are optional on this generation-only envelope; original journal/archive validation remains unchanged. No unedited journal data is added to the request; the server calls the OpenAI Responses API with plain text output (prompted as Markdown), no tools, and `store: false`. Source data is treated as untrusted data, not prompt instructions. Responses are checked for completion, refusal and nonempty bounded Markdown text before replacing a draft. No request/response content is logged or saved on the server. No automatic retries incur additional calls.
 
 The consent dialog names OpenAI, previews the source JSON, explains paid API usage and provider retention, and links to [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data). API data is not used for training by default unless the account opts in; abuse-monitoring logs may retain content for up to 30 days with exceptions. Disabling response storage is not zero retention. Photos remain local; only their context, captions and known capture dates enter the request.
 
-The review interface provides editable sections, original-source comparisons and review notes. Original collection/archive data is never overwritten. Previous drafts survive failed regeneration, while successful regeneration explicitly replaces the old session draft after renewed consent. Closing while a request is running stops waiting locally; provider work and charges may still occur. A downloaded review document preserves edits and source traceability. Photos are positioned using referenced source IDs, with remaining photos after the prose. Printed output labels the result as AI-assisted.
+The review interface provides one Markdown editor and a local formatting preview. It has no source-comparison panels. Original collection/archive data is never overwritten. Previous drafts survive failed regeneration, while successful regeneration explicitly replaces the previous local draft after renewed consent. Closing while a request is running stops waiting locally; provider work and charges may still occur. Download saves only the edited Markdown. A bundled Marked parser and DOMPurify sanitizer render headings, paragraphs, emphasis, lists and other text formatting; raw HTML, active links and embedded images are excluded. PDF printing uses the current profile and local photos; supplied captions follow the prose in archive order. A notice identifies a draft based on an earlier version of the journal. Printed output labels the result as AI-assisted.
+
+## Portable prompt
+
+The own-model route builds a copyable prompt from the shared editorial instructions, collection language and editable source text. It is available independently of API configuration and does not contact an LLM. The local-model hint is conditional: a model running entirely on the person’s device can keep processing there; online providers have their own policies. Copy and download contain no image bytes or file paths. A pasted Markdown result can be explicitly saved as a locally stored draft (`model: "External AI"`) without modifying original entries. Existing drafts are replaced only through a labelled save action, and a journal change prevents saving the result against a different collection.

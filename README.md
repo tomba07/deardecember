@@ -8,7 +8,7 @@ This application begins with a 24-door advent calendar for the mind: a little ti
 
 Read [Purpose and principles](docs/project-principles.md) for the project's commitments, design consequences and current privacy limitations. The format is intended to be open and freely implementable; an explicit licence for the specification and schema is still pending.
 
-Dear December is the advent-calendar application. Miniography remains the name of the generic, open personal-information format and the final generated portrait. The application downloads `.deardecember` journal files using the same ZIP/JSON format; Earlier `.adventofyou`, `.miniography` and `.zip` archives remain importable. The public introduction does not disclose the final miniography reveal.
+Dear December is the advent-calendar application. The generic, open journal archive format stores original personal information; the generated portrait is called a mini biography. The application downloads `.deardecember` journal files using the same ZIP/JSON format; Earlier `.adventofyou`, `.miniography` and `.zip` archives remain importable. The public introduction does not disclose the final mini biography reveal.
 
 The canonical project lives at `/Users/alexteschke/Dev/dear-december`.
 
@@ -16,11 +16,13 @@ The canonical project lives at `/Users/alexteschke/Dev/dear-december`.
 
 - `src/index.html` — page structure
 - `src/style.css` — styles and responsive layouts
-- `src/app.js` — question banks, entry editing, story preview and PDF output
+- `src/app.js` — question banks, entry editing, Christmas reveal and PDF output
 - `src/model.js` — collection state, timestamps and browser draft storage
 - `src/archive.js` — ZIP import/export and archive validation
+- `src/door-moments.js` — bilingual door introductions, opening effects and small closing messages
 - `src/catalog.js` — prompt choices and original answer snapshots
 - `src/facts.js` — basic facts inside the first calendar door
+- `src/markdown.js` — generated, bundled Marked/DOMPurify renderer; regenerate with `node scripts/generate-markdown.mjs`
 - `src/welcome.js` — English/German welcome copy and final-door keepsake reveal
 - `src/manifest-validator.js` — generated offline validator; edit its schema instead
 - `src/zip.js` — vendored JSZip 3.10.1 library
@@ -52,13 +54,13 @@ A first-visit popup introduces the everyday-memory idea and explains local brows
 
 The main button shows a live countdown until December 1 in the visitor’s local time. Once available, it opens door 1 until that door has been answered or its basic facts completed; it then opens today’s door (capped at door 24). The calendar and button update at midnight and when returning to the tab.
 
-The welcome explains why ordinary routines, preferences and memories may interest children and future generations. The longer explanation lives in the About dialog; the homepage focuses on the hero and calendar. Writing hints belong inside the doors. Device-transfer guidance and clear privacy language remain available. Before December 24, people revisit entries through their doors; the combined miniography and its homepage/navigation links are hidden. Opening the final door presents a personal reveal, followed by the combined miniography and PDF option. Those links stay available afterward. The sample journal also keeps the surprise until its final door.
+The welcome explains why ordinary routines, preferences and memories may interest children and future generations. The longer explanation lives in the About dialog; the homepage focuses on the hero and calendar. Writing hints belong inside the doors. Device-transfer guidance and clear privacy language remain available. Before December 24, people revisit entries through their doors; the Christmas options and their homepage/navigation links are hidden. Opening the final door presents a Christmas greeting, adapted for early developer previews, Christmas (December 24–26), belated visits (through January 6), or later returns. The reveal presents the original daily reflections as a gift from yourself, before any AI rewriting. A “What can I do with it?” section groups three options that invite people to download their journal (or unfinished backup), optionally turn their entries into an editable AI text for PDF/printing, and keep their files for possible future ways to use them. The teaser makes no promise of a feature or automatic reuse. Original entries can be printed directly from the Christmas reveal. There is no intermediate dialog containing the full source text; generation and saved-text access open directly from the reveal. Reopening door 24 returns to this reveal with an updated greeting. Those links stay available afterward. The sample journal also keeps the surprise until its final door.
 
 Original text and photo entries autosave in the browser. The app includes separate photo context/captions, schema-validated `.miniography` ZIP import/export, entry editing and reordering, unfinished-draft recovery backups, and browser print-to-PDF. An optional local development server can generate an editable draft through the OpenAI API after explicit consent; German interface translation is partial (the generation preview currently uses English).
 
 ## Completed simulation
 
-Choose “Try Alex’s completed story” above the calendar to explore 23 main answers and 46 follow-up answers. This session-only simulation preserves existing browser data; “Exit simulation” restores it. Supplied life facts are distinguished from invented sample details on the PDF cover. Use “Print / Save as PDF” in the story dialog to generate the book. A previously rendered sample may be available in `output/pdf/`; regenerate it to reflect the current branding.
+Choose “Try a sample journal” above the calendar to explore 23 main answers and 46 follow-up answers. This session-only simulation preserves existing browser data; “Exit simulation” restores it. Supplied life facts are distinguished from invented sample details on the PDF cover. Open door 24 and use “Print my original entries / Save as PDF” to print locally. A previously rendered sample may be available in `output/pdf/`; regenerate it to reflect the current branding.
 
 ## Content plan: the 24 topics
 
@@ -68,27 +70,35 @@ The agreed door names, topic boundaries and question-writing guidelines are docu
 
 Name, full birthday and birthplace belong to the first door, “Your beginnings”, alongside an optional places-lived text field. There is no separate profile page or popup. People can revisit the first door to change these facts and can answer other doors without completing them first. A complete portable archive requires the basic facts; unfinished collections can still be saved as draft backups. The archive continues to store facts in its structured `profile` object.
 
-All 24 doors retain their names, which appear only after opening the door. Unopened doors show their number and decoration without revealing their topic, including in accessible labels. Opened-door state is remembered locally; existing imported answers also reveal their associated topics. Each of the 23 memory doors offers its original prompt, two alternatives from the catalog and a free memory option. Answers to different choices save independently. Original question wording stays with each answer. Profile details, places lived, entries, photo context/captions, timestamps and reading order travel with archive exports. Earlier prototype archive shapes are no longer supported. Printed stories include the profile and places-lived text.
+The calendar distinguishes four states with opacity and small status icons, retaining the original pastel colours (status names remain available to screen readers and on hover): locked (not yet available), unopened (available), in progress (opened without any content), and completed (at least one nonblank answer or any first-door fact; door 24 requires its reveal). Additional questions remain optional. All 24 doors retain their names, which appear only after opening the door. Unopened doors show their number and decoration without revealing their topic, including in accessible labels. Opened-door state is remembered locally; existing imported answers also reveal their associated topics. Each of the 23 memory doors offers its original prompt, two alternatives from the catalog and a free memory option. Answers to different choices save independently. Original question wording stays with each answer. Profile details, places lived, entries, photo context/captions, timestamps and reading order travel with archive exports. Earlier prototype archive shapes are no longer supported. Printed stories include the profile and places-lived text.
 
-Opening a memory door first shows a question picker. Selecting a prompt opens its response field. “A little more of your story” returns to that same picker to answer another question or edit an existing answer. Earlier answers remain visible above the picker and while writing the next answer, with an edit action for each. Additional imported answers appear as answered choices when associated with a known topic; all entries remain editable from the story preview.
+Opening a door plays a brief paper-door animation and reveals its title and a short topic description, before the question picker and controls fade in. This sequence only runs when opening a door, not when switching questions. Reduced-motion preferences skip the effects. “Save & close” shows a small, dismissible, topic-specific message for a few seconds; empty doors get a gentle invitation to return, and failed saves retain the storage warning. Closing the Christmas reveal has its own festive message. These messages are original app copy, not attributed quotations. Each memory door holds one reflection. Choose a question on the first visit; returning opens your answer for editing. Additional entries from earlier versions remain available under About → Manage original entries.
 
-## Optional API miniography generation
+## Optional API mini biography generation
 
-[docs/generation.md](docs/generation.md) defines the flexible editorial structure, first-person voice, factuality rules, photo treatment and review checklist for a future generated miniography. It includes a fictional source-to-draft example. The existing reveal and PDF still assemble original entries locally. API generation is a separate optional action after the reveal, or in developer preview.
+[docs/generation.md](docs/generation.md) defines the flexible editorial structure, first-person voice, factuality rules, photo treatment and review checklist for a future generated mini biography. It includes a fictional source-to-draft example. The existing reveal and PDF still assemble original entries locally. API generation is a separate optional action after the reveal, or in developer preview.
 
 To try it locally:
 
 1. Copy `.env.example` to `.env` and set `OPENAI_API_KEY` in that file. It is ignored by Git.
-2. Optionally change `OPENAI_MODEL` (default `gpt-4.1-mini`, a Responses API model supporting structured output).
+2. Optionally change `OPENAI_MODEL` (default `gpt-4.1-mini`, a Responses API model supporting text output).
 3. Restart `npm run dev`, then open http://127.0.0.1:8123. Stop an older server first if port 8123 is in use.
-4. Enable developer preview, write entries or load the sample, open door 24 and then the miniography. Select **Create an AI draft (optional)**.
-5. Review the exact source-data preview, consent to sending it to OpenAI, and generate. Compare sections against their sources, edit, then download the draft or print it.
+4. Enable developer preview, write entries or load the sample, open door 24 and select **Create my text** directly.
+5. Use the short generation dialog to consent; privacy details and “Review and edit what gets sent” are expandable. The latter is a plain-text copy you can redact or rewrite, with a reset button; editing clears consent and never changes the journal. Each generation dialog starts with a fresh journal copy. After generation, a separate saved-text dialog provides the Markdown editor, formatting preview, download, PDF/print, and regenerate controls. Reopening saved text goes straight to this dialog without showing consent again. Regenerate opens fresh consent with a replacement warning; cancel returns to the existing edits.
 
 The key stays in the local Node server, never the browser, archives or static build. The server binds only to `127.0.0.1`; it is not a production proxy. Static hosting and `npm run preview` retain the local-only experience without API generation. A public deployment would require a separately secured backend and a clear account/billing policy.
 
-Only the projected basic facts, language, questions, answers, recording dates, and photo context/captions/capture dates are sent, not image bytes or local file paths. Nothing is sent merely by opening door 24 or the generation dialog. Each generation (including regeneration) requires fresh consent; API usage is billed to the configured key. The request uses `store: false`; provider abuse-monitoring retention can still apply. See [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data).
+The default input copy contains basic facts, questions, answers, recording dates, and photo context/captions/capture dates. You can change or remove any of that text before sending. Only the text currently in the input editor and the collection language are sent as personal content, not the untouched journal snapshot, image bytes or local file paths. Nothing is sent merely by opening door 24 or the generation dialog. Each generation (including regeneration) requires fresh consent; API usage is billed to the configured key. The request uses `store: false`; provider abuse-monitoring retention can still apply. See [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data).
 
-Drafts stay separate from the original collection and last only for the current page session. **Download draft & sources** saves a separate JSON review document with the source snapshot and section references; it is not an importable journal archive and does not contain photographs. Export the journal separately to preserve photos. Generated PDF photos use local assets, supplied captions and section references; unmatched photos follow the prose. API errors and failed regeneration leave the previous draft and all entries intact. Tests use a mocked provider; actual model quality and account access must be checked with an explicitly initiated API run.
+Generated text and edits autosave in this browser alongside the journal, separately from the original entries, and survive reloads. **Open my saved text** reopens them without an API connection or a new generation request. Recovery backups include the generated text; importing a different journal clears the previous journal’s generated text. Sample generation stays temporary and cannot overwrite a personal draft. The model returns one Markdown document, not structured sections or source comparisons. **Download Markdown** saves the current edited text as `my-mini-biography.md`; it contains no source snapshot, credentials or image bytes and is not an importable journal archive. Export the journal separately to preserve photos. The local formatting preview and PDF use a bundled Markdown renderer with sanitization: raw HTML, active links and embedded remote images are excluded. PDF printing uses the current local profile and photos, with photos following the generated prose in archive order and only supplied captions printed. If the journal has changed since generation, the editor shows a notice. Browser storage failure shows a warning while leaving editing and Markdown download available. API errors and failed regeneration leave the previous draft and all entries intact. Tests use a mocked provider; actual model quality and account access must be checked with an explicitly initiated API run.
+
+## Use your preferred AI
+
+Door 24 also offers **Use my own AI · Get the prompt**, including on static hosting without an API key. This opens a local dialog with the same writing instructions as built-in generation, an explicit output language and a readable copy of the reflections. Review or redact the reflections, then copy the complete prompt or download `mini-biography-prompt.txt`. No model request is made. If clipboard access is denied, the prompt is selected for manual copying.
+
+A short hint explains that local LLMs can keep reflections on the device when inference runs entirely locally. Pasting into an online service is the person’s choice and subject to that service’s privacy terms. Photos and paths are excluded from the prompt.
+
+Optionally paste the resulting Markdown into **Bring your result back** and save it in the same local editor for editing, Markdown download and PDF/printing. Replacing existing saved text is clearly labelled. Entering this route from the API consent dialog preserves the edited input; returning resets consent without sending anything.
 
 ## Portable archive format (v1)
 
@@ -115,7 +125,7 @@ Text entries store `type: "text"`, the original `question`, and the response in 
 
 Photo entries store `type: "photo"`, contextual `description`, and `filePath`, such as `media/seabrook-beach.jpg`. An optional `caption` provides the printed label; descriptions are not printed automatically. Place photos immediately after the text they illustrate. Optional `takenAt` records a known capture date; approximate dates belong in the description.
 
-Both entry types have `createdAt` and a `modificationDates` array of subsequent edit timestamps. Timestamps use UTC; photo `createdAt` means when it was added to Miniography, not when it was taken. Edit dates track when changes occurred, not previous versions of the content. Import and export preserve timestamps.
+Both entry types have `createdAt` and a `modificationDates` array of subsequent edit timestamps. Timestamps use UTC; photo `createdAt` means when it was added to the journal, not when it was taken. Edit dates track when changes occurred, not previous versions of the content. Import and export preserve timestamps.
 
 JSON keeps the source material readable, JSON Schema defines its structure, and ZIP bundles the photos without embedding them into JSON. PDFs are reading copies; the archive preserves the original material for further writing and printing.
 
@@ -143,8 +153,8 @@ The tests cover real archive round trips, original photo bytes, edit timestamps,
 
 ### Saving and recovery
 
-“Download my journal” creates a `.deardecember` file using the formal `formatVersion: 1` ZIP format. Complete the basic facts in door 1 first. “Backup unfinished draft” downloads a separate recovery JSON file when the profile is incomplete. Restore either file using “Import archive / draft”. The collection is stored locally in this browser; export a backup to keep it safe.
+“Download my journal” creates a `.deardecember` file using the formal `formatVersion: 1` ZIP format. Complete the basic facts in door 1 first. “Backup unfinished draft” downloads `dear-december-backup.zip`, including unfinished profile fields, all original entries, image files in `media/`, and any saved generated text. Restore it using “Open an existing journal”; older JSON backups can still be imported. The collection is stored locally in this browser; export a backup to keep it safe.
 
-The app now uses the formal format directly. Earlier experimental archive shapes are unsupported, and earlier prototype browser storage is left untouched. In “Your story”, edit original entries or move them up/down; both the archive and PDF use the resulting order. The story preview is derived from those entries rather than a separate rewritten biography.
+The app now uses the formal format directly. Earlier experimental archive shapes are unsupported, and earlier prototype browser storage is left untouched. Under About → Manage original entries, edit imported or other original entries and move them up/down; both the archive and local source PDF use the resulting order. The original full-text summary dialog has been removed.
 
 A sample of the new archive is available locally at `output/archive/sample-journal.deardecember`; it carries `isSample: true` and includes 69 simulated answers.

@@ -42,7 +42,7 @@ The facts record where and when; the questions invite memories about what those 
 | 21 | What matters to you | Values, changing opinions, hopes and your understanding of a good life. |
 | 22 | A word to your younger self | Advice, reassurance and things you now see differently. |
 | 23 | Still to come | Curiosity, unfinished dreams, skills to learn and experiences you look forward to. |
-| 24 | A little of you, kept | A message for future generations and a chance to read, edit and save your miniography. |
+| 24 | A little of you, kept | A message for future generations and a chance to read, edit and save your mini biography. |
 
 ## Questions and interaction
 
@@ -50,9 +50,9 @@ Each door keeps its name and offers three distinct entry points: a quick detail,
 
 Unopened calendar doors show numbers and decoration without topic names; clicking an available door reveals its name and question picker. Opened doors retain their topic labels when revisited.
 
-Opening a door shows the question picker first. Selecting a prompt opens its response field. “A little more of your story” returns to the same picker to answer another question or edit an existing answer. It does not introduce a separate set of follow-up fields. People can answer one or several questions, skip a door or return later. A short answer counts.
+Each door holds one reflection. On the first visit, choose a question and write your answer. Returning to the door opens that answer for editing. You can skip a door or return later; a short answer counts. Entries created with earlier versions remain available under About → Manage original entries.
 
-“Save & close” returns to the calendar. It does not open the next door. Door 24 offers a final message as well as the story reveal. Before December 24, people read and edit entries through their individual doors. The final door introduces the combined miniography with a personal reveal and PDF option; both remain available afterward. The welcome explanation focuses on journaling and reflection.
+“Save & close” returns to the calendar. It does not open the next door. Door 24 offers a final message as well as the story reveal. Before December 24, people read and edit entries through their individual doors. The final door introduces the combined mini biography with a personal reveal and PDF option; both remain available afterward. The welcome explanation focuses on journaling and reflection.
 
 ## Question-writing guidelines
 

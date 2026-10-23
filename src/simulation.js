@@ -27,19 +27,19 @@ const simulationMemories = [
 let simulationBackup=null;
 function startSimulation(){
  if(!isDevelopmentHost)return;
- if(simulationBackup)return story();
- commitAndSave();simulationBackup={document:structuredClone(storedDocument()),preview:$('preview').checked,lang};
+ if(simulationBackup)return;
+ $('revealDialog').close();$('aboutDialog').close();editor.close();commitAndSave();simulationBackup={document:structuredClone(storedDocument()),preview:$('preview').checked,lang};
  state={formatVersion:1,language:'en',isSample:true,profile:{name:'Alex Morgan',dateOfBirth:'1988-04-12',placeOfBirth:'Brookfield, Germany',placesLived:'Brookfield, Germany · 1988–1991\nSeabrook, United Kingdom · 1991–1994\nOakridge, Germany · from 1994'},entries:[]};
- media=Object.create(null);entryBindings=new WeakMap();pendingEdits=new Map();isSimulation=true;keepsakeRevealed=false;openedDoors=[];lang='en';
+ media=Object.create(null);entryBindings=new WeakMap();pendingEdits=new Map();isSimulation=true;generatedDraft=null;window.refreshSavedGeneration?.();keepsakeRevealed=false;openedDoors=[];lang='en';
  simulationMemories.forEach(([answer,...followups],day)=>{
   addTextEntry(answer,{topic:themes[day],question:question(day),binding:{day,choice:0}});
   followups.forEach((answer,index)=>addTextEntry(answer,{topic:themes[day],question:followupQuestions.en[day][index],binding:{day}}));
  });commitEdits();
- $('preview').checked=true;$('simulationNotice').hidden=false;applyLanguage();story();
+ $('preview').checked=true;$('simulationNotice').hidden=false;applyLanguage();
 }
 function endSimulation(){
  if(!simulationBackup)return;
  const backup=simulationBackup;simulationBackup=null;isSimulation=false;restoreDocument(backup.document);$('preview').checked=backup.preview;lang=backup.lang;
- $('simulationNotice').hidden=true;$('printSheet')?.remove();storyDialog.close();$('revealDialog').close();editor.close();$('entryDialog').close();applyLanguage();
+ $('simulationNotice').hidden=true;$('printSheet')?.remove();$('revealDialog').close();editor.close();$('entryDialog').close();applyLanguage();
 }
 inferBindings();applyLanguage();initializeIntro();startCalendarClock();

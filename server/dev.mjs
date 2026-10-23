@@ -2,7 +2,7 @@ import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {resolve,extname,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {generationInstructions,validateGenerationSource,draftSchema,validateGeneratedDraft} from '../src/generation-core.js';
+import {generationInstructions,validateGenerationSource,validateGeneratedMarkdown} from '../src/generation-core.js';
 
 // This is a loopback-only development server, not a public proxy.
 export function createDevServer({apiKey=process.env.OPENAI_API_KEY,model=process.env.OPENAI_MODEL||'gpt-4.1-mini',fetchImpl=fetch}={}) {
@@ -27,15 +27,15 @@ export function createDevServer({apiKey=process.env.OPENAI_API_KEY,model=process
    }catch{return json(400,{error:'Invalid generation request. Include at least one written memory and valid source data.'})}
    busy=true;
    try{
-    const response=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${apiKey}`},signal:AbortSignal.timeout(120000),body:JSON.stringify({model,store:false,instructions:generationInstructions,input:JSON.stringify(body.source),max_output_tokens:10000,text:{format:{type:'json_schema',name:'miniography_draft',strict:true,schema:draftSchema(body.source)}}})});
+    const response=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${apiKey}`},signal:AbortSignal.timeout(120000),body:JSON.stringify({model,store:false,instructions:generationInstructions,input:JSON.stringify(body.source),max_output_tokens:10000,text:{format:{type:'text'}}})});
     if(!response.ok){const message=response.status===401?'The server’s OpenAI API key was rejected.':response.status===429?'OpenAI’s rate or usage limit was reached. Check your API billing and try again.':'OpenAI could not generate a draft. Please try again later.';return json(502,{error:message})}
     const result=await response.json();
     if(result.status!=='completed')return json(502,{error:'Generation did not finish. Try a shorter journal or another model.'});
     const content=(result.output||[]).flatMap(item=>item.content||[]);
     if(content.some(item=>item.type==='refusal'))return json(422,{error:'OpenAI declined this generation request. Your entries are unchanged.'});
     const text=content.filter(item=>item.type==='output_text').map(item=>item.text).join('');
-    const draft=validateGeneratedDraft(JSON.parse(text),body.source);
-    return json(200,{draft,model,generatedAt:new Date().toISOString()});
+    const markdown=validateGeneratedMarkdown(text);
+    return json(200,{markdown,model,generatedAt:new Date().toISOString()});
    }catch{return json(502,{error:'Generation failed or timed out. Your entries and any previous draft are unchanged.'})}
    finally{busy=false}
   }

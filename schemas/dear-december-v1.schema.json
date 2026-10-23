@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Miniography archive manifest, version 1",
+  "title": "Personal journal archive manifest, version 1",
   "description": "The UTF-8 miniography.json manifest inside a ZIP-based .miniography archive. Array order is reading order.",
   "type": "object",
   "additionalProperties": false,
@@ -156,7 +156,7 @@
         },
         "createdAt": {
           "$ref": "#/$defs/timestamp",
-          "description": "When the photo entry was added to Miniography, not when the photograph was taken."
+          "description": "When the photo entry was added to the journal, not when the photograph was taken."
         },
         "modificationDates": {
           "$ref": "#/$defs/modificationDates"
