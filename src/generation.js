@@ -9,6 +9,7 @@ dialog.innerHTML=`<button class="close" aria-label="Close generation">×</button
 <p id="generationReplace" class="hint" hidden>Regenerating replaces your saved text and edits. Download your current Markdown first if you want to keep it.</p>
 <label class="generation-check"><input type="checkbox" id="generationAgree"> I agree to send this journal data to OpenAI.</label>
 <button class="primary" id="generationSubmit" disabled>Generate my text</button> <button id="generationLocal">Cancel</button><button id="generationOwnLlm">Use my own AI instead</button>
+<div id="generationLoading" class="generation-loading" role="status" aria-live="polite" hidden><span class="generation-spinner" aria-hidden="true"></span><span id="generationLoadingText">Creating your text…</span></div>
 <p id="generationStatus" role="status" aria-live="polite"></p>`;
 const textDialog=document.createElement('dialog');textDialog.id='miniographyDialog';
 textDialog.innerHTML=`<button class="close" aria-label="Close my text">×</button><button type="button" class="dialog-back" id="savedTextBack">← Back</button><h2>Your mini biography</h2><p class="hint">Saved in this browser. Read it through before keeping or sharing it; AI can make mistakes.</p><section id="generationResult" hidden><p id="generationStorage" class="hint" role="status"></p><p id="generationStale" class="hint" hidden>Your journal has changed since this text was generated.</p><label for="generationMarkdown">Your text (Markdown)</label><textarea id="generationMarkdown" spellcheck="true"></textarea><details><summary>Preview formatting</summary><div id="generationPreview" class="markdown-content"></div></details><div class="text-actions"><button class="primary" id="generationDownload">Download Markdown ↓</button><button id="generationPrint">Convert to PDF / Print ↗</button><button id="generationRegenerate">Regenerate text</button><button id="savedOwnLlm">Use my own AI</button></div><p class="hint">Keep a downloaded copy too. Journal archive downloads contain your original entries; photos follow the text when printing.</p></section>`;
@@ -56,12 +57,18 @@ $('savedTextBack').onclick=closeSavedText;
 textDialog.querySelector('.close').onclick=closeSavedText;
 textDialog.addEventListener('cancel',event=>{event.preventDefault();closeSavedText()});
 $('generationRegenerate').onclick=openGenerationConsent;
+function setGenerationLoading(active){
+ $('generationLoading').hidden=!active;
+ $('generationLoadingText').textContent=lang==='de'?'Dein Text entsteht…':'Creating your text…';
+ $('generationSubmit').setAttribute('aria-busy',String(active));
+ $('generationSubmit').textContent=active?(lang==='de'?'Wird erstellt…':'Generating…'):(generatedDraft?'Regenerate my text':'Generate my text');
+}
 $('generationSubmit').onclick=async()=>{
  if(generating||!$('generationAgree').checked||!generationConfig?.available)return;
  if(JSON.stringify(currentSource())!==JSON.stringify(preview)){if(sourceEdited){preview=currentSource();resetGenerationConsent()}else refreshPreview();$('generationStatus').textContent='Your journal changed. Review the text to send and agree again.';return}
  const activeDocument=state,journalSource=structuredClone(preview),source={language:preview.language,profile:{},entries:[{id:'entry-1',type:'text',question:null,text:$('generationPayload').value}]};
  try{validateGenerationSource(source);if(new TextEncoder().encode(JSON.stringify({consent:true,source})).length>512000)throw Error('Please shorten the text to send (maximum 500 KB).')}catch(error){$('generationStatus').textContent=source.entries[0].text.trim()?error.message:'Add some text before generating.';return}
- generating=true;controller=new AbortController();$('generationSubmit').disabled=true;$('generationAgree').disabled=true;$('generationPayload').disabled=true;$('generationResetInput').disabled=true;$('generationStatus').textContent='Creating your draft… You can close this window; the provider may still finish and charge for the request.';
+ generating=true;setGenerationLoading(true);controller=new AbortController();$('generationSubmit').disabled=true;$('generationAgree').disabled=true;$('generationPayload').disabled=true;$('generationResetInput').disabled=true;$('generationStatus').textContent='You can close this window; the provider may still finish and charge for the request.';
  try{
   const response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({consent:true,source})});
   const result=await response.json();if(!response.ok)throw Error(result.error||'Generation failed. Please try again.');
@@ -69,7 +76,7 @@ $('generationSubmit').onclick=async()=>{
   if(state!==activeDocument)throw Error('The journal changed while generating. Open the current journal and try again.');
   generatedDraft={...result,source,journalSource,updatedAt:result.generatedAt};persistGeneratedDraft();refreshSavedGeneration();openSavedText();
  }catch(error){$('generationStatus').textContent=error.name==='AbortError'?'Stopped waiting for the draft. Your entries are unchanged.':error.message}
- finally{generating=false;controller=null;$('generationAgree').disabled=false;$('generationPayload').disabled=false;$('generationResetInput').disabled=false;$('generationAgree').checked=false;$('generationSubmit').disabled=true;$('generationRegenerate').disabled=!generationConfig?.available}
+ finally{generating=false;setGenerationLoading(false);controller=null;$('generationAgree').disabled=false;$('generationPayload').disabled=false;$('generationResetInput').disabled=false;$('generationAgree').checked=false;$('generationSubmit').disabled=true;$('generationRegenerate').disabled=!generationConfig?.available}
 };
 function renderDraft(){
  $('generationResult').hidden=false;$('generationMarkdown').value=generatedDraft.markdown;

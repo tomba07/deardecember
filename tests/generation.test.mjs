@@ -168,3 +168,20 @@ test('nested dialogs offer Back and preserve edits while returning to their pare
  await p.evaluate(()=>toggleLang());await p.locator('#revealOwnLlm').click();assert.equal(await p.locator('#ownLlmBack').textContent(),'← Zurück');
  }finally{await p.context().close()}
 });
+
+test('generation shows an accessible loading indicator and clears it on success, error and cancellation',async()=>{
+ const p=await openPage();let release;try{
+ for(const outcome of ['success','error','cancel']){
+  await p.route('**/api/generate',async route=>{await new Promise(resolve=>{release=resolve});await route.fulfill({status:outcome==='error'?502:200,contentType:'application/json',body:JSON.stringify(outcome==='error'?{error:'Test generation failed.'}:{markdown:'My finished text.',model:'test',generatedAt:new Date().toISOString()})}).catch(()=>{})});
+  if(outcome!=='success')await p.locator('#generationRegenerate').click();
+  await p.locator('#generationAgree').check();await p.locator('#generationSubmit').click();
+  await p.locator('#generationLoading').waitFor();assert.equal(await p.locator('#generationSubmit').getAttribute('aria-busy'),'true');assert.equal(await p.locator('#generationSubmit').isDisabled(),true);assert((await p.locator('#generationLoading').textContent()).includes('Creating your text'));
+  if(outcome==='cancel')await p.locator('#generationBack').click();
+  release();await p.waitForFunction(()=>document.getElementById('generationLoading').hidden);
+  assert.equal(await p.locator('#generationSubmit').getAttribute('aria-busy'),'false');
+  if(outcome==='error'){assert((await p.locator('#generationStatus').textContent()).includes('Test generation failed'));await p.locator('#generationBack').click()}
+  assert.equal(await p.locator('#miniographyDialog').isVisible(),true);
+  await p.unroute('**/api/generate');
+ }
+ }finally{release?.();await p.context().close()}
+});

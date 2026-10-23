@@ -139,3 +139,5 @@ footer{flex-direction:column;align-items:center;justify-content:center;gap:22px;
 #begin{display:inline-flex;align-items:center;justify-content:center;gap:12px}#begin>svg{width:17px;height:17px;flex:none}
 
 .dialog-back{display:block;padding:4px 0;margin:0 36px 16px 0;font-size:13px;text-align:left}.dialog-back[hidden]{display:none}
+
+.generation-loading{display:flex;align-items:center;gap:12px;margin-top:22px;padding:16px;background:#ebeee1;border-radius:6px;font-size:14px}.generation-loading[hidden]{display:none}.generation-spinner{width:20px;height:20px;flex:none;border:2px solid #294f3d30;border-top-color:#294f3d;border-radius:50%;animation:generation-spin 1s linear infinite}@keyframes generation-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.generation-spinner{animation:none}}
