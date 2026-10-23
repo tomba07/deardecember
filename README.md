@@ -158,3 +158,5 @@ The tests cover real archive round trips, original photo bytes, edit timestamps,
 The app now uses the formal format directly. Earlier experimental archive shapes are unsupported, and earlier prototype browser storage is left untouched. Under About → Manage original entries, edit imported or other original entries and move them up/down; both the archive and local source PDF use the resulting order. The original full-text summary dialog has been removed.
 
 A sample of the new archive is available locally at `output/archive/sample-journal.deardecember`; it carries `isSample: true` and includes 69 simulated answers.
+
+On localhost, **Reset all data** in the developer controls deletes this app’s saved journal, photos, generated text and welcome preference, then reloads to a fresh start. It asks for confirmation, also clears the personal journal when a sample is active, and is unavailable on hosted pages. Downloaded backups are unaffected.

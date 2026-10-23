@@ -216,3 +216,12 @@ $('importFile').onchange=async event=>{
  }catch(error){toast(`Import failed: ${error.message}`)}finally{importingArchive=false}
 };
 window.addEventListener('pagehide',()=>{commitEdits();try{persistDocument()}catch{}});
+
+function resetDevelopmentData(){
+ if(!isDevelopmentHost)return;
+ if(!confirm(lang==='de'?'Alle lokalen Daten von Dear December löschen? Dazu gehören deine Einträge, Fotos und generierten Texte. Lade zuerst ein Backup herunter, wenn du sie behalten möchtest.':'Delete all local Dear December data, including entries, photos and generated text? Download a backup first if you want to keep them.'))return;
+ try{
+  localStorage.removeItem(DOCUMENT_KEY);localStorage.removeItem(INTRO_SEEN_KEY);
+  resettingDevelopmentData=true;location.reload();
+ }catch{toast(lang==='de'?'Die lokalen Daten konnten nicht gelöscht werden.':'Local data could not be cleared.')}
+}

@@ -158,7 +158,7 @@ test('the unlock-all control is localhost-only and cannot unlock the hosted cale
   await context.route('https://dear-december.test/**',async route=>{const response=await route.fetch({url:url+new URL(route.request().url()).pathname});await route.fulfill({response})});
   await p.goto('https://dear-december.test/');await p.evaluate(()=>dismissIntro());assert.equal(await p.locator('#devPreview').isVisible(),false);assert(!(await p.locator('body').innerText()).includes('Not December?'));
   assert.equal(await p.evaluate(()=>{document.getElementById('preview').checked=true;return unlocked(0)}),false);
-  assert.equal(await p.locator('#devSample').isVisible(),false);await p.evaluate(()=>startSimulation());assert.equal(await p.evaluate(()=>isSimulation),false);assert.equal(await p.evaluate(()=>unlocked(23)),false);
+  assert.equal(await p.locator('#devSample').isVisible(),false);assert.equal(await p.locator('#devReset').isVisible(),false);await p.evaluate(()=>{localStorage.setItem('reset-test','keep');resetDevelopmentData()});assert.equal(await p.evaluate(()=>localStorage.getItem('reset-test')),'keep');await p.evaluate(()=>startSimulation());assert.equal(await p.evaluate(()=>isSimulation),false);assert.equal(await p.evaluate(()=>unlocked(23)),false);
  }finally{await context.close()}
 });
 
@@ -339,5 +339,24 @@ test('Continue waits until the opening title and description have finished',asyn
  const p=await page();try{
  await p.emulateMedia({reducedMotion:'no-preference'});await p.evaluate(()=>{openDoor(2);for(const animation of editor.getAnimations({subtree:true})){animation.pause();animation.currentTime=700}});assert.equal(await p.locator('#editor .opening-continue').isVisible(),false);assert.equal(await p.locator('#editor .opening-continue').isDisabled(),true);
  await p.evaluate(()=>{for(const animation of editor.getAnimations({subtree:true}))animation.finish()});await p.locator('#editor .opening-continue').waitFor();assert.equal(await p.locator('#editor .opening-continue').isEnabled(),true);const opacity=await p.locator('#editor .opening-continue').evaluate(el=>{const animation=el.getAnimations().find(animation=>animation.animationName==='opening-continue-arrive');animation.pause();animation.currentTime=250;return Number(getComputedStyle(el).opacity)});assert(opacity>0&&opacity<1);await p.locator('#editor .opening-continue').evaluate(el=>el.getAnimations().forEach(animation=>animation.finish()));await p.locator('#editor .opening-continue').click();await p.waitForFunction(()=>!document.querySelector('#editor .door-opening-overlay'));assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
+
+test('developer reset confirms, clears personal data during simulation and returns to a fresh visit',async()=>{
+ const p=await page();try{
+ await p.evaluate(()=>{openDoor(2)});await answer(p,1,'A memory to reset.');
+ const image=await png(p);await p.locator('#photo').setInputFiles({name:'reset.png',mimeType:'image/png',buffer:image});await p.locator('.photo-card').waitFor();
+ await p.locator('#saveClose').click();
+ await p.evaluate(()=>{generatedDraft={markdown:'A saved generated text.'};save();localStorage.setItem('unrelated-data','keep')});
+ const original=await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY));
+ assert.equal(await p.locator('#devReset').isVisible(),true);
+ p.once('dialog',dialog=>dialog.dismiss());await p.locator('#devReset').click();
+ assert.equal(await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY)),original);
+ await p.evaluate(()=>startSimulation());assert.equal(await p.evaluate(()=>isSimulation),true);
+ p.once('dialog',dialog=>dialog.accept());await p.locator('#devReset').click();await p.waitForFunction(()=>document.getElementById('introDialog')?.open);
+ assert.equal(await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY)),null);
+ assert.equal(await p.evaluate(()=>localStorage.getItem(INTRO_SEEN_KEY)),null);
+ assert.deepEqual(await p.evaluate(()=>({entries:state.entries,media:Object.keys(media),draft:generatedDraft,simulation:isSimulation,backup:simulationBackup})),{entries:[],media:[],draft:null,simulation:false,backup:null});
+ assert.equal(await p.evaluate(()=>localStorage.getItem('unrelated-data')),'keep');assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });

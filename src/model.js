@@ -1,6 +1,7 @@
 const isDevelopmentHost=['localhost','127.0.0.1','[::1]'].includes(location.hostname);
 const DOCUMENT_KEY='miniography-document-v1';
 function emptyCollection(){return {formatVersion:1,language:'en',profile:{name:'',dateOfBirth:'',placeOfBirth:'',placesLived:''},entries:[]}}
+let resettingDevelopmentData=false;
 let state=emptyCollection(), media=Object.create(null), entryBindings=new WeakMap(), pendingEdits=new Map(), isSimulation=false, keepsakeRevealed=false, openedDoors=[], generatedDraft=null;
 function entryContent(entry){const {createdAt,modificationDates,...content}=entry;return JSON.stringify(content)}
 function timestampAfter(previous){return new Date(Math.max(Date.now(),Date.parse(previous||'')+1||0)).toISOString()}
@@ -28,7 +29,7 @@ function readGeneratedDraft(value){
 }
 function storedDocument(){return {collection:state,media,generatedDraft,keepsakeRevealed,openedDoors,bindings:state.entries.map(entry=>entryBinding(entry)),pending:state.entries.map(entry=>pendingEdits.get(entry)||null)}}
 function persistDocument(document=storedDocument()){
- if(!isSimulation)localStorage.setItem(DOCUMENT_KEY,JSON.stringify(document));
+ if(!isSimulation&&!resettingDevelopmentData)localStorage.setItem(DOCUMENT_KEY,JSON.stringify(document));
 }
 function restoreDocument(document){
  generatedDraft=readGeneratedDraft(document.generatedDraft);

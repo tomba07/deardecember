@@ -45,6 +45,8 @@ function applyWelcomeCopy(){
  applyChristmasRevealCopy();
  $('devPreview').hidden=!isDevelopmentHost;
  $('devSample').hidden=!isDevelopmentHost;
+ $('devReset').hidden=!isDevelopmentHost;
+ $('devReset').textContent=lang==='de'?'Alle Daten zurücksetzen':'Reset all data';
  $('manageEntriesTitle').textContent=lang==='de'?'Ursprüngliche Einträge verwalten':'Manage original entries';
 }
 
