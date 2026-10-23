@@ -172,7 +172,7 @@ function preparePrintStory(collection=state,assets=media){
  commitAndSave();$('revealDialog').close();editor.close();$('printSheet')?.remove();
  const sheet=document.createElement('article');sheet.id='printSheet';
  function text(parent,tag,value,className){const element=document.createElement(tag);element.textContent=value;if(className)element.className=className;parent.append(element);return element}
- const cover=document.createElement('section');cover.className='print-cover';text(cover,'p','DEAR DECEMBER · A LITTLE BOOK OF A LIFE','print-kicker');text(cover,'h1',collection.profile.name||'My story');text(cover,'p',[profileDate(collection.profile),collection.profile.placeOfBirth].filter(Boolean).join(' · ')||'The stories that make a life','print-subtitle');text(cover,'p','A life, in my words.','print-dedication');
+ const cover=document.createElement('section');cover.className='print-cover';text(cover,'h1',collection.profile.name||'My story');text(cover,'p',[profileDate(collection.profile),collection.profile.placeOfBirth].filter(Boolean).join(' · ')||'The stories that make a life','print-subtitle');
  if(collection.isSample)text(cover,'p','SIMULATED EDITION\nBirth details, the moves to Seabrook (1991–1994) and Oakridge, beach memories and sledding were supplied by Alex. All other details are imagined sample answers for this preview.','print-disclaimer');sheet.append(cover);
  if(collection.profile.placesLived?.trim()){const places=document.createElement('section');places.className='print-chapter print-timeline';text(places,'h2',lang==='de'?'Meine Wohnorte':'Places I have called home');text(places,'p',collection.profile.placesLived).style.whiteSpace='pre-wrap';sheet.append(places)}
  let lastTopic=null;
