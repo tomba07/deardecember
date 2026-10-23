@@ -3,7 +3,7 @@
 
 .simulation-tools{display:flex;align-items:center;gap:16px;margin:0 0 20px}.simulation-tools span{font-size:11px;color:#7f8973}#simulationNotice button{text-decoration:underline}#printSheet{display:none}
 @media print{
- @page{size:A4;margin:18mm 21mm}
+ @page{size:A4;margin:18mm 21mm;@top-left{content:""}@top-center{content:""}@top-right{content:""}@bottom-left{content:""}@bottom-center{content:""}@bottom-right{content:""}}
  body{background:white}
  #printSheet{padding:0;font:10.5pt/1.5 Georgia,serif}
  .print-cover{padding:8mm 0 9mm;margin-bottom:10mm;border-top:2pt solid #baa16c;border-bottom:1pt solid #dedfd3;break-inside:avoid}
