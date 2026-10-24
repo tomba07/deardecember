@@ -105,9 +105,9 @@
   const calendarHidden=el('calendar').hidden;el('calendar').hidden=true;
   try{const response=await fetch('/api/account/config',{credentials:'same-origin'});if(response.status===404){enabled=false;return}if(!response.ok)throw Error();const config=await response.json();if(!config.accounts){enabled=false;return}
    try{const raw=localStorage.getItem(DOCUMENT_KEY);if(raw)localDraft=JSON.parse(raw)}catch{}
-   enabled=true;resetView();window.applyAccountCopy();await refreshSession();
+   enabled=true;document.body.classList.add('account-mode');resetView();window.applyAccountCopy();await refreshSession();
    const params=new URL(location.href).searchParams;if(params.has('token'))showAccount('reset');if(params.has('error')){showAccount('signin');message('The link is invalid or expired. Request a new one.')}
-  }catch{enabled=true;ready=false;nav.hidden=false;showStatus('Unable to connect to your account. Please reload to try again. No local journal has been uploaded.')}finally{el('calendar').hidden=calendarHidden}
+  }catch{enabled=true;document.body.classList.add('account-mode');ready=false;nav.hidden=false;showStatus('Unable to connect to your account. Please reload to try again. No local journal has been uploaded.')}finally{el('calendar').hidden=calendarHidden}
  }
  initialize();
 })();
