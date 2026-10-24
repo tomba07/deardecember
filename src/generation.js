@@ -161,3 +161,9 @@ $('ownLlmSave').onclick=()=>{
 $('revealOwnLlm').onclick=()=>openOwnLlm();$('generationOwnLlm').onclick=()=>openOwnLlm('generation');$('savedOwnLlm').onclick=()=>openOwnLlm('saved');
 
 window.applyAccountCopy?.();
+
+window.clearPrivateGeneration=()=>{
+ controller?.abort();preview=null;sourceEdited=false;ownDocument=null;ownJournalSource=null;
+ for(const id of ['generationPayload','generationMarkdown','ownLlmSource','ownLlmPrompt','ownLlmResult'])$(id).value='';
+ $('generationPreview').replaceChildren();resetGenerationConsent();
+};
