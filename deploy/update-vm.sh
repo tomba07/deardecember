@@ -26,7 +26,7 @@ exec 9>"$app_dir/deploy.lock"
 flock -n 9 || { echo "Another deployment is running"; exit 1; }
 old_image="$(docker inspect dear-december --format '{{.Config.Image}}' 2>/dev/null || true)"
 if [[ -n "$old_image" ]]; then bash backup.sh; fi
-docker build -t "dear-december:$release" "$app_dir/releases/$release"
+docker build --memory=384m --memory-swap=768m -t "dear-december:$release" "$app_dir/releases/$release"
 if ! DEAR_DECEMBER_IMAGE="dear-december:$release" docker compose up -d --wait --wait-timeout 120; then
  if [[ -n "$old_image" ]]; then DEAR_DECEMBER_IMAGE="$old_image" docker compose up -d --wait --wait-timeout 120; fi
  exit 1
