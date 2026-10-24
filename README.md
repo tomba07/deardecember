@@ -159,3 +159,5 @@ A sample of the new archive is available locally at `output/archive/sample-journ
 On localhost, **Reset all data** in the developer controls deletes this app’s saved journal, photos, generated text and welcome preference, then reloads to a fresh start. It asks for confirmation, also clears the personal journal when a sample is active, and is unavailable on hosted pages. Downloaded backups are unaffected.
 
 Door 24 opens on or after December 24 only when doors 1–23 are completed. Its locked tooltip explains the requirement. Developer preview bypasses the date, but still requires completion; the sample journal can be used to preview the full reveal. A saved reflection completes a memory door, and saved basic facts can complete door 1.
+
+The proposed next storage architecture follows the local Checkmates project: Better Auth, SQLite/Drizzle and private photo storage on the existing VM deployment pattern. The first version would use regular private server storage, not E2EE. See [login and backend persistence concept](docs/backend-persistence.md). This is a documented plan; the current app remains local-only until implemented.

@@ -1,6 +1,6 @@
 # Account-based encrypted sync — proposed design
 
-Status: proposal, not implemented. The current app still uses local browser storage and manual backups. Provider selection and the journal-unlock/recovery experience are pending. This document does not change the archive format or current privacy claims.
+Status: deferred proposal, not implemented. The chosen next step is [regular private backend persistence](backend-persistence.md), following the local Checkmates project. E2EE is not part of that first version. The current app still uses local browser storage and manual backups. Provider selection and the journal-unlock/recovery experience are pending. This document does not change the archive format or current privacy claims.
 
 ## Intended experience
 
