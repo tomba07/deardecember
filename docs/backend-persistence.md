@@ -1,6 +1,6 @@
 # Login and backend persistence
 
-Status: implementation concept, not implemented or deployed. The chosen first version uses regular private server storage, not end-to-end encryption. This supersedes the earlier managed-provider/passphrase proposal for the next implementation step. E2EE remains a possible later project, not an advertised capability.
+Status: implemented with production deployment packaging. See [deployment/operations](../deploy/README.md) for the actual runtime and limitations. The chosen first version uses regular private server storage, not end-to-end encryption. This supersedes the earlier managed-provider/passphrase proposal for the next implementation step. E2EE remains a possible later project, not an advertised capability.
 
 ## Reference: chesscoop / Checkmates
 
@@ -36,7 +36,7 @@ The public landing page explains the calendar and offers sign in / create accoun
 
 On first sign-in, create an empty private journal or load the existing one. On a second device, signing in loads that same journal and photos. No separate encryption passphrase or recovery key in this version. Sign-out/account switching clears the previous journal from memory, previews and any account-scoped browser cache before another account can load.
 
-A local draft queue can protect unsaved work, but the backend becomes the persisted source of truth. Never present a local-only change as saved to the account. Decide explicitly whether an offline queue persists across sign-out; first version should not leave another person's readable journal behind in a shared browser.
+The backend is the persisted source of truth. This first version retains unsaved edits in page memory and warns before navigation; it does not claim persistent offline editing. Never present a local-only change as saved to the account. Decide explicitly whether an offline queue persists across sign-out; first version should not leave another person's readable journal behind in a shared browser.
 
 ## Persistence model
 

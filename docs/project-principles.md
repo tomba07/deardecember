@@ -54,7 +54,7 @@ Choosing another application does not transfer these project commitments to that
 - Prefer local processing and storage. A server account or central copy should not be necessary to keep a personal collection.
 - Keep outputs modest and readable. The aim is to capture a person, not make a life sound more impressive.
 
-## Current implementation and limits
+## Local preview and account deployment
 
 A dismissible first-visit introduction explains the purpose, local storage and portable file concept without revealing the December 24 keepsake. It can be skipped, closed or dismissed with Escape with a separate About dialog for the fuller purpose, privacy and storage explanation. The dismissal flag is stored only in this browser; it is not part of the personal archive or sent to a server.
 
@@ -74,3 +74,5 @@ Publishing a schema does not, by itself, establish an open-source licence. The f
 - [JSON Schema](../schemas/dear-december-v1.schema.json): the machine-readable structure.
 
 The portable format now treats all content as generic tagged records, including basic personal facts. Tags are plain string labels; generic links connect questions and photo context to the records they describe. No calendar-specific profile or entry type is required by the schema. The familiar fact/reflection controls remain an application view of these records. See [the format specification](archive-format.md).
+
+The production account server stores personal journals and photos centrally for the user-requested persistence purpose, with server-enforced account access. This storage is not E2EE; the operator can access content. It does not authorize advertising or unrelated reuse. Sign-in, email verification/reset, account deletion, backup retention and save/offline behavior are described in [operations](../deploy/README.md). Older local-only privacy descriptions apply to static/local previews.

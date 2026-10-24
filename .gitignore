@@ -16,3 +16,6 @@ node_modules/
 
 # macOS metadata
 .DS_Store
+
+# Local account database and media
+.data/

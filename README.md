@@ -1,3 +1,11 @@
+## Account deployment
+
+Dear December now includes a production account server with verified email/password login, Resend verification/reset emails, private SQLite journal storage, private original photos, revision-controlled autosave and account deletion. It uses the Checkmates VM pattern with an independent database and Docker volume. This is regular private server storage, not E2EE.
+
+Use `npm run build && npm start` with the account environment configured, or `npm run dev:accounts` with ignored `.env.accounts`. See [VM deployment and operations](deploy/README.md). Public cloud-AI generation is disabled; users can still take the prompt to their chosen model. Existing `npm run dev` and static previews keep their local-only behavior; the local-mode descriptions below refer to those previews.
+
+On the account server, sign in on another device to load the same journal and photos. Backup export stays available. Restore and explicit migration of an existing browser journal live under Account. Unsaved/offline edits remain on the page with a navigation warning, rather than being silently treated as saved. No automatic upload of old local data occurs.
+
 # Dear December
 
 Dear December helps you record the basic facts, ordinary details and memories of your life, for yourself and, if you choose, future generations. You do not need an extraordinary story or polished prose. The aim is a small, honest portrait of a person, rather than self-praise or an exhaustive biography.
@@ -160,4 +168,4 @@ On localhost, **Reset all data** in the developer controls deletes this app’s 
 
 Door 24 opens on or after December 24 only when doors 1–23 are completed. Its locked tooltip explains the requirement. Developer preview bypasses the date, but still requires completion; the sample journal can be used to preview the full reveal. A saved reflection completes a memory door, and saved basic facts can complete door 1.
 
-The proposed next storage architecture follows the local Checkmates project: Better Auth, SQLite/Drizzle and private photo storage on the existing VM deployment pattern. The first version would use regular private server storage, not E2EE. See [login and backend persistence concept](docs/backend-persistence.md). This is a documented plan; the current app remains local-only until implemented.
+The proposed next storage architecture follows the local Checkmates project: Better Auth, SQLite/Drizzle and private photo storage on the existing VM deployment pattern. The first version would use regular private server storage, not E2EE. See [login and backend persistence concept](docs/backend-persistence.md). The account implementation and VM packaging now follow this plan; static/local-only previews remain available.

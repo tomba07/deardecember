@@ -29,7 +29,9 @@ function readGeneratedDraft(value){
 }
 function storedDocument(){return {collection:taggedManifest(state),media,generatedDraft,keepsakeRevealed,openedDoors,bindings:state.entries.map(entry=>entryBinding(entry)),pending:state.entries.map(entry=>pendingEdits.get(entry)||null)}}
 function persistDocument(document=storedDocument()){
- if(!isSimulation&&!resettingDevelopmentData)localStorage.setItem(DOCUMENT_KEY,JSON.stringify(document));
+ if(isSimulation||resettingDevelopmentData)return;
+ if(window.accountPersistence?.enabled){window.accountPersistence.queue(document);return}
+ localStorage.setItem(DOCUMENT_KEY,JSON.stringify(document));
 }
 function restoreDocument(document){
  generatedDraft=readGeneratedDraft(document.generatedDraft);

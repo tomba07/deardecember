@@ -99,7 +99,7 @@ $('generationPrint').onclick=async()=>{
  await Promise.all([...sheet.querySelectorAll('img')].map(image=>image.decode().catch(()=>{})));window.print();
 };
 function persistGeneratedDraft(){
- const saved=save();$('generationStorage').textContent=saved?(isSimulation?'Sample text is temporary; download it to keep it.':''):'Could not save in this browser. Download your Markdown now to keep these edits.';
+ const saved=save();$('generationStorage').textContent=window.accountPersistence?.enabled&&!isSimulation?'Saving to your account…':saved?(isSimulation?'Sample text is temporary; download it to keep it.':''):'Could not save in this browser. Download your Markdown now to keep these edits.';
 }
 function refreshSavedGeneration(){
  if(!generatedDraft){$('generationResult').hidden=true;textDialog.close();if(dialog.open)dialog.close()}else if(textDialog.open)renderDraft();
@@ -114,7 +114,7 @@ function refreshRevealGeneration(){
  const available=Boolean(generationConfig?.available||generatedDraft);
  $('revealGenerate').disabled=!available;
  $('revealGenerate').textContent=generatedDraft?(lang==='de'?'Meinen erstellten Text öffnen ↗':'Open my saved text ↗'):(lang==='de'?'Meinen Text erstellen ↗':'Create my text ↗');
- $('revealGenerationHint').textContent=generatedDraft?(lang==='de'?'Dein Text ist lokal gespeichert. Du kannst ihn bearbeiten, herunterladen und drucken.':'Your text is saved locally. You can edit, download and print it.'):available?'':(lang==='de'?'Die integrierte KI-Erstellung ist noch nicht eingerichtet. Du kannst trotzdem deine eigene KI nutzen.':'Built-in generation is not set up here. You can still use your own AI.');
+ $('revealGenerationHint').textContent=generatedDraft?(window.accountPersistence?.enabled?(lang==='de'?'Dein Text wird in deinem Konto gespeichert. Du kannst ihn bearbeiten, herunterladen und drucken.':'Your text is saved to your account. You can edit, download and print it.'):(lang==='de'?'Dein Text ist lokal gespeichert. Du kannst ihn bearbeiten, herunterladen und drucken.':'Your text is saved locally. You can edit, download and print it.')):available?'':(lang==='de'?'Die integrierte KI-Erstellung ist noch nicht eingerichtet. Du kannst trotzdem deine eigene KI nutzen.':'Built-in generation is not set up here. You can still use your own AI.');
 }
 window.refreshRevealGeneration=refreshRevealGeneration;
 $('revealGenerate').onclick=()=>{if(!generationConfig?.available&&!generatedDraft)return;$('revealDialog').close();openGeneration()};
@@ -159,3 +159,5 @@ $('ownLlmSave').onclick=()=>{
  }catch(error){$('ownLlmStatus').textContent=error.message}
 };
 $('revealOwnLlm').onclick=()=>openOwnLlm();$('generationOwnLlm').onclick=()=>openOwnLlm('generation');$('savedOwnLlm').onclick=()=>openOwnLlm('saved');
+
+window.applyAccountCopy?.();

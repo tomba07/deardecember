@@ -110,6 +110,7 @@ function insertForDoor(entry,day){
  state.entries.splice(last<0?state.entries.length:last+1,0,entry);
 }
 function openDoor(index){
+ if(window.requireAccount?.())return;
  if(index===23&&!earlierDoorsComplete()){toast(completionHint());return}
  if(!unlocked(index)){toast(lang==='de'?`Dieses Türchen öffnet am ${index+1}. Dezember.`:`This door opens December ${index+1}. Come back during Advent.`);return}
  $('aboutDialog').close();if(!openedDoors.includes(index)){openedDoors.push(index);save()}if(index===23){story(true);return}
@@ -150,6 +151,7 @@ function renderPhotos(){
  }
 }
 function story(reveal=false){
+ if(window.requireAccount?.())return;
  if(!earlierDoorsComplete()){toast(completionHint());return}
  if(!keepsakeRevealed&&!(reveal&&revealAvailable())&&!developmentCalendar()){toast(lang==='de'?'Am 24. Dezember wartet hier eine Überraschung auf dich.':'A little surprise is waiting for you on December 24.');return}
  keepsakeRevealed=true;commitAndSave();applyWelcomeCopy();$('revealName').textContent=state.profile.name||(lang==='de'?'dich':'you');
@@ -216,7 +218,7 @@ $('importFile').onchange=async event=>{
   if(!confirm(`Import ${incoming.collection.entries.length} entries and replace this browser’s current collection? Export a backup first if needed.`))return;
   const document={...incoming,bindings:[],pending:[]};
   // A failed storage write must leave both the active and persisted collection intact.
-  localStorage.setItem(DOCUMENT_KEY,JSON.stringify(document));
+  if(window.accountPersistence?.enabled)await window.accountPersistence.replace(document);else localStorage.setItem(DOCUMENT_KEY,JSON.stringify(document));
   generatedDraft=readGeneratedDraft(incoming.generatedDraft);window.refreshSavedGeneration?.();state=incoming.collection;media=incoming.media;pendingEdits=new Map();keepsakeRevealed=false;openedDoors=[];inferBindings();
   if(isSimulation){isSimulation=false;simulationBackup=null;$('simulationNotice').hidden=true}
   lang=state.language.toLowerCase().startsWith('de')?'de':'en';editor.close();$('revealDialog').close();$('aboutDialog').close();$('entryDialog').close();applyLanguage();save();toast('Your collection has been imported.');
@@ -225,7 +227,7 @@ $('importFile').onchange=async event=>{
 window.addEventListener('pagehide',()=>{commitEdits();try{persistDocument()}catch{}});
 
 function resetDevelopmentData(){
- if(!isDevelopmentHost)return;
+ if(!isDevelopmentHost||window.accountPersistence?.enabled)return;
  if(!confirm(lang==='de'?'Alle lokalen Daten von Dear December löschen? Dazu gehören deine Einträge, Fotos und generierten Texte. Lade zuerst ein Backup herunter, wenn du sie behalten möchtest.':'Delete all local Dear December data, including entries, photos and generated text? Download a backup first if you want to keep them.'))return;
  try{
   localStorage.removeItem(DOCUMENT_KEY);localStorage.removeItem(INTRO_SEEN_KEY);

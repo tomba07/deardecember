@@ -47,6 +47,7 @@ function applyWelcomeCopy(){
  $('devSample').hidden=!isDevelopmentHost;
  $('devReset').hidden=!isDevelopmentHost;
  $('devReset').textContent=lang==='de'?'Alle Daten zurücksetzen':'Reset all data';
+ window.applyAccountCopy?.();
  $('manageEntriesTitle').textContent=lang==='de'?'Ursprüngliche Einträge verwalten':'Manage original entries';
 }
 

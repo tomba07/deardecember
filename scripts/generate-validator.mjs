@@ -10,3 +10,5 @@ await build({ stdin: { contents: standaloneCode(ajv, ajv.compile(schema)), resol
 
 const legacySchema = JSON.parse(await readFile(new URL('../schemas/legacy-journal-v1.schema.json', import.meta.url), 'utf8'));
 await build({ stdin: { contents: standaloneCode(ajv, ajv.compile(legacySchema)), resolveDir: process.cwd(), sourcefile: 'legacy-validator.cjs' }, bundle: true, format: 'iife', globalName: 'validateLegacyManifest', minify: true, outfile: 'src/legacy-validator.js', banner: { js: '// Generated legacy import validator. Do not edit.' } });
+
+await build({ stdin: { contents: standaloneCode(ajv, ajv.compile(schema)), resolveDir: process.cwd(), sourcefile: 'server-validator.cjs' }, bundle: true, platform: 'node', format: 'cjs', minify: true, outfile: 'server/manifest-validator.cjs', banner: { js: '// Generated from schemas/dear-december-v1.schema.json. Do not edit.' } });
