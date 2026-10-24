@@ -111,7 +111,7 @@ test('ZIP backup and import restore unfinished entries, image files and generate
  await p.evaluate(()=>{generatedDraft={markdown:'## Childhood\n\nMy wooden train.',model:'External AI'};commitAndSave()});
  const original=await collection(p);const download=p.waitForEvent('download');await p.evaluate(()=>exportDraftBackup());const file=await download;
  assert.equal(file.suggestedFilename(),'dear-december-backup.zip');const bytes=await readFile(await file.path());
- const contents=await p.evaluate(async bytes=>{const zip=await JSZip.loadAsync(new Uint8Array(bytes));const document=JSON.parse(await zip.file('draft-backup.json').async('string'));return {document,image:[...await zip.file(document.collection.entries.find(e=>e.type==='photo').filePath).async('uint8array')]}},[...bytes]);
+ const contents=await p.evaluate(async bytes=>{const zip=await JSZip.loadAsync(new Uint8Array(bytes));const document=JSON.parse(await zip.file('draft-backup.json').async('string'));return {document,image:[...await zip.file(document.collection.entries.find(e=>e.filePath).filePath).async('uint8array')]}},[...bytes]);
  assert.deepEqual(Buffer.from(contents.image),image);assert.equal(contents.document.media,undefined);assert(contents.document.generatedDraft.markdown.includes('My wooden train.'));
  await p.evaluate(()=>{editor.close();state=emptyCollection();media={};generatedDraft=null;save()});
  p.once('dialog',dialog=>dialog.accept());await p.locator('#importFile').setInputFiles({name:file.suggestedFilename(),mimeType:'application/zip',buffer:bytes});
@@ -276,7 +276,7 @@ test('Christmas reveal adapts to late visits and offers a local backup even with
  const p=await page();try{
  await p.clock.install({time:new Date('2026-12-24T12:00:00Z')});await p.evaluate(()=>{state.profile={name:'Alex',dateOfBirth:'',placeOfBirth:'',placesLived:''};addTextEntry('Tea by the kitchen window.',{question:null});save();for(let day=0;day<23;day++)if(!doorComplete(day))addTextEntry('A small everyday memory.',{topic:themes[day],question:questions[day],binding:{day,choice:0}});openDoor(23)});
  assert.equal(await p.locator('#grandTitle').textContent(),'Merry Christmas!');assert.equal(await p.locator('.reveal-options>section').count(),3);assert((await p.locator('#revealSaveTitle').textContent()).includes('Keep it safe'));assert.equal(await p.locator('#revealGenerate').isDisabled(),true);
- const event=p.waitForEvent('download');await p.locator('#revealDownload').click();const backup=await event;assert.equal(backup.suggestedFilename(),'dear-december-backup.zip');const bytes=await readFile(await backup.path());const data=await p.evaluate(async bytes=>JSON.parse(await(await JSZip.loadAsync(new Uint8Array(bytes))).file('draft-backup.json').async('string')),[...bytes]);assert.equal(data.collection.entries[0].text,'Tea by the kitchen window.');assert.equal(await p.locator('#revealDialog').isVisible(),true);
+ const event=p.waitForEvent('download');await p.locator('#revealDownload').click();const backup=await event;assert.equal(backup.suggestedFilename(),'dear-december-backup.zip');const bytes=await readFile(await backup.path());const data=await p.evaluate(async bytes=>JSON.parse(await(await JSZip.loadAsync(new Uint8Array(bytes))).file('draft-backup.json').async('string')),[...bytes]);assert.equal(data.collection.entries.find(entry=>entry.tags.includes('reflection')).text,'Tea by the kitchen window.');assert.equal(await p.locator('#revealDialog').isVisible(),true);
  for(const [date,text]of [['2026-12-26T12:00:00Z','Merry Christmas!'],['2026-12-29T12:00:00Z','A belated merry Christmas!'],['2027-01-03T12:00:00Z','A belated merry Christmas!'],['2027-03-01T12:00:00Z','A little Christmas warmth, whenever you arrive.']]){await p.clock.setSystemTime(new Date(date));await p.evaluate(()=>{document.getElementById('revealDialog').close();for(let day=0;day<23;day++)if(!doorComplete(day))addTextEntry('A small everyday memory.',{topic:themes[day],question:questions[day],binding:{day,choice:0}});openDoor(23)});assert.equal(await p.locator('#grandTitle').textContent(),text)}
  await p.evaluate(()=>toggleLang());assert.equal(await p.locator('#grandTitle').textContent(),'Ein wenig Weihnachtswärme für dich.');assert((await p.locator('#revealFutureText').textContent()).includes('entscheidest du selbst'));await p.setViewportSize({width:390,height:844});const box=await p.locator('#revealDialog').boundingBox();assert(box.x>=0&&box.x+box.width<=390);assert.equal(await p.locator('#revealDialog').evaluate(element=>element.scrollWidth>element.clientWidth),false);assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
@@ -372,5 +372,61 @@ test('door 24 requires all earlier doors, explains the lock, and guards direct o
  await last.click();assert.equal(await p.locator('#revealDialog').isVisible(),true);
  await p.evaluate(()=>{document.getElementById('revealDialog').close();state.entries=state.entries.filter(entry=>entryBinding(entry).day!==22);save();story()});
  assert.equal(await last.isDisabled(),true);assert.equal(await p.locator('#revealDialog').isVisible(),false);assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
+
+test('generic tagged records preserve labels, IDs and linked context through editing and reload',async()=>{
+ const p=await page();try{
+ const manifest={formatVersion:1,language:'en',entries:[
+  {id:'name',tags:['person:name','private'],text:'Alex'},
+  {id:'reflection',tags:['reflection','childhood','other-app:custom','dear-december:door:3'],text:'A wooden train.',createdAt:'2026-10-22T12:00:00Z',modificationDates:[]},
+  {id:'prompt',tags:['question','other-app:prompt'],text:'Which toy do you remember?',relatedTo:['reflection']},
+  {id:'note',tags:['another-app:research'],text:'A separate observation.'},
+  {id:'context',tags:['topic','external:preserve'],text:'Additional topic context',relatedTo:['name']}
+ ]};
+ await p.evaluate(manifest=>{validateCollection(manifest);state=calendarCollection(manifest);inferBindings();save();openDoor(2)},manifest);
+ assert.equal(await p.locator('#answer').inputValue(),'A wooden train.');assert.equal(await p.locator('#question').textContent(),'Which toy do you remember?');
+ await p.locator('#answer').fill('A red wooden train.');await p.locator('#saveClose').click();await p.reload();
+ const saved=await p.evaluate(()=>JSON.parse(localStorage.getItem(DOCUMENT_KEY)).collection);
+ assert.equal(saved.profile,undefined);assert(saved.entries.every(entry=>Array.isArray(entry.tags)&&!('type'in entry)&&!('question'in entry)));
+ assert.equal(saved.entries.find(entry=>entry.id==='reflection').text,'A red wooden train.');
+ assert.deepEqual(saved.entries.find(entry=>entry.id==='reflection').tags,manifest.entries[1].tags);
+ assert.deepEqual(saved.entries.find(entry=>entry.id==='prompt'),manifest.entries[2]);assert.deepEqual(saved.entries.find(entry=>entry.id==='context'),manifest.entries[4]);
+ const roundtrip=await p.evaluate(async()=>{const before=taggedManifest(state);const blob=await createArchive(before,media);const result=await readArchive(await blob.arrayBuffer());return {before,after:taggedManifest(result.collection)}});
+ assert.deepEqual(roundtrip.after,roundtrip.before);assert.equal(roundtrip.before.entries.find(entry=>entry.id==='name').createdAt,undefined);assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
+
+test('generic manifests reject duplicate IDs, invalid links and bad edit chronology',async()=>{
+ const p=await page();try{
+ const failures=await p.evaluate(()=>{
+  const entry={id:'one',tags:['anything'],text:'A record.'},base={formatVersion:1,language:'en',entries:[entry]};
+  const cases=[{...base,entries:[entry,{...entry}]},{...base,entries:[{...entry,relatedTo:['missing']}]},{...base,entries:[{...entry,relatedTo:['one']}]},{...base,entries:[{...entry,modificationDates:['2026-10-22T12:00:00Z']}]},{...base,entries:[{...entry,createdAt:'2026-10-22T12:00:00Z',modificationDates:['2026-10-21T12:00:00Z']}]}];
+  return cases.map(manifest=>{try{validateCollection(manifest);return false}catch{return true}});
+ });assert(failures.every(Boolean));assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
+
+test('legacy browser data migrates to plain tagged records without invented fact timestamps',async()=>{
+ const p=await page();try{
+ const before=await p.evaluate(()=>{addTextEntry('An existing memory.',{question:'An old prompt',topic:'An old topic'});commitAndSave();const legacy=structuredClone(state);localStorage.setItem(DOCUMENT_KEY,JSON.stringify({collection:legacy,media:{}}));return legacy});
+ await p.reload();assert.deepEqual(await collection(p),before);
+ const saved=await p.evaluate(()=>JSON.parse(localStorage.getItem(DOCUMENT_KEY)).collection);
+ assert.equal(saved.profile,undefined);assert.equal(saved.entries.find(entry=>entry.tags.includes('person:name')).createdAt,undefined);
+ const record=saved.entries.find(entry=>entry.tags.includes('reflection'));assert.equal(record.createdAt,before.entries[0].createdAt);
+ const ids=saved.entries.map(entry=>entry.id);await p.evaluate(()=>save());assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem(DOCUMENT_KEY)).collection.entries.map(entry=>entry.id)),ids);assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
+
+test('file content stays a file regardless of its plain labels',async()=>{
+ const p=await page();try{
+ const bytes=await png(p);
+ const result=await p.evaluate(async bytes=>{
+  const manifest={formatVersion:1,language:'en',entries:[{id:'file',tags:['question','person:name','custom'],filePath:'media/photo.png'}]};
+  const blob=new Blob([new Uint8Array(bytes)],{type:'image/png'}),source=await blobDataUrl(blob);
+  const archive=await createArchive(manifest,{'media/photo.png':source});const incoming=await readArchive(await archive.arrayBuffer());
+  return {restored:incoming.media['media/photo.png'],manifest:taggedManifest(incoming.collection),photo:incoming.collection.entries[0].type};
+ },[...bytes]);
+ assert.equal(result.photo,'photo');assert.deepEqual(Buffer.from(result.restored.split(',')[1],'base64'),bytes);assert.deepEqual(result.manifest.entries[0].tags,['question','person:name','custom']);assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });

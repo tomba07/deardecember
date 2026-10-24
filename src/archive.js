@@ -2,12 +2,17 @@ const ARCHIVE_LIMITS={compressed:25e6,expanded:30e6,manifest:2e6,image:3e6,entri
 const IMAGE_TYPES={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp'};
 function validateCollection(collection){
  if(collection?.formatVersion!==1)throw Error('Unsupported archive format. Please use a journal archive with formatVersion 1.');
- if(!validateManifest(collection)){
-  const error=validateManifest.errors[0];throw Error(`Invalid collection at ${error.instancePath||'/'}: ${error.message}.`);
+ const validate=Object.hasOwn(collection,'profile')?validateLegacyManifest:validateManifest;
+ if(!validate(collection)){
+  const error=validate.errors[0];throw Error(`Invalid collection at ${error.instancePath||'/'}: ${error.message}.`);
  }
  try{new Intl.Locale(collection.language)}catch{throw Error('The collection language tag is invalid.')}
  if(collection.entries.length>ARCHIVE_LIMITS.entries)throw Error('This archive has more than 2,000 entries.');
- for(const entry of collection.entries){let previous=Date.parse(entry.createdAt);for(const date of entry.modificationDates){if(Date.parse(date)<=previous)throw Error('Entry modification dates must be chronological and later than creation.');previous=Date.parse(date)}}
+ if(!Object.hasOwn(collection,'profile')){
+  const ids=new Set();for(const entry of collection.entries){if(ids.has(entry.id))throw Error('Duplicate record id.');ids.add(entry.id)}
+  for(const entry of collection.entries)for(const id of entry.relatedTo||[])if(!ids.has(id)||id===entry.id)throw Error('Invalid relatedTo reference.');
+ }
+ for(const entry of collection.entries){if(entry.modificationDates?.length&&!entry.createdAt)throw Error('Edit dates require createdAt.');let previous=Date.parse(entry.createdAt);for(const date of entry.modificationDates||[]){if(Date.parse(date)<=previous)throw Error('Entry modification dates must be chronological and later than creation.');previous=Date.parse(date)}}
 }
 // Inspect the raw central directory before JSZip can normalize paths or collapse duplicates.
 function inspectZip(buffer){
@@ -62,8 +67,9 @@ async function readArchive(buffer){
  const members=inspectZip(buffer);const zip=await JSZip.loadAsync(buffer);
  const draft=members.has('draft-backup.json'),manifestPath=draft?'draft-backup.json':'miniography.json';
  const manifestBytes=await readZipMember(zip,manifestPath,members.get(manifestPath));if(manifestBytes.length!==members.get(manifestPath).size)throw Error('The manifest size does not match the ZIP directory.');
- const document=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(manifestBytes)),collection=draft?document.collection:document;
- if(draft)validateDraftCollection(collection);else validateCollection(collection);
+ const document=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(manifestBytes)),manifest=draft?document.collection:document;
+ if(draft)validateDraftCollection(manifest);else validateCollection(manifest);
+ const collection=calendarCollection(manifest);
  const assets=Object.create(null);
  for(const photo of collection.entries.filter(entry=>entry.type==='photo')){
   if(Object.hasOwn(assets,photo.filePath))continue;
@@ -76,6 +82,7 @@ async function readArchive(buffer){
  return draft?{collection,media:assets,generatedDraft:readGeneratedDraft(document.generatedDraft)}:{collection,media:assets};
 }
 function validateDraftCollection(collection){
+ if(!Object.hasOwn(collection,'profile')){validateCollection(collection);return}
  const profile=collection?.profile;
  if(!profile||['name','dateOfBirth','placeOfBirth'].some(key=>typeof profile[key]!=='string'))throw Error('Invalid draft profile.');
  const candidate=structuredClone(collection);candidate.profile.name=profile.name.trim()?profile.name:'Draft';candidate.profile.dateOfBirth=profile.dateOfBirth||'1900-01-01';candidate.profile.placeOfBirth=profile.placeOfBirth.trim()?profile.placeOfBirth:'Draft';validateCollection(candidate);
@@ -84,7 +91,7 @@ async function readDraftBackup(buffer){
  if(buffer.byteLength>ARCHIVE_LIMITS.expanded)throw Error('The draft backup exceeds 30 MB.');
  const document=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(buffer));
  if(!document.collection||!document.media||typeof document.media!=='object'||Array.isArray(document.media))throw Error('Invalid draft recovery backup.');
- const collection=document.collection;validateDraftCollection(collection);
+ validateDraftCollection(document.collection);const collection=calendarCollection(document.collection);
  const assets=Object.create(null);let total=0;
  for(const photo of collection.entries.filter(entry=>entry.type==='photo')){
   if(Object.hasOwn(assets,photo.filePath))continue;
@@ -96,14 +103,15 @@ async function readDraftBackup(buffer){
 }
 async function createArchive(collection,assets,{draftDocument=null}={}){
  if(draftDocument)validateDraftCollection(collection);else validateCollection(collection);
- const json=JSON.stringify(draftDocument?{...draftDocument,collection,media:undefined}:collection,null,2);if(new TextEncoder().encode(json).length>ARCHIVE_LIMITS.manifest)throw Error('The collection manifest exceeds 2 MB.');
+ const manifest=taggedManifest(collection);validateCollection(manifest);
+ const json=JSON.stringify(draftDocument?{...draftDocument,collection:manifest,media:undefined}:manifest,null,2);if(new TextEncoder().encode(json).length>ARCHIVE_LIMITS.manifest)throw Error('The collection manifest exceeds 2 MB.');
  const zip=new JSZip();zip.file(draftDocument?'draft-backup.json':'miniography.json',json);let total=new TextEncoder().encode(json).length;
- for(const path of new Set(collection.entries.filter(entry=>entry.type==='photo').map(entry=>entry.filePath))){
+ for(const path of new Set(manifest.entries.filter(entry=>entry.filePath).map(entry=>entry.filePath))){
   const source=assets[path];if(!source)throw Error(`Missing original photo: ${path}`);
   const bytes=Uint8Array.from(atob(source.split(',')[1]||''),value=>value.charCodeAt(0));
   if(bytes.length>ARCHIVE_LIMITS.image||(total+=bytes.length)>ARCHIVE_LIMITS.expanded)throw Error('The photos exceed the archive size limit.');
   await imageIsValid(bytes,IMAGE_TYPES[path.split('.').pop()]);zip.file(path,bytes);
  }
- zip.file('README.txt',draftDocument?'Dear December draft backup\nOpen this ZIP in Dear December to restore unfinished entries, original photos and saved generated text.\ndraft-backup.json holds the journal data; media/ contains the image files.':'Personal journal archive, formatVersion 1\nminiography.json contains your profile and ordered original text/photo entries.\nPhotos in media/ follow the text they illustrate. createdAt is the date added; modificationDates records later edits.\nOpen this archive with any ZIP reader.');
+ zip.file('README.txt',draftDocument?'Dear December draft backup\nOpen this ZIP in Dear December to restore unfinished entries, original photos and saved generated text.\ndraft-backup.json holds the journal data; media/ contains the image files.':'Personal journal archive, formatVersion 1\nminiography.json contains ordered tagged text and file records, including personal facts and linked question/photo context.\nPhotos in media/ follow the text they illustrate. createdAt is the date added; modificationDates records later edits.\nOpen this archive with any ZIP reader.');
  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});if(blob.size>ARCHIVE_LIMITS.compressed)throw Error('The archive exceeds 25 MB.');return blob;
 }

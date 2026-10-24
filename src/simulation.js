@@ -42,4 +42,4 @@ function endSimulation(){
  const backup=simulationBackup;simulationBackup=null;isSimulation=false;restoreDocument(backup.document);$('preview').checked=backup.preview;lang=backup.lang;
  $('simulationNotice').hidden=true;$('printSheet')?.remove();$('revealDialog').close();editor.close();$('entryDialog').close();applyLanguage();
 }
-inferBindings();applyLanguage();initializeIntro();startCalendarClock();
+initializeSavedDocument();inferBindings();applyLanguage();initializeIntro();startCalendarClock();

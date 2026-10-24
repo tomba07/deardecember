@@ -1,55 +1,42 @@
-import { readFile } from 'node:fs/promises';
+import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
-
-const root = new URL('../', import.meta.url);
-const schema = JSON.parse(await readFile(new URL('schemas/dear-december-v1.schema.json', root), 'utf8'));
-const example = JSON.parse(await readFile(new URL('examples/format-v1/journal.json', root), 'utf8'));
-const ajv = new Ajv2020({ strict: true, allErrors: true, validateFormats: true });
-addFormats(ajv);
-assert(ajv.validateSchema(schema), JSON.stringify(ajv.errors));
-const validate = ajv.compile(schema);
-let checked = 0;
-function check(name, mutate, expected) {
-  const manifest = structuredClone(example);
-  mutate(manifest);
-  assert.equal(validate(manifest), expected, `${name}: ${JSON.stringify(validate.errors)}`);
-  checked++;
-}
-
-check('example manifest', () => {}, true);
-check('real collection without sample marker', doc => { delete doc.isSample; }, true);
-check('optional places lived', doc => { delete doc.profile.placesLived; }, true);
-check('empty places lived', doc => { doc.profile.placesLived = ''; }, true);
-check('sample collection marker', doc => { doc.isSample = true; }, true);
-check('sample marker must be boolean', doc => { doc.isSample = 'yes'; }, false);
-check('empty collection', doc => { doc.entries = []; }, true);
-check('photo with no written context or caption', doc => {
-  doc.entries[1].description = ''; delete doc.entries[1].caption;
-}, true);
-check('known capture date', doc => { doc.entries[1].takenAt = '1997-08-17'; }, true);
-check('known capture timestamp', doc => { doc.entries[1].takenAt = '1997-08-17T12:00:00Z'; }, true);
-check('fractional timestamp', doc => { doc.entries[0].createdAt = '2026-10-22T18:30:00.123Z'; }, true);
-check('unsupported version', doc => { doc.formatVersion = 2; }, false);
-check('prototype shape does not satisfy the schema', doc => {
-  delete doc.formatVersion; doc.version = 1;
-}, false);
-check('missing profile fact', doc => { delete doc.profile.dateOfBirth; }, false);
-check('impossible birthday', doc => { doc.profile.dateOfBirth = '1992-02-30'; }, false);
-check('invalid timestamp', doc => { doc.entries[0].createdAt = '2026-13-22T18:30:00Z'; }, false);
-check('UTC required', doc => { doc.entries[1].createdAt = '2026-10-22T18:35:00-07:00'; }, false);
-check('photo timestamp required', doc => { delete doc.entries[1].createdAt; }, false);
-check('duplicate edit dates', doc => {
-  doc.entries[0].modificationDates.push(doc.entries[0].modificationDates[0]);
-}, false);
-check('edit history must be an array', doc => { doc.entries[0].modificationDates = '2026-10-22T18:40:00Z'; }, false);
-check('unknown entry type', doc => { doc.entries[0].type = 'video'; }, false);
-check('misspelled field', doc => { doc.entries[1].captian = 'A caption'; }, false);
-check('mixed text/photo fields', doc => { doc.entries[0].filePath = 'media/image.jpg'; }, false);
-check('blank answer', doc => { doc.entries[0].text = ' \n\t'; }, false);
-check('no invented precision for capture dates', doc => { doc.entries[1].takenAt = 'summer 1997'; }, false);
-for (const filePath of ['../image.jpg', 'media/../image.jpg', '/media/image.jpg', 'media\\image.jpg', 'https://example.com/image.jpg', 'media/image.svg']) {
-  check(`invalid media path ${filePath}`, doc => { doc.entries[1].filePath = filePath; }, false);
-}
-console.log(`Schema and example validated; ${checked} manifest cases passed. ZIP contents and timestamp ordering require separate application checks.`);
+const root=new URL('../',import.meta.url);
+const schema=JSON.parse(await readFile(new URL('schemas/dear-december-v1.schema.json',root),'utf8'));
+const example=JSON.parse(await readFile(new URL('examples/format-v1/journal.json',root),'utf8'));
+const ajv=new Ajv2020({strict:true,allErrors:true,validateFormats:true});addFormats(ajv);
+assert(ajv.validateSchema(schema));const validate=ajv.compile(schema);let checked=0;
+function check(name,mutate,expected){const doc=structuredClone(example);mutate(doc);assert.equal(validate(doc),expected,`${name}: ${JSON.stringify(validate.errors)}`);checked++}
+const text=doc=>doc.entries.find(entry=>entry.tags.includes('reflection'));
+const photo=doc=>doc.entries.find(entry=>entry.filePath);
+check('tagged example',()=>{},true);
+check('empty journal',doc=>{doc.entries=[]},true);
+check('no required personal facts',doc=>{doc.entries=doc.entries.filter(entry=>!entry.tags.some(tag=>tag.startsWith('person:')))},true);
+check('arbitrary plain tags',doc=>{text(doc).tags=['childhood','another-app:note']},true);
+check('empty tags',doc=>{text(doc).tags=[]},true);
+check('no invented timestamps required',doc=>{delete text(doc).createdAt;delete text(doc).modificationDates},true);
+check('multiple generic links',doc=>{text(doc).relatedTo=['fact-name','fact-dateOfBirth']},true);
+check('sample marker optional',doc=>{delete doc.isSample},true);
+check('sample marker boolean',doc=>{doc.isSample='yes'},false);
+check('no fixed profile',doc=>{doc.profile={name:'Alex'}},false);
+for(const key of ['type','question','topic','description','caption'])check(`no fixed ${key}`,doc=>{text(doc)[key]='example'},false);
+check('labels are not named values',doc=>{text(doc).tags={topic:'childhood'}},false);
+check('tag values must be strings',doc=>{text(doc).tags=[{}]},false);
+check('tags cannot be blank',doc=>{text(doc).tags=[' ']},false);
+check('tags unique',doc=>{text(doc).tags=['childhood','childhood']},false);
+check('id required',doc=>{delete text(doc).id},false);
+check('id portable',doc=>{text(doc).id='../record'},false);
+check('content required',doc=>{delete text(doc).text},false);
+check('content cannot be blank',doc=>{text(doc).text=' \n'},false);
+check('exactly one content field',doc=>{text(doc).filePath='media/photo.jpg'},false);
+check('links unique',doc=>{text(doc).relatedTo=['fact-name','fact-name']},false);
+check('timestamps use UTC',doc=>{text(doc).createdAt='2026-10-22T12:00:00-07:00'},false);
+check('timestamps valid',doc=>{text(doc).createdAt='2026-13-22T12:00:00Z'},false);
+check('edit dates unique',doc=>{text(doc).modificationDates=['2026-10-22T18:40:00Z','2026-10-22T18:40:00Z']},false);
+check('unknown version',doc=>{doc.formatVersion=2},false);
+for(const path of ['../image.jpg','media/../image.jpg','/media/image.jpg','media\\image.jpg','https://example.com/image.jpg','media/image.svg'])check(`unsafe file ${path}`,doc=>{photo(doc).filePath=path},false);
+const legacySchema=JSON.parse(await readFile(new URL('schemas/legacy-journal-v1.schema.json',root),'utf8'));
+const legacyExample=JSON.parse(await readFile(new URL('examples/format-v1/legacy-journal.json',root),'utf8'));
+assert(ajv.compile(legacySchema)(legacyExample));assert.equal(validate(legacyExample),false);checked+=2;
+console.log(`Schema and example validated; ${checked} manifest cases passed. ID/reference integrity, tag conventions, ZIP media and edit chronology require application checks.`);

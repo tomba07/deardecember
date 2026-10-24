@@ -117,15 +117,12 @@ The manifest contains:
 | --- | --- |
 | `formatVersion` | `1`, the first formal version of the format. |
 | `language` | Collection language, such as `en` or `de`. |
-| `profile` | `name`, `dateOfBirth`, `placeOfBirth`, and optional free-form `placesLived`. |
-| `entries` | An ordered array of text and photo entries. Array order determines reading order and photo placement. |
+| `entries` | Ordered generic records containing `id`, plain `tags`, and either `text` or `filePath`. |
 | `isSample` | Optional marker identifying simulated/example content. |
 
-Text entries store `type: "text"`, the original `question`, and the response in `text`. A journal entry uses `question: null`. An optional `topic` preserves the named door.
+All content, including name, birthday and birthplace, is stored as tagged records. There is no fixed `profile`, `type` or `question` property. Context such as a question, topic or photo caption is another text record with a label (`question`, `topic`, `photo:caption`) and a generic `relatedTo` link. Tags are plain strings, for example `["reflection", "childhood"]`, never key/value objects. Custom labels survive import, editing and export.
 
-Photo entries store `type: "photo"`, contextual `description`, and `filePath`, such as `media/seabrook-beach.jpg`. An optional `caption` provides the printed label; descriptions are not printed automatically. Place photos immediately after the text they illustrate. Optional `takenAt` records a known capture date; approximate dates belong in the description.
-
-Both entry types have `createdAt` and a `modificationDates` array of subsequent edit timestamps. Timestamps use UTC; photo `createdAt` means when it was added to the journal, not when it was taken. Edit dates track when changes occurred, not previous versions of the content. Import and export preserve timestamps.
+`createdAt` and `modificationDates` are optional; existing known timestamps are preserved, and missing historical timestamps are not invented. The calendar still presents familiar fact, reflection and photo controls through an internal view. Newly persisted collections and exported files use the tagged schema. Legacy profile/text/photo archives and backups remain importable.
 
 JSON keeps the source material readable, JSON Schema defines its structure, and ZIP bundles the photos without embedding them into JSON. PDFs are reading copies; the archive preserves the original material for further writing and printing.
 
@@ -153,7 +150,7 @@ The tests cover real archive round trips, original photo bytes, edit timestamps,
 
 ### Saving and recovery
 
-“Download my journal” creates a `.deardecember` file using the formal `formatVersion: 1` ZIP format. Complete the basic facts in door 1 first. “Backup unfinished draft” downloads `dear-december-backup.zip`, including unfinished profile fields, all original entries, image files in `media/`, and any saved generated text. Restore it using “Open an existing journal”; older JSON backups can still be imported. The collection is stored locally in this browser; export a backup to keep it safe.
+“Download my journal” creates a `.deardecember` file using the formal `formatVersion: 1` ZIP format. Personal facts may be incomplete. “Backup unfinished draft” downloads `dear-december-backup.zip`, including unfinished profile fields, all original entries, image files in `media/`, and any saved generated text. Restore it using “Open an existing journal”; older JSON backups can still be imported. The collection is stored locally in this browser; export a backup to keep it safe.
 
 The app now uses the formal format directly. Earlier experimental archive shapes are unsupported, and earlier prototype browser storage is left untouched. Under About → Manage original entries, edit imported or other original entries and move them up/down; both the archive and local source PDF use the resulting order. The original full-text summary dialog has been removed.
 

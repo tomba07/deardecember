@@ -81,6 +81,7 @@ function inferBindings(){
  for(const entry of state.entries){
   if(entry.type!=='text')continue;
   let day=themes.indexOf(entry.topic);if(day<0)day=deThemes.indexOf(entry.topic);
+  const taggedDay=formatEntryContexts.get(entry)?.record?.tags.find(tag=>/^dear-december:door:([1-9]|1[0-9]|2[0-3])$/.test(tag));if(taggedDay)day=Number(taggedDay.split(':').at(-1))-1;
   let choice=null;
   for(const language of ['en','de']){
    for(let index=0;index<23;index++){
@@ -200,8 +201,8 @@ function applyLanguage(){
 function toggleLang(){commitEdits();lang=lang==='en'?'de':'en';state.language=lang;save();applyLanguage()}
 function downloadBlob(blob,name){const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000)}
 async function exportArchive(){
- try{commitAndSave();const collection=structuredClone(state),assets={...media};const blob=await createArchive(collection,assets);downloadBlob(blob,collection.isSample?'sample-journal.deardecember':'my-journal.deardecember');toast('Archive exported. Keep it somewhere safe.')}
- catch(error){if(!factsComplete()){toast(lang==='de'?'Ergänze zuerst die Fakten in Türchen 1 oder sichere deinen unfertigen Entwurf.':'Add the basic facts in door 1 first, or download an unfinished-draft backup.');if(unlocked(0))openDoor(0)}else toast(error.message)}
+ try{commitAndSave();const collection=taggedManifest(state),assets={...media};const blob=await createArchive(collection,assets);downloadBlob(blob,collection.isSample?'sample-journal.deardecember':'my-journal.deardecember');toast('Archive exported. Keep it somewhere safe.')}
+ catch(error){toast(error.message)}
 }
 async function exportDraftBackup(){
  try{commitAndSave();const document=structuredClone(storedDocument());const blob=await createArchive(document.collection,document.media,{draftDocument:document});downloadBlob(blob,'dear-december-backup.zip');toast('Backup exported, including your entries, photos and saved generated text.')}catch(error){toast(`Backup failed: ${error.message}`)}

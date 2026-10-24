@@ -72,3 +72,5 @@ Publishing a schema does not, by itself, establish an open-source licence. The f
 - [Mini biography generation](generation.md): the editorial structure and rules for future generated drafts.
 - [Archive format](archive-format.md): the portable format and its implementation rules.
 - [JSON Schema](../schemas/dear-december-v1.schema.json): the machine-readable structure.
+
+The portable format now treats all content as generic tagged records, including basic personal facts. Tags are plain string labels; generic links connect questions and photo context to the records they describe. No calendar-specific profile or entry type is required by the schema. The familiar fact/reflection controls remain an application view of these records. See [the format specification](archive-format.md).

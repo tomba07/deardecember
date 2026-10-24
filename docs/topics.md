@@ -10,10 +10,10 @@ Implementation status: the app currently uses an earlier set of 23 memory topics
 
 The first door, “Your beginnings”, includes the basic facts as part of the calendar experience. There is no separate profile page or popup:
 
-- Name, full birthday and birthplace are required for a complete portable archive. Other doors can be answered before these facts are complete.
+- Door 1 offers name, full birthday and birthplace. The generic archive schema does not require personal facts. Other doors can be answered before these facts are complete.
 - Places lived is an optional free-form text field. A hint suggests places and approximate years.
 
-The facts record where and when; the questions invite memories about what those places and experiences felt like. People do not need to repeat facts in a written answer. For structured reuse, the archive still stores them in its `profile` object.
+The facts record where and when; the questions invite memories about what those places and experiences felt like. People do not need to repeat facts in a written answer. For reuse, these facts are ordinary tagged text records (`person:name`, `person:date-of-birth`, `person:place-of-birth`, `person:places-lived`), with no separate profile object.
 
 ## Topics
 

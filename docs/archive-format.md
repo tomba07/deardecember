@@ -1,124 +1,98 @@
-# Personal journal archive format v1
+# Tagged personal records — archive format, version 1
 
-The format serves the [project purpose and privacy/ownership principles](project-principles.md). It is a generic personal-information format; the advent calendar is one application of it. An open format makes data portable, not public.
+The format is a generic collection of text and file records. Dear December is one application of it. The schema has no `profile`, entry `type`, `question`, `topic`, `caption` or `description` properties. Meaning is expressed with plain string labels in `tags`; generic `relatedTo` links associate records.
 
-Status: implemented. The app stores ordered entries in this structure and imports/exports ZIP-based archives using this schema. There are no external users yet, so compatibility with prototype archives is not required.
-
-## Container
-
-A `.miniography` file is an ordinary ZIP archive. Dear December, the advent-calendar application, uses `.deardecember` as its download extension for the same format; it also accepts earlier `.adventofyou` files, `.miniography` and `.zip`. The manifest, schema and version are identical. Changing its extension to `.zip` makes its contents accessible with common archive tools. It contains:
+## ZIP layout
 
 ```text
-my-story.miniography
+my-journal.deardecember
 ├── miniography.json
+├── README.txt              optional
 └── media/
-    └── seabrook-beach.jpg
+    └── photograph.jpg
 ```
 
-`miniography.json` is UTF-8 JSON, preferably indented with two spaces. Original image bytes live in `media/`, not embedded as base64 in JSON. The media directory may be absent when there are no photos. An optional `README.txt` or bundled `schema.json` may help future readers; neither changes the manifest's meaning. Exporters should use standard ZIP storage or Deflate compression and avoid proprietary extensions.
+The download is an ordinary ZIP. `.zip` is accepted on import, along with the historical extensions. `miniography.json` remains the manifest filename for compatibility. Text is UTF-8. Original image bytes are separate files, never base64 inside this manifest. The current app supports JPG, PNG and WebP; safe portable filenames match the schema. No URLs, absolute paths or traversal are allowed.
 
-The schema is `schemas/dear-december-v1.schema.json`. The example in `examples/format-v1/journal.json` illustrates the manifest; the referenced childhood image is intentionally not supplied. It is a schema-valid manifest example, not a complete importable archive. Its timestamps and the journal/photo descriptions are illustrative.
+## Collection
 
-This design starts at `formatVersion: 1`. The earlier prototype used `{format: "miniography", version: 1, answers: ...}`, but that experimental structure is not the formal v1 format. The file extension stays the same; importers identify the formal format using `formatVersion`. No compatibility or migration layer for prototype archives is required.
+Required fields are `formatVersion: 1`, `language` (a BCP 47 language tag), and `entries` (an ordered array). `isSample: true` identifies simulated material. Empty collections and collections without personal facts are valid. Unknown structural properties are rejected; labels are extensible.
 
-## Manifest
+## Record
 
-- `formatVersion`: exactly `1`.
-- `language`: the collection's language tag, such as `en`, `de` or `en-GB`.
-- `profile`: name, full birthday (`dateOfBirth`), birthplace (`placeOfBirth`) and optional free-form `placesLived` text.
-- `entries`: one ordered array containing text and photo entries.
-- `isSample`: optional boolean identifying simulated/example content. The simulation sets it to `true`; import/export preserves it and PDF output labels sample content.
+| Field | Contract |
+| --- | --- |
+| `id` | Required unique, portable identifier. Remains stable while editing. |
+| `tags` | Required array of distinct, nonblank strings. May be empty. Labels are case-sensitive; unknown labels must be preserved. |
+| `text` | Plain text, preserving line breaks. Exactly one of `text` or `filePath` is required. Nonblank. |
+| `filePath` | Relative path to an original file in `media/`. Exactly one of `text` or `filePath` is required. |
+| `relatedTo` | Optional array of distinct record IDs in this collection. No missing targets or self-links. This links context to content without a question-specific field. |
+| `createdAt` | Optional UTC RFC 3339 timestamp for creation/addition to the collection. Do not invent it for imported facts whose recording time is unknown. |
+| `modificationDates` | Optional chronological array of later UTC content-edit timestamps. Requires `createdAt` when nonempty. No duplicates. These are edit dates, not past content versions. |
 
-The structured `profile` belongs to the person. In the app, its fields are filled in as part of the first calendar door, rather than through a separate profile interface. Other doors do not require those fields to be completed first. Places lived are optional and never require structured city, country or date fields. Incomplete browser drafts can exist before a schema-valid archive is ready. The app offers “Backup unfinished draft” for incomplete profiles. This creates `dear-december-backup.zip`, containing a root `draft-backup.json` with the collection, editing metadata and saved generated text, plus original image files in `media/`. Unlike the complete journal archive, its profile facts may be empty. Exactly one root journal or draft manifest is allowed. “Open an existing journal” restores either ZIP format and continues to accept older JSON recovery backups with embedded media. Missing profile facts remain empty; image bytes, descriptions and captions are preserved.
+Array order is reading order for content records. Apps may place linked contextual records beside their content when serializing. Links and IDs, rather than adjacency alone, preserve their association. New records use random UUIDs in this app. Reordering and export do not change content timestamps.
 
-Question catalogs and application UI state do not need to be copied into the archive. Each text entry contains the actual question wording, so it can be read without the app or catalog. Topic names are optional snapshots, not database references.
+## Example
 
-## Text entries
-
-`type: "text"` requires `question`, `text`, `createdAt` and `modificationDates`.
-
-`question` contains the original prompt. Use `null` for a free-form journal entry. `text` contains the original answer or journal text, as plain text with line breaks; consumers must not interpret it as HTML. Unanswered catalog questions are omitted. An optional `topic` keeps the named door or a journal topic.
-
-Editing an existing answer changes that entry. Answering the same question again as a new journal reflection adds another entry with its own creation timestamp. The source entries remain independent of any generated PDF or rewritten biography. Generated biographies and saved editions are outside this minimal v1 format. The current story preview is derived from the original entries; edit those entries individually through “Edit entries and arrange your story”. A closing message can be stored as a text entry; generated output must not overwrite source entries.
-
-## Photo entries
-
-`type: "photo"` requires `description`, `filePath`, `createdAt` and `modificationDates`.
-
-- `description` provides context for understanding and positioning the image. It can be empty.
-- `caption` is an optional literal label for PDF output. No caption is printed when it is missing or empty. Descriptions are not printed automatically.
-- `filePath` points to an image inside `media/`, relative to the ZIP root. It uses a portable ASCII basename and a lowercase `jpg`, `jpeg`, `png` or `webp` extension. The path is case-sensitive.
-- `createdAt` means when the photo was added to the journal, not its capture date or the filesystem timestamp.
-- `takenAt` is optional: either a known `YYYY-MM-DD` date or an exact UTC timestamp. Put uncertain dates such as “summer 1997” in `description`, rather than inventing precision.
-
-## Reading order and placement
-
-Array order is the intended reading order, not necessarily timestamp order. A photo follows the text entry it illustrates. Multiple consecutive photos form a group for the nearest preceding text entry; leading photos are standalone opening images. A later text entry starts the next group. Moving a photo in the array deliberately changes its context.
-
-The app can use descriptions to suggest placement, but should persist the chosen placement in array order. PDF generation follows that order, scaling photos and flowing text without forced page breaks per entry. No IDs or relationship tables are required for this version. Cross-references to multiple memories are outside its scope.
-
-## Dates and edits
-
-`createdAt` is immutable. `modificationDates` starts as `[]`, contains distinct subsequent edit timestamps in chronological order, and excludes `createdAt`. Dates use UTC RFC 3339 timestamps with uppercase `T` and `Z`; fractional seconds are allowed.
-
-Append one timestamp for each committed content change, not every keystroke, export or import. The app commits edits on leaving a text/photo field, switching questions, closing the editor, exporting, or leaving the page. Creating a new entry starts with an empty edit history. Changing a value and reverting it before committing adds no edit date. Changing an answer, description, caption, question or known capture date is a content change. Reordering entries or renaming a media file for packaging is not. Import/export preserves existing timestamps; importing a file is not a new creation event. These are edit dates, not content revisions: past wording cannot be recovered from them.
-
-The app records entry timestamps directly in the collection. Existing prototype data has no reliable entry timestamps; preserving or migrating it is not a requirement for this format. Any optional conversion must not claim to recover historical timestamps that were never recorded.
-
-`dateOfBirth` is a calendar date without a timezone. The schema checks that it is a real date. The app also rejects future birthdays; there is no minimum age restriction.
-
-## Validation
-
-JSON Schema Draft 2020-12 describes fields, entry variants, required values, unknown-property rejection, media-path syntax, date syntax and date validity. Consumers must enable date/date-time format assertions: Draft 2020-12 permits validators to treat `format` as annotation unless explicitly configured.
-
-Run:
-
-```sh
-npm run validate:format
+```json
+{
+  "formatVersion": 1,
+  "language": "en",
+  "entries": [
+    {"id": "name", "tags": ["person:name"], "text": "Alex"},
+    {
+      "id": "memory",
+      "tags": ["reflection", "childhood", "dear-december:door:3"],
+      "text": "We rode our bikes until it got dark.",
+      "createdAt": "2026-10-23T12:00:00Z",
+      "modificationDates": []
+    },
+    {
+      "id": "prompt",
+      "tags": ["question"],
+      "text": "What did you enjoy after school?",
+      "relatedTo": ["memory"]
+    },
+    {"id": "photo", "tags": ["photo"], "filePath": "media/bicycle.jpg", "relatedTo": ["memory"]},
+    {"id": "context", "tags": ["photo:context"], "text": "My bicycle beside the garden gate.", "relatedTo": ["photo"]},
+    {"id": "label", "tags": ["photo:caption"], "text": "The bicycle", "relatedTo": ["photo"]}
+  ]
+}
 ```
 
-This validates the schema and example and exercises valid and invalid manifest cases. The same schema is compiled into the offline browser validator in `src/manifest-validator.js`; regenerate it with `npm run generate:validator` after schema changes. `npm run build` also regenerates it.
+These are plain labels, not tag objects or key/value maps. A question is an ordinary text record bearing the `question` label; it is not a required question field on every reflection. Free writing needs no question record.
 
-Browser integration tests inspect actual ZIP files and image bytes:
+## Dear December label conventions
 
-```sh
-npm exec playwright install chromium
-npm test
-```
+These labels are application conventions, not required schema fields. Other apps may add their own labels without changing the schema.
 
-They cover creation and edit timestamps, prompt snapshots, profile and media round trips, reading/PDF order, journal entries, malformed archives, ZIP integrity/path checks, missing or invalid images, unsupported versions, failed imports, storage failures, simulation isolation and unfinished-draft recovery.
+| Label | Calendar interpretation |
+| --- | --- |
+| `person:name` | Name text. |
+| `person:date-of-birth` | Birthday text in `YYYY-MM-DD` form. |
+| `person:place-of-birth` | Birthplace text. |
+| `person:places-lived` | Optional free-form places lived. |
+| `reflection` | A reflection or journal entry; other ordinary text records are also retained and editable. |
+| `question` | Original prompt wording, linked to a reflection. |
+| `topic` | Topic/door title wording, linked to a reflection. |
+| `photo` | A photograph; `filePath` determines the actual file content. |
+| `photo:context` | Photo context text, linked to a file record. Never automatically printed or rewritten as autobiography. |
+| `photo:caption` | Literal printed label, linked to a file record. |
+| `photo:taken-at` | Known capture date/timestamp as text, linked to a file record. Approximate dates belong in context. |
+| `dear-december:door:1` … `dear-december:door:23` | Stable calendar association for a reflection, independent of prompt wording or language. |
 
-The archive importer additionally checks:
+When multiple facts share a recognized label, the calendar displays the first and preserves the remaining records. Unknown labels on displayed records survive edits. Context records the calendar does not interpret are retained. The UI uses a calendar-specific view internally; the persisted collection and new exported manifests use the generic tagged structure.
 
-1. Exactly one root manifest; no duplicate ZIP member names, absolute paths, traversal paths or symlinks. A media reference must resolve to a normal file inside the archive.
-2. Every referenced image exists and can be decoded as the declared supported image type. Different entries may deliberately reference the same file. Exporters should omit unreferenced media.
-3. Modification timestamps are strictly ascending and later than the entry's creation timestamp. These comparisons are performed by the archive validator rather than JSON Schema.
-4. Language-tag validity using `Intl.Locale`, plus resource limits: 25 MB compressed, 30 MB expanded, a 2 MB manifest, 2,000 entries, 2,100 ZIP members, and 3 MB / 40 megapixels per image. These are application limits, reported as errors rather than truncating data. Single-part ZIP archives using Store or Deflate are supported; ZIP64 and encrypted archives are rejected.
-5. The format version is supported before replacing any existing local collection. Only after every validation step succeeds does the app ask whether to replace the current collection. The incoming document is written to browser storage before it becomes active; validation errors, cancellation or storage failures leave the current collection intact.
+## Validation and migration
 
-Decompression is bounded by each central-directory member size, and file CRC32 integrity is checked before using its contents. Only referenced originals are retained on import and exported. Original files and sample markers remain unchanged through an archive round trip.
+[The JSON Schema](../schemas/dear-december-v1.schema.json) defines structure, label arrays, dates and path syntax. `npm run validate:format` checks the schema and example. The application separately validates unique IDs, reference integrity, timestamp ordering, language tags, ZIP integrity and image bytes. Limits remain 25 MB compressed, 30 MB expanded, 2 MB manifest, 3 MB per image, 40 megapixels per image and 2,000 records. Questions and other contextual records count toward the record limit.
 
-All entries and profile fields reject unknown properties in this format, so accidental misspellings do not silently disappear. Future structural changes require a new format version and explicit migration. Importers must not silently downgrade or strip fields from unsupported versions.
+The early v1 format used `profile` and text/photo variants. As a pre-release format change, the tagged design remains version 1. Existing journals are recognized by their legacy `profile` root and checked with the isolated [legacy schema](../schemas/legacy-journal-v1.schema.json). Old browser documents and ZIP/JSON backups are converted to tagged records on the next successful save/export. Facts with no known recording timestamp stay undated. Existing original text/photo timestamps and wording are preserved. Future structural changes require an explicit version/migration decision.
 
-## Why JSON inside ZIP?
+## Backup and local storage
 
-JSON keeps the original words and metadata easy to inspect with ordinary tools. JSON Schema gives the format an independently checkable contract. ZIP keeps image files beside the manifest and compresses the text. This is the proposed interchange/archive format; the application's internal storage can change independently.
+`dear-december-backup.zip` contains `draft-backup.json` and original files in `media/`. Its `collection` uses this same tagged schema. The envelope additionally carries generated Markdown and local editing/calendar metadata. It is separate from the minimal portable manifest. Older JSON backups with embedded media remain importable. Imported data replaces the current journal only after validation, confirmation and a successful storage write.
 
-Alternatives have different strengths:
+Local storage under `miniography-document-v1` contains the tagged collection, photo data URLs, generated text and editing metadata. Data URLs are a browser-storage detail, not the archive format. ZIP export, Markdown and PDF are unencrypted; keep personal copies somewhere you trust. Generated Markdown never overwrites the source records.
 
-| Format | Useful property | Tradeoff for this archive |
-| --- | --- | --- |
-| YAML | Readable multiline text and comments | More syntax and parsing rules; little benefit for an app-written archive. |
-| Markdown plus metadata | Pleasant for a human-readable journal export | Does not by itself define typed mixed entries, photo metadata or edit dates. Useful as an additional export. |
-| CBOR | Compact binary representation | Needs a decoder to inspect; compactness is not the priority for the source manifest. |
-| SQLite | Queries, transactions and incremental updates | A reasonable future working database, but requires database tooling to inspect the archive. |
-
-Recommendation: keep JSON + JSON Schema + ZIP for portability and preservation. Add Markdown/PDF as reading formats, not as the only source of truth.
-
-References: [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12), [validation and format behavior](https://json-schema.org/draft/2020-12/json-schema-validation), [YAML specification](https://yaml.org/spec/1.2.2/), [CBOR RFC 8949](https://www.rfc-editor.org/rfc/rfc8949.html), [SQLite as an application file format](https://www.sqlite.org/aff_short.html).
-
-## Local browser storage
-
-The app stores `{collection, media, bindings, pending}` under the `miniography-document-v1` localStorage key. `collection` is the manifest; `media` holds data URLs locally, and `bindings` links original entries to the UI's doors and prompt choices. Pending edit baselines allow an interrupted edit to be committed once after reload. These local details are omitted from portable archives. On import, the UI reconstructs prompt bindings from stored question/topic text; unknown and repeated answers remain available in the ordered entry list.
-
-Browser storage capacity varies and can be smaller than the archive import limits. A storage failure is reported and never causes an import to replace the active collection. During editing, unsaved changes remain in memory so they can still be exported. Export backups regularly. Earlier prototype storage is not read or deleted; there is no automatic migration or invented historical timestamp.
+Sync/login remains a proposal in [encrypted-sync.md](encrypted-sync.md); none of these format changes uploads data.

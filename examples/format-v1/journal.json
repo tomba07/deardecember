@@ -1,33 +1,101 @@
 {
   "formatVersion": 1,
-  "isSample": true,
   "language": "en",
-  "profile": {
-    "name": "Alex Morgan",
-    "dateOfBirth": "1988-04-12",
-    "placeOfBirth": "Brookfield, Germany",
-    "placesLived": "Seabrook, 1991–1994. Then Oakridge."
-  },
+  "isSample": true,
   "entries": [
     {
-      "type": "text",
-      "topic": "Childhood treasures",
-      "question": "What small childhood memory still makes you smile?",
-      "text": "The beaches in Seabrook and sledding on the hill in Oakridge.",
-      "createdAt": "2026-10-22T18:30:00Z",
-      "modificationDates": ["2026-10-22T18:40:00Z"]
+      "id": "fact-name",
+      "tags": [
+        "person:name"
+      ],
+      "text": "Alex Morgan"
     },
     {
-      "type": "photo",
-      "description": "Example only: a childhood photograph on a beach in Seabrook, around 1993.",
-      "caption": "Seabrook, around 1993",
+      "id": "fact-dateOfBirth",
+      "tags": [
+        "person:date-of-birth"
+      ],
+      "text": "1988-04-12"
+    },
+    {
+      "id": "fact-placeOfBirth",
+      "tags": [
+        "person:place-of-birth"
+      ],
+      "text": "Brookfield, Germany"
+    },
+    {
+      "id": "fact-placesLived",
+      "tags": [
+        "person:places-lived"
+      ],
+      "text": "Seabrook, 1991\u20131998. Then Oakridge."
+    },
+    {
+      "id": "memory-1",
+      "tags": [
+        "reflection"
+      ],
+      "text": "The beaches in Seabrook and sledding on the hill in Oakridge.",
+      "createdAt": "2026-10-22T18:30:00Z",
+      "modificationDates": [
+        "2026-10-22T18:40:00Z"
+      ]
+    },
+    {
+      "id": "memory-1-question",
+      "tags": [
+        "question"
+      ],
+      "text": "What small childhood memory still makes you smile?",
+      "relatedTo": [
+        "memory-1"
+      ]
+    },
+    {
+      "id": "memory-1-topic",
+      "tags": [
+        "topic"
+      ],
+      "text": "Childhood treasures",
+      "relatedTo": [
+        "memory-1"
+      ]
+    },
+    {
+      "id": "memory-2",
+      "tags": [
+        "photo"
+      ],
       "filePath": "media/seabrook-beach.jpg",
       "createdAt": "2026-10-22T18:35:00Z",
       "modificationDates": []
     },
     {
-      "type": "text",
-      "question": null,
+      "id": "memory-2-description",
+      "tags": [
+        "photo:context"
+      ],
+      "text": "Example only: a childhood photograph on a beach in Seabrook, around 1993.",
+      "relatedTo": [
+        "memory-2"
+      ]
+    },
+    {
+      "id": "memory-2-caption",
+      "tags": [
+        "photo:caption"
+      ],
+      "text": "Seabrook, around 1993",
+      "relatedTo": [
+        "memory-2"
+      ]
+    },
+    {
+      "id": "memory-3",
+      "tags": [
+        "reflection"
+      ],
       "text": "Example journal entry: today I wanted to write down a few small memories before I forget them.",
       "createdAt": "2026-10-22T19:00:00Z",
       "modificationDates": []
