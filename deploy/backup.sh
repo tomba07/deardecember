@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd /opt/apps/dear-december/deploy
+if [[ "${DEPLOY_LOCK_HELD:-0}" != 1 ]]; then
+ exec 8>/opt/apps/dear-december/deploy.lock
+ flock -n 8 || exit 0
+fi
 exec 9>/opt/apps/dear-december/backup.lock
 flock -n 9 || exit 0
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"

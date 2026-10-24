@@ -1,0 +1,3 @@
+# Dear December: consistent private backups and independent <=30-day retention.
+30 2 * * * root /bin/bash /opt/apps/dear-december/deploy/backup.sh 2>&1 | /usr/bin/logger -t dear-december-backup
+0 * * * * root /usr/bin/find /opt/apps/dear-december/backups -name '*.tar.gz' -mmin +43140 -delete
