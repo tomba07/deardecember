@@ -1,0 +1,4 @@
+- pdf formatting
+ - for first PDF, not just plain text, but nicely formatted and larger text (like a childrens book)
+- explanation (short version, expand long version)
+- connect social media
