@@ -58,8 +58,8 @@ function doorStatus(index){
 }
 function render(){
  refreshPrimaryAction();
- const count=themes.slice(0,23).filter((_,day)=>doorComplete(day)).length;
- $('count').textContent=lang==='de'?`${count} von 23 Erinnerungen gesammelt`:`${count} of 23 memories collected`;$('bar').style.width=count/23*100+'%';$('grid').replaceChildren();
+ const count=themes.filter((_,day)=>doorComplete(day)).length;
+ $('count').textContent=lang==='de'?`${count} von 24 Erinnerungen gesammelt`:`${count} of 24 memories collected`;$('bar').style.width=count/24*100+'%';$('grid').replaceChildren();
  themes.forEach((_,index)=>{
   const button=document.createElement('button'),status=doorStatus(index),opened=openedDoors.includes(index)||dayEntries(index).some(entry=>entry.text.trim())||(index===23&&keepsakeRevealed);
   const title=(lang==='de'?deThemes:themes)[index];

@@ -537,3 +537,18 @@ test('timeline catalog offers all doors in both languages and sample answers use
   assert.deepEqual(sample,{count:23,complete:true,matches:true});assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
+
+
+test('progress includes door 24 only after the Christmas reveal is opened',async()=>{
+ const p=await page();try{
+  await p.evaluate(()=>{keepsakeRevealed=false;startSimulation()});
+  assert.equal(await p.locator('#count').textContent(),'23 of 24 memories collected');
+  assert((await p.locator('#bar').evaluate(el=>parseFloat(el.style.width)))<100);
+  await p.evaluate(()=>openDoor(23));
+  assert.equal(await p.locator('#count').textContent(),'24 of 24 memories collected');
+  assert.equal(await p.locator('#bar').evaluate(el=>el.style.width),'100%');
+  await p.evaluate(()=>{closeDoorReveal();toggleLang()});
+  assert.equal(await p.locator('#count').textContent(),'24 von 24 Erinnerungen gesammelt');
+  assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
