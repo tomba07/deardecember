@@ -106,6 +106,8 @@ test('sample journal includes an editable draft and downloads its PDF without an
  const p=await page();try{
   let generationRequests=0;p.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/generate'))generationRequests++});
   await p.evaluate(()=>startSimulation());
+  assert.equal(await p.evaluate(()=>state.profile.name),'Alex Morgan');
+  assert.equal(await p.evaluate(()=>state.profile.dateOfBirth),'1988-04-12');
   assert.equal(await p.evaluate(()=>generatedDraft.model),'Simulated sample draft');
   await p.evaluate(()=>openDoor(23));await p.locator('#revealGenerate').click();
   assert.equal(await p.locator('#miniographyDialog').isVisible(),true);

@@ -14,7 +14,7 @@ Output: `output/pdf/dear-december-a5-sample.pdf` (ignored by Git).
 - Short memories stay short. No invented lessons or filler to reach a page count.
 - A full-width photograph with a plain caption; no crop across the binding.
 
-Pages 2–5 use the childhood facts supplied by the user. Page 6 is explicitly fictional and demonstrates a fuller text page. The stock photograph demonstrates placement and is explicitly labelled as illustrative, not a family photograph.
+All names, dates, places and memories are fictional. A neutral placeholder demonstrates photo placement without using a personal or stock photograph. Page 6 demonstrates a fuller text page.
 
 This is a design specimen, not the final automatic pagination system. A full journal should combine related short entries and let longer passages flow, rather than assigning every answer a page. Paper tint is for the preview; a print mode should allow unprinted white paper.
 
@@ -28,15 +28,9 @@ python3 examples/book-layout/generate.py
 
 Optional output: `--output /absolute/path/sample.pdf`.
 
-## Photograph
+## Image placeholder
 
-“Seabrook Beach”, Mike Coates, released as CC0 by the photographer on PublicDomainPictures.net:
-https://www.publicdomainpictures.net/en/view-image.php?image=8313&picture=seabrook-beach
-
-Downloaded original sample asset:
-https://www.publicdomainpictures.net/pictures/10000/velka/seabrook-beach-29941281355211SG6E.jpg
-
-The source lists Trevaunance, Saint Agnes, Seabrook. This is not evidence of the user's particular childhood beach. No attribution is required under CC0; the sample includes a credit and source link for clarity.
+The sample uses a neutral rectangle labelled “Your photograph”. The application sample builds it from a small SVG locally. No real personal photographs or biographical information are included.
 
 ## Actual application export
 

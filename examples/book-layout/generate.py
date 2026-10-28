@@ -24,7 +24,7 @@ args.output.parent.mkdir(parents=True, exist_ok=True)
 c = canvas.Canvas(str(args.output), pagesize=(W, H), pageCompression=1)
 c.setTitle('Alex Morgan - A5 book design sample')
 c.setAuthor('Dear December')
-c.setSubject('Design proof using supplied childhood details and a labelled illustrative photograph')
+c.setSubject('Design proof using entirely fictional details and a neutral image placeholder')
 
 
 def margins(page):
@@ -82,9 +82,9 @@ c.showPage()
 start(2)
 y = para('A place to begin', H-31*mm, 2, size=30, leading=35)
 y = para('My name is Alex Morgan.<br/>I was born on 12 April 1988 in Brookfield, Germany.', y-13*mm, 2)
-y = para('I lived in Seabrook from 1991 to 1994. Then we moved to Oakridge.', y-7*mm, 2)
+y = para('I grew up in Oakridge. Later, I moved to Riverside.', y-7*mm, 2)
 y -= 15*mm
-for year, place in [('1988', 'Brookfield'), ('1991–1994', 'Seabrook'), ('From 1994', 'Oakridge')]:
+for year, place in [('1988', 'Brookfield'), ('Childhood', 'Oakridge'), ('Adulthood', 'Riverside')]:
     y = para(year, y, 2, size=10, leading=14, color=MUTED)
     y = para(place, y-2*mm, 2, size=17, leading=23)-7*mm
 c.showPage()
@@ -93,44 +93,41 @@ c.showPage()
 start(3)
 left, _ = margins(3)
 c.setFillColor(MUTED);c.setFont('Book',10);c.drawString(left,H-29*mm,'01')
-y = para('The beaches<br/>of Seabrook', H-40*mm, 3, size=31, leading=35)
-y = para('I have fond memories of the beaches in Seabrook.', y-15*mm, 3, size=19, leading=28)
-y = para('We lived there from 1991 to 1994, before moving to Oakridge.', y-9*mm, 3)
-para('Seabrook was part of my early childhood. The beaches are what I remember especially fondly from those years.', y-7*mm, 3)
+y = para('Walks beside<br/>the river', H-40*mm, 3, size=31, leading=35)
+y = para('The canal in Riverside became a favourite place for a walk.', y-15*mm, 3, size=19, leading=28)
+y = para('My first flat in Riverside was near the water.', y-9*mm, 3)
+para('When I wanted to get outside for a while, I could follow the towpath and watch the boats go by.', y-7*mm, 3)
 c.showPage()
 
-# 4. Photograph kept separate from invented family history.
+# 4. Neutral placeholder for photo placement.
 start(4)
-photo = Path(__file__).parent / 'assets/seabrook-beach.jpg'
-image = ImageReader(str(photo)); iw, ih = image.getSize()
 left, right = margins(4)
-width = W-left-right
-height = width * ih/iw
+width, height = W-left-right, 75*mm
 image_top = H-35*mm
-c.drawImage(image, left, image_top-height, width=width, height=height, mask='auto')
+c.setFillColor(HexColor('#eeede8'));c.rect(left,image_top-height,width,height,stroke=0,fill=1)
+c.setFillColor(MUTED);c.setFont('BookItalic',14)
+c.drawCentredString(left+width/2,image_top-height/2,'Your photograph')
 y = image_top-height-7*mm
-y = para('Seabrook', y, 4, size=20, leading=25)
-para('Illustrative photograph, not a family photo.', y-3*mm, 4, size=10, leading=15, italic=True, color=MUTED)
-para('Trevaunance Cove, St Agnes<br/>Photograph: Mike Coates · CC0<br/>PublicDomainPictures.net, image 8313', 52*mm, 4, size=8.5, leading=13, color=MUTED)
-c.linkURL('https://www.publicdomainpictures.net/en/view-image.php?image=8313&picture=seabrook-beach',(left,31*mm,W-right,52*mm),relative=0)
+y = para('A place to remember', y, 4, size=20, leading=25)
+para('A neutral placeholder to demonstrate photo placement.', y-3*mm, 4, size=10, leading=15, italic=True, color=MUTED)
 c.showPage()
 
 # 5. Short memories do not need filler or invented lessons.
-chapter(5, '02', 'The hill<br/>in Oakridge', [
-    'In 1994 we moved to Oakridge.',
-    'One of my fond memories from there is sledding on the hill.',
-    'The Seabrook beaches and that hill in Oakridge are two places I remember from growing up.'
+chapter(5, '02', 'Growing up<br/>in Oakridge', [
+    'I spent most of my childhood in Oakridge.',
+    'I often visited the library after school or rode my bike around the park.',
+    'On rainy afternoons, I drew pictures at the kitchen table.'
 ])
 c.showPage()
 
-# 6. A clearly marked fiction specimen shows a denser page without claiming more personal facts.
+# 6. A denser fictional text page.
 start(6)
 left, _ = margins(6)
 c.setFillColor(MUTED);c.setFont('Book',9);c.drawString(left,H-22*mm,'FICTIONAL TEXT FOR LAYOUT ONLY')
 y = para('An ordinary<br/>Saturday', H-34*mm, 6, size=30, leading=34)
 y = para('On Saturdays I like a slow breakfast. There is usually coffee, bread and something to read. If the weather is good, I go out for a walk before deciding what to do next.', y-11*mm, 6)
 y = para('An afternoon might be spent cooking, fixing something at home or meeting a friend. Sometimes there is a film in the evening. Often, the best part is having a day without much of a plan.', y-6*mm, 6)
-para('This page is invented to demonstrate a fuller text layout. Pages 2–5 use the childhood details supplied for this sample. The photograph demonstrates placement only.', 43*mm, 6, size=8.5, leading=12, color=MUTED)
+para('All names, dates, places and memories in this sample are fictional. The image placeholder demonstrates placement only.', 43*mm, 6, size=8.5, leading=12, color=MUTED)
 c.showPage()
 c.save()
 print(args.output)

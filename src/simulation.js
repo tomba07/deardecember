@@ -1,35 +1,35 @@
-// Only the supplied birth details, moves, beaches and sledding memories are factual.
+// All people, dates, places and memories in this sample are fictional.
 const simulationMemories=[
- "I was born in Brookfield in 1988. From 1991 to 1994 I lived in Seabrook, and then we moved to Oakridge. I remember the beaches in Seabrook and sledding on the hill in Oakridge.",
- "In this sample, I picture a home with a small garden and a bedroom looking out onto a quiet street. The Seabrook coast and the hills around Oakridge are the real places behind these memories.",
- "I liked building sandcastles and making routes for a sled. For this example, I also imagine a box of toy cars and a collection of interesting stones.",
- "The memory that stands out is sledding on the hill in Oakridge: carrying the sled up, rushing down and climbing back again. On warmer days, I imagine spending afternoons outdoors on a bike.",
- "For this example, I imagine being nervous about dark staircases as a child. A bedside lamp and a familiar book made evenings feel more comfortable.",
- "A plausible favourite would be pasta with tomato sauce. I imagine weekend breakfasts with bread rolls and plenty of time to sit at the table.",
- "In this sample, birthdays meant cake in the afternoon and choosing what to eat for dinner. December meant candles and opening a calendar door each morning.",
- "I imagine a school day beginning with a short walk, followed by lessons and a noisy break outside. Building or drawing something would have been a favourite part.",
- "For this sample, I picture meeting friends after school and riding bikes around the neighbourhood. We usually decided what to do once we were outside.",
- "I imagine teenage weekends with friends, music and computer games. Clothes were practical, and a favourite album might stay on repeat for weeks.",
- "A plausible first job was helping with small computer tasks. I imagine saving some of the money and spending the rest on a game or something for a hobby.",
- "For this example, I imagine planning a first independent train trip: working out connections, finding the right platform and arriving somewhere unfamiliar with a backpack.",
- "I lived in Brookfield, then Seabrook from 1991 to 1994, then Oakridge. I remember Seabrook through its beaches and Oakridge through the hill where I went sledding.",
- "In this sample, I imagine meeting a friend through a shared technical project. We still meet for coffee, walks and conversations about things we are making.",
- "I enjoy the idea of making small, useful tools. For this example, an evening might involve trying a design, changing a few details and testing whether it works.",
- "For this sample, I imagine returning to an adventure film, a well-read novel and music that works in the background while cooking. Pasta would remain on the weekly menu.",
- "A plausible weekday starts with coffee, then work at a computer. There is a walk or an errand at lunchtime and cooking or a personal project in the evening.",
- "An ideal sample Saturday would have a slow breakfast, time outdoors and a few hours for a project. Meeting friends for dinner would round it off.",
- "At the moment, this sample version of me is interested in small web projects and ways of keeping family memories. I like seeing a rough idea become something usable.",
- "In this example, I take coffee without sugar, carry a phone and keys, and tend to check a small detail one more time before calling something finished.",
- "A snowy afternoon sledding in Oakridge is a memory I like returning to. So are the Seabrook beaches: the sand, the sea and the room to run around.",
- "For this sample, I make time for curiosity, a walk and staying in touch with friends. Those are things I would like to keep in an ordinary week.",
- "I would like to return to the Seabrook beaches and see what I recognise. For this example, I would also like to learn a practical craft and finish a few small projects."
+ "I was born in Brookfield on 12 April 1988. I spent most of my childhood in Oakridge. I remember the little park near our flat and visiting the library after school.",
+ "We lived in a flat above a bakery. My bedroom looked onto a courtyard, and there was a shelf beside the window where I kept books and little collections.",
+ "I liked a wooden train set and a box of coloured pencils. Later I collected postcards and kept them in a biscuit tin.",
+ "After school I often went to the library or rode my bike around the park. On wet afternoons, I drew pictures at the kitchen table.",
+ "As a child I was nervous around large dogs. Meeting a neighbour’s patient old dog helped. At bedtime I liked leaving a small lamp on while I read.",
+ "My favourite childhood meal was potato soup with bread. These days I often make vegetable curry, with enough left over for lunch the next day.",
+ "Birthdays usually began with pancakes. In summer we took a picnic to the park, even if the celebration was just a few people and a cake in a tin.",
+ "I walked to school with a neighbour. Art and geography were my favourite subjects, and I liked borrowing books from the classroom shelf.",
+ "I spent a lot of time with Sam and Casey from our street. We rode bikes, made up board games and met at the park after lunch.",
+ "As a teenager I listened to borrowed CDs and spent weekends with friends. I wore jeans most of the time and was always looking for another second-hand book.",
+ "My first paid job was in a small bookshop. I saved some of my wages for a bicycle and spent a little on books I had been meaning to read.",
+ "One adventure I remember was taking an overnight train to a city I had never visited. Finding my way around with a paper map was part of the fun.",
+ "I was born in Brookfield, grew up in Oakridge and later moved to Riverside. My first flat there was near the canal, which became a favourite place for a walk.",
+ "I met several friends through a community garden. We still meet for coffee, exchange plants and help with each other’s small projects.",
+ "I enjoy making simple shelves and repairing things around the house. Measuring twice is a habit I learned after making one shelf that did not quite fit.",
+ "I return to detective novels and familiar comedies. I like acoustic music while cooking and would happily eat apple crumble every week.",
+ "A usual weekday begins with tea and breakfast. I take the bus to work at the library. In the evening I cook, read or spend a little time looking after the plants.",
+ "An ideal Saturday includes a visit to the market, time for a walk and a board game with friends. I like leaving some of the afternoon unplanned.",
+ "I am learning to grow tomatoes and trying a few bread recipes. I keep notes about what worked so that I can try again next season.",
+ "I take my coffee with milk and carry a spare pen. I like an organised kitchen drawer, although the rest of the flat is not always as tidy.",
+ "A birthday lunch in the garden is a moment I remember fondly. It started raining halfway through, and everyone helped carry the table inside.",
+ "I like making time for friends, cooking and a quiet hour with a book. Those are the things I would want to keep in a busy week.",
+ "I would like to try pottery and take a longer train journey. For now, I am looking forward to seeing whether this year’s tomatoes ripen."
 ];
 let simulationBackup=null;
 function startSimulation(){
  if(!isDevelopmentHost)return;
  if(simulationBackup)return;
  $('revealDialog').close();$('aboutDialog').close();editor.close();commitAndSave();simulationBackup={document:structuredClone(storedDocument()),preview:$('preview').checked,lang};
- state={formatVersion:1,language:'en',isSample:true,profile:{name:'Alex Morgan',dateOfBirth:'1988-04-12',placeOfBirth:'Brookfield, Germany',placesLived:'Brookfield, Germany · 1988–1991\nSeabrook, United Kingdom · 1991–1994\nOakridge, Germany · from 1994'},entries:[]};
+ state={formatVersion:1,language:'en',isSample:true,profile:{name:'Alex Morgan',dateOfBirth:'1988-04-12',placeOfBirth:'Brookfield',placesLived:'Oakridge · childhood\nRiverside · adulthood'},entries:[]};
  media=Object.create(null);entryBindings=new WeakMap();pendingEdits=new Map();isSimulation=true;generatedDraft=null;window.refreshSavedGeneration?.();keepsakeRevealed=false;biographyCardHidden=false;openedDoors=[];lang='en';
  simulationMemories.forEach((answer,day)=>addTextEntry(answer,{topic:themes[day],question:question(day),binding:{day,choice:0}}));commitEdits();
  window.prepareSimulationDraft?.();

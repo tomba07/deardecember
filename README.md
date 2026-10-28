@@ -68,7 +68,7 @@ Original text and photo entries autosave in the browser. The app includes separa
 
 ## Completed simulation
 
-Choose “Try a sample journal” above the calendar to explore 23 main answers and 46 follow-up answers. This session-only simulation preserves existing browser data; “Exit simulation” restores it. Supplied life facts are distinguished from invented sample details on the PDF cover. Open door 24 and use “Print my original entries / Save as PDF” to print locally. A previously rendered sample may be available in `output/pdf/`; regenerate it to reflect the current branding.
+Choose “Try a sample journal” above the calendar to explore a fictional journal with 23 answers and a ready-made mini biography. All names, dates, places and memories are invented. The session-only simulation preserves your existing journal; “Exit simulation” restores it. Open door 24, select the saved text and choose “Download PDF” to try the A5 layout without an API request.
 
 ## Content plan: the 24 topics
 
@@ -116,7 +116,7 @@ A `.miniography` file is a ZIP containing a readable JSON manifest and original 
 my-story.miniography
 ├── miniography.json
 └── media/
-    └── seabrook-beach.jpg
+    └── sample-photo.jpg
 ```
 
 The manifest contains:
