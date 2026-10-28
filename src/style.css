@@ -90,7 +90,7 @@ footer{flex-direction:column;align-items:center;justify-content:center;gap:22px;
 .reveal-number{position:absolute;left:0;top:25px;color:#969a7c;font-size:11px}
 .reveal-options h4{font:24px Georgia,serif;margin:0 0 10px}
 .reveal-options p{line-height:1.8;margin:0 0 15px;font-size:13px}
-#revealDialog #printButton{padding:0;text-decoration:underline;text-underline-offset:4px;font-size:12px}
+
 @media(max-width:700px){#revealDialog{padding:35px 22px}#revealDialog h2{font-size:34px}.reveal-options>section{padding-left:28px}.reveal-options h4{font-size:22px}}
 
 .entry-management{border-top:1px solid var(--line);padding-top:18px;margin-top:24px}.entry-management summary{cursor:pointer}
