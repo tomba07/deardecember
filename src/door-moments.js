@@ -75,7 +75,14 @@ function animateDoorOpening(dialog){
  const onClose=()=>{if(!dialog.open)finish()};
  openingCleanups.set(dialog,finish);dialog.addEventListener('close',onClose);motion.addEventListener('change',motionChanged);
  proceed.onclick=()=>{proceed.disabled=true;dialog.classList.add('door-clearing');overlay.classList.add('is-leaving')};
- description.addEventListener('animationend',event=>{if(event.animationName==='opening-caption'&&!overlay.classList.contains('is-leaving')){proceed.classList.add('is-ready');proceed.style.visibility='';proceed.disabled=false;proceed.focus({preventScroll:true})}},{once:true});
+ const showContinue=()=>{if(overlay.classList.contains('is-leaving'))return;proceed.classList.add('is-ready');proceed.style.visibility='';proceed.disabled=false;proceed.focus({preventScroll:true})};
+ description.addEventListener('animationend',event=>{if(event.animationName==='opening-caption')showContinue()},{once:true});
+ overlay.addEventListener('click',event=>{
+  if(event.target.closest('button')||!proceed.disabled||overlay.classList.contains('is-leaving'))return;
+  for(const animation of copy.getAnimations({subtree:true}))animation.finish();
+  showContinue();
+  for(const animation of proceed.getAnimations())animation.finish();
+ });
  overlay.addEventListener('animationend',event=>{if(event.target===overlay&&event.animationName==='door-overlay-away')finish(true)});
 }
 

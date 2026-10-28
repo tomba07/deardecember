@@ -430,3 +430,22 @@ test('file content stays a file regardless of its plain labels',async()=>{
  assert.equal(result.photo,'photo');assert.deepEqual(Buffer.from(result.restored.split(',')[1],'base64'),bytes);assert.deepEqual(result.manifest.entries[0].tags,['question','person:name','custom']);assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
+
+
+test('tapping a door introduction reveals Continue early without opening the content',async()=>{
+ const p=await page();try{
+  await p.emulateMedia({reducedMotion:'no-preference'});
+  await p.evaluate(()=>{openDoor(2);for(const animation of editor.getAnimations({subtree:true})){animation.pause();animation.currentTime=100}});
+  assert.equal(await p.locator('#editor .opening-continue').isVisible(),false);
+  await p.locator('#editor .door-opening-overlay').click({position:{x:20,y:20}});
+  assert.equal(await p.locator('#editor .opening-continue').isVisible(),true);
+  assert.equal(await p.locator('#editor .opening-continue').isEnabled(),true);
+  assert.equal(await p.locator('#editor .opening-continue').evaluate(el=>Number(getComputedStyle(el).opacity)),1);
+  assert.equal(await p.locator('#questionPicker').evaluate(el=>el.inert),true);
+  assert.equal(await p.locator('#editor .door-opening-overlay').count(),1);
+  await p.locator('#editor .opening-continue').click();
+  await p.waitForFunction(()=>!document.querySelector('#editor .door-opening-overlay'));
+  assert.equal(await p.locator('#questionPicker').evaluate(el=>el.inert),false);
+  assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
