@@ -12,7 +12,7 @@ dialog.innerHTML=`<button class="close" aria-label="Close generation">×</button
 <div id="generationLoading" class="generation-loading" role="status" aria-live="polite" hidden><span class="generation-spinner" aria-hidden="true"></span><span id="generationLoadingText">Creating your text…</span></div>
 <p id="generationStatus" role="status" aria-live="polite"></p>`;
 const textDialog=document.createElement('dialog');textDialog.id='miniographyDialog';
-textDialog.innerHTML=`<button class="close" aria-label="Close my text">×</button><button type="button" class="dialog-back" id="savedTextBack">← Back</button><h2>Your mini biography</h2><p class="hint">Saved in this browser. Read it through before keeping or sharing it; AI can make mistakes.</p><section id="generationResult" hidden><p id="generationStorage" class="hint" role="status"></p><p id="generationStale" class="hint" hidden>Your journal has changed since this text was generated.</p><label for="generationMarkdown">Your text (Markdown)</label><textarea id="generationMarkdown" spellcheck="true"></textarea><details><summary>Preview formatting</summary><div id="generationPreview" class="markdown-content"></div></details><div class="text-actions"><button class="primary" id="generationDownload">Download Markdown ↓</button><button id="generationPrint">Convert to PDF / Print ↗</button><button id="generationRegenerate">Regenerate text</button><button id="savedOwnLlm">Use my own AI</button></div><p class="hint">Keep a downloaded copy too. Journal archive downloads contain your original entries; photos follow the text when printing.</p></section>`;
+textDialog.innerHTML=`<button class="close" aria-label="Close my text">×</button><button type="button" class="dialog-back" id="savedTextBack">← Back</button><h2>Your mini biography</h2><p class="hint">Saved in this browser. Read it through before keeping or sharing it; AI can make mistakes.</p><section id="generationResult" hidden><p id="generationStorage" class="hint" role="status"></p><p id="generationStale" class="hint" hidden>Your journal has changed since this text was generated.</p><label for="generationMarkdown">Your text (Markdown)</label><textarea id="generationMarkdown" spellcheck="true"></textarea><details><summary>Preview formatting</summary><div id="generationPreview" class="markdown-content"></div></details><div class="text-actions"><button class="primary" id="generationDownload">Download Markdown ↓</button><button id="generationPrint">Download PDF</button><button id="generationRegenerate">Regenerate text</button><button id="savedOwnLlm">Use my own AI</button></div><p class="hint">Keep a downloaded copy too. Journal archive downloads contain your original entries; photos follow the text when printing.</p></section>`;
 document.body.append(dialog,textDialog);
 async function loadGenerationConfig(){
  if(!isDevelopmentHost)return;
@@ -79,6 +79,7 @@ function openGenerationConsent(){
 }
 function openSavedText(){
  updateDialogBackLabels();
+ if(!$('generationPrint').disabled)$('generationPrint').textContent=lang==='de'?'PDF herunterladen':'Download PDF';
  if(!generatedDraft)return;
  dialog.close();$('revealDialog').close();renderDraft();
  $('generationStale').hidden=JSON.stringify(currentSource())===JSON.stringify(generatedDraft.journalSource||generatedDraft.source);
@@ -127,15 +128,20 @@ $('generationDownload').onclick=()=>{
  downloadBlob(new Blob([generatedDraft.markdown],{type:'text/markdown;charset=utf-8'}),'my-mini-biography.md');
 };
 $('generationPrint').onclick=async()=>{
- if(!generatedDraft)return;textDialog.close();
- const sheet=preparePrintStory();
- while(sheet.children.length>1)sheet.lastElementChild.remove();
- const append=(parent,tag,value)=>{const element=document.createElement(tag);element.textContent=value;parent.append(element);return element};
- append(sheet.firstElementChild,'p','AI-assisted draft').className='print-disclaimer';
- const content=document.createElement('section');content.className='markdown-content';content.innerHTML=renderMarkdown(generatedDraft.markdown);sheet.append(content);
- const photo=(entry)=>{const figure=document.createElement('figure');figure.className='print-photo';const image=new Image();image.src=media[entry.filePath];image.alt=entry.description||entry.caption||'Memory photograph';figure.append(image);if(entry.caption)append(figure,'figcaption',entry.caption);sheet.append(figure)};
- for(const entry of state.entries)if(entry.type==='photo'&&media[entry.filePath])photo(entry);
- await Promise.all([...sheet.querySelectorAll('img')].map(image=>image.decode().catch(()=>{})));window.print();
+ if(!generatedDraft)return;
+ const button=$('generationPrint'),activeDocument=state,draft=generatedDraft;
+ button.disabled=true;button.setAttribute('aria-busy','true');
+ button.textContent=lang==='de'?'PDF wird erstellt…':'Preparing PDF…';
+ $('generationStorage').textContent='';
+ try{
+  commitAndSave();const photoContexts={};
+  for(const entry of state.entries){if(entry.type!=='photo')continue;const links=formatEntryContexts.get(entry)?.record?.relatedTo||[];const anchor=state.entries.find(candidate=>candidate.type==='text'&&links.includes(formatEntryContexts.get(candidate)?.id));if(anchor)photoContexts[entry.filePath]=structuredClone(anchor)}
+  const snapshot={markdown:draft.markdown,collection:structuredClone(state),media:{...media},photoContexts};
+  const {createBookPdf}=await import('./book-pdf.js');const blob=await createBookPdf(snapshot);
+  if(state!==activeDocument||generatedDraft!==draft)throw Error('The journal changed. Reopen your text and try again.');
+  downloadBlob(blob,'my-mini-biography.pdf');
+ }catch(error){if(state===activeDocument)$('generationStorage').textContent=error.message}
+ finally{button.disabled=false;button.removeAttribute('aria-busy');button.textContent=lang==='de'?'PDF herunterladen':'Download PDF'}
 };
 function persistGeneratedDraft(){
  const saved=save();$('generationStorage').textContent=window.accountPersistence?.enabled&&!isSimulation?'Saving to your account…':saved?(isSimulation?'Sample text is temporary; download it to keep it.':''):'Could not save in this browser. Download your Markdown now to keep these edits.';

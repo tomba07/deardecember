@@ -37,3 +37,14 @@ Downloaded original sample asset:
 https://www.publicdomainpictures.net/pictures/10000/velka/seabrook-beach-29941281355211SG6E.jpg
 
 The source lists Trevaunance, Saint Agnes, Seabrook. This is not evidence of the user's particular childhood beach. No attribution is required under CC0; the sample includes a credit and source link for clarity.
+
+## Actual application export
+
+The app now has a browser-local A5 PDF renderer. Reproduce its sample through the real Download PDF button:
+
+```sh
+npm run build
+node examples/book-layout/export-app-sample.mjs
+```
+
+This writes `output/pdf/dear-december-a5-export.pdf`. It uses bundled, openly licensed Source Serif 4 rather than depending on system Georgia. The original Python design proof above is retained for comparison.

@@ -28,13 +28,31 @@ test('API requests one Markdown text with projected source and server key, with 
 test('API handles rejected keys, refusals, empty and oversized output',async()=>{
  for(const [value,status]of [['unauthorized',502],['refusal',422],['broken',502],['oversized',502]]){mode=value;const response=await post({consent:true,source:generationSource(collection)});assert.equal(response.status,status);assert(!JSON.stringify(await response.json()).includes('test-secret'))}mode='ok';
 });
-async function openPage(){const context=await browser.newContext({reducedMotion:'reduce'});const page=await context.newPage();await page.goto(url);await page.evaluate(c=>{dismissIntro();state.profile=c.profile;state.entries=c.entries;document.getElementById('preview').checked=true;for(let day=0;day<23;day++)if(!doorComplete(day))addTextEntry('A small everyday memory.',{topic:themes[day],question:questions[day],binding:{day,choice:0}});save();story()},collection);await page.locator('#revealGenerate').click();return page}
-test('browser requires explicit consent, preserves sources, edits/downloads a separate draft and prints safely',async()=>{
+async function chooseOpenAI(p){
+ if(await p.locator('#biographyDetailsDialog').isVisible())await p.locator('#biographyDetailsContinue').click();
+ if(await p.locator('#generationChoiceDialog').isVisible())await p.locator('#generationChoiceOpenAi').click();
+}
+async function cancelGeneration(p){
+ await p.locator('#generationLocal').click();
+ if(await p.locator('#generationChoiceDialog').isVisible())await p.locator('#generationChoiceBack').click();
+ if(await p.locator('#biographyDetailsDialog').isVisible())await p.locator('#biographyDetailsBack').click();
+}
+async function openOwnFromReveal(p){
+ await p.locator('#revealGenerate').click();
+ if(await p.locator('#miniographyDialog').isVisible()){await p.locator('#savedOwnLlm').click();return}
+ if(await p.locator('#biographyDetailsDialog').isVisible())await p.locator('#biographyDetailsContinue').click();
+ await p.locator('#generationChoiceOwn').click();
+}
+async function choiceBackToReveal(p){await p.locator('#generationChoiceBack').click();await p.locator('#biographyDetailsBack').click()}
+async function openPage(){const context=await browser.newContext({reducedMotion:'reduce'});const page=await context.newPage();await page.goto(url);await page.evaluate(c=>{dismissIntro();state.profile=c.profile;state.entries=c.entries;const canvas=document.createElement('canvas');canvas.width=32;canvas.height=20;media['media/private-filename.jpg']=canvas.toDataURL('image/jpeg');document.getElementById('preview').checked=true;for(let day=0;day<23;day++)if(!doorComplete(day))addTextEntry('A small everyday memory.',{topic:themes[day],question:questions[day],binding:{day,choice:0}});save();story()},collection);await page.locator('#revealGenerate').click();await chooseOpenAI(page);return page}
+test('browser requires explicit consent, preserves sources, edits/downloads a separate draft and downloads an A5 PDF',async()=>{
  mode='ok';const p=await openPage();try{
- const count=calls.length;assert.equal(await p.locator('#generationSubmit').isDisabled(),true);await p.locator('#generationLocal').click();assert.equal(calls.length,count);await p.locator('#revealGenerate').click();const original=await p.evaluate(()=>JSON.stringify(state));
+ const count=calls.length;assert.equal(await p.locator('#generationSubmit').isDisabled(),true);await cancelGeneration(p);assert.equal(calls.length,count);await p.locator('#revealGenerate').click();await chooseOpenAI(p);const original=await p.evaluate(()=>JSON.stringify(state));
  assert(!(await p.locator('#generationPayload').inputValue()).includes('private-filename'));await p.locator('#generationAgree').check();await p.locator('#generationSubmit').click();await p.locator('#generationResult').waitFor();assert.equal(await p.locator('#generationDialog').isVisible(),false);assert.equal(await p.locator('#miniographyDialog').isVisible(),true);assert(!(await p.locator('#miniographyDialog').innerText()).includes('I agree to send'));assert.equal(await p.evaluate(()=>JSON.stringify(state)),original);assert.equal(await p.locator('#generationAgree').isChecked(),false);
  await p.locator('#generationMarkdown').fill('My edited draft.');const event=p.waitForEvent('download');await p.locator('#generationDownload').click();const download=await event;const {readFile}=await import('node:fs/promises');const saved=await readFile(await download.path(),'utf8');assert.equal(download.suggestedFilename(),'my-mini-biography.md');assert.equal(saved,'My edited draft.');assert(!saved.includes('test-secret'));assert.equal(await p.locator('#generationSections').count(),0);assert(!(await p.locator('#generationResult').textContent()).includes('Compare with original'));assert(await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY).includes('My edited draft.')));
- await p.evaluate(()=>{window.print=()=>{window.didPrint=true}});await p.locator('#generationPrint').click();await p.waitForFunction(()=>window.didPrint);assert((await p.locator('#printSheet').textContent()).includes('My edited draft.'));assert(!(await p.locator('#printSheet').textContent()).includes('My bicycle by the gate.'));assert.equal(await p.evaluate(()=>JSON.stringify(state)),original);
+ const pdfEvent=p.waitForEvent('download');await p.locator('#generationPrint').click();const pdf=await pdfEvent;
+ assert.equal(pdf.suggestedFilename(),'my-mini-biography.pdf');assert((await readFile(await pdf.path())).subarray(0,5).toString()==='%PDF-');assert.equal(await p.locator('#printSheet').count(),0);assert.equal(await p.evaluate(()=>JSON.stringify(state)),original);
+
  }finally{await p.context().close()}
 });
 test('failed regeneration keeps edited draft and original entries; close sends nothing new',async()=>{
@@ -56,9 +74,9 @@ test('unconfigured server exposes no key and concurrent generation is rejected',
 
 test('reveal generation opens consent without sending data; archive download stays local',async()=>{
  const p=await openPage();try{
- await p.locator('#generationLocal').click();await p.evaluate(()=>{state.entries=state.entries.filter(entry=>entry.type==='text');document.getElementById('revealDialog').close();openDoor(23)});const count=calls.length;assert.equal(await p.locator('#revealGenerate').isEnabled(),true);
- const event=p.waitForEvent('download');await p.locator('#revealDownload').click();const download=await event;assert.equal(download.suggestedFilename(),'my-journal.deardecember');assert.equal(calls.length,count);
- await p.locator('#revealGenerate').click();assert.equal(await p.locator('#generationDialog').isVisible(),true);assert.equal(await p.locator('#generationAgree').isChecked(),false);assert.equal(calls.length,count);
+ await cancelGeneration(p);await p.evaluate(()=>{state.entries=state.entries.filter(entry=>entry.type==='text');document.getElementById('revealDialog').close();openDoor(23)});const count=calls.length;assert.equal(await p.locator('#revealGenerate').isEnabled(),true);
+ const event=p.waitForEvent('download');await p.locator('#revealDownload').click();const download=await event;assert.equal(download.suggestedFilename(),'dear-december-backup.zip');assert.equal(calls.length,count);
+ await p.locator('#revealGenerate').click();await chooseOpenAI(p);assert.equal(await p.locator('#generationDialog').isVisible(),true);assert.equal(await p.locator('#generationAgree').isChecked(),false);assert.equal(calls.length,count);
  }finally{await p.context().close()}
 });
 
@@ -67,7 +85,11 @@ test('Markdown preview and PDF preserve formatting without executing HTML or loa
  await p.locator('#generationAgree').check();await p.locator('#generationSubmit').click();await p.locator('#generationResult').waitFor();let remoteRequests=0;p.on('request',request=>{if(request.url().includes('malicious.example'))remoteRequests++});
  await p.locator('#generationMarkdown').fill('## Small moments\n\nA **favourite** routine with *tea*.\n\n## Everyday favourites\n\n- A walk\n- A book\n\n<script>window.injected=true</script>\n\n![test](https://malicious.example/track)\n\n[link](javascript:window.injected=true)');
  assert.deepEqual(await p.locator('#generationPreview h2').allTextContents(),['Small moments','Everyday favourites']);assert.equal(await p.locator('#generationPreview strong').textContent(),'favourite');assert.equal(await p.locator('#generationPreview li').count(),2);assert.equal(await p.locator('#generationPreview img, #generationPreview script, #generationPreview a').count(),0);assert.equal(await p.evaluate(()=>window.injected),undefined);const event=p.waitForEvent('download');await p.locator('#generationDownload').click();const download=await event;const {readFile}=await import('node:fs/promises');const markdown=await readFile(await download.path(),'utf8');assert(markdown.includes('## Small moments'));assert(markdown.includes('## Everyday favourites'));
- await p.evaluate(()=>{window.print=()=>{window.didPrint=true}});await p.locator('#generationPrint').click();await p.waitForFunction(()=>window.didPrint);assert.deepEqual(await p.locator('#printSheet .markdown-content h2').allTextContents(),['Small moments','Everyday favourites']);assert.equal(await p.locator('#printSheet .markdown-content strong').textContent(),'favourite');assert.equal(await p.locator('#printSheet .markdown-content img, #printSheet script').count(),0);assert.equal(remoteRequests,0);
+ const pdfEvent=p.waitForEvent('download');await p.locator('#generationPrint').click();const pdf=await pdfEvent;
+ assert.equal(pdf.suggestedFilename(),'my-mini-biography.pdf');assert((await readFile(await pdf.path())).subarray(0,5).toString()==='%PDF-');
+ const sections=await p.evaluate(async()=>{const {bookSections}=await import('./book-pdf.js');return bookSections(generatedDraft.markdown)});
+ assert.deepEqual(sections.map(section=>section.title),['Small moments','Everyday favourites']);assert.equal(remoteRequests,0);assert.equal(await p.evaluate(()=>window.injected),undefined);
+
  }finally{await p.context().close()}
 });
 
@@ -77,14 +99,14 @@ async function createText(p,text='Saved local text.'){
 test('generated Markdown and edits survive reload and can be downloaded without an API connection',async()=>{
  mode='ok';const p=await openPage();try{
  const original=await p.evaluate(()=>JSON.stringify(state));await createText(p,'## Kept locally\n\nMy edited text.');const count=calls.length;
- await p.route('**/api/generation',route=>route.abort());await p.reload();await p.evaluate(()=>{document.getElementById('preview').checked=true;story()});await p.locator('#revealGenerate').click();assert.equal(await p.locator('#generationMarkdown').inputValue(),'## Kept locally\n\nMy edited text.');assert.equal(await p.locator('#generationAgree').isChecked(),false);assert.equal(await p.locator('#generationSubmit').isDisabled(),true);assert.deepEqual(await p.evaluate(()=>structuredClone(state)),JSON.parse(original));assert.equal(calls.length,count);
+ await p.route('**/api/generation',route=>route.abort());await p.reload();await p.evaluate(()=>{document.getElementById('preview').checked=true;story()});await p.locator('#revealGenerate').click();await chooseOpenAI(p);assert.equal(await p.locator('#generationMarkdown').inputValue(),'## Kept locally\n\nMy edited text.');assert.equal(await p.locator('#generationAgree').isChecked(),false);assert.equal(await p.locator('#generationSubmit').isDisabled(),true);assert.deepEqual(await p.evaluate(()=>structuredClone(state)),JSON.parse(original));assert.equal(calls.length,count);
  const event=p.waitForEvent('download');await p.locator('#generationDownload').click();const download=await event;const {readFile}=await import('node:fs/promises');assert.equal(await readFile(await download.path(),'utf8'),'## Kept locally\n\nMy edited text.');
  }finally{await p.context().close()}
 });
 test('simulation isolates generated text and restores the saved personal draft',async()=>{
  mode='ok';const p=await openPage();try{
  await createText(p,'Personal draft.');await p.locator('#miniographyDialog .close').click();await p.evaluate(()=>startSimulation());assert.equal(await p.evaluate(()=>generatedDraft),null);assert((await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Personal draft.'));
- await p.evaluate(()=>openDoor(23));await p.locator('#revealGenerate').click();await createText(p,'Sample draft.');assert((await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Personal draft.'));assert(!(await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Sample draft.'));await p.evaluate(()=>endSimulation());await p.evaluate(()=>story());await p.locator('#revealGenerate').click();assert.equal(await p.locator('#generationMarkdown').inputValue(),'Personal draft.');
+ await p.evaluate(()=>openDoor(23));await p.locator('#revealGenerate').click();await chooseOpenAI(p);await createText(p,'Sample draft.');assert((await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Personal draft.'));assert(!(await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Sample draft.'));await p.evaluate(()=>endSimulation());await p.evaluate(()=>story());await p.locator('#revealGenerate').click();await chooseOpenAI(p);assert.equal(await p.locator('#generationMarkdown').inputValue(),'Personal draft.');
  }finally{await p.context().close()}
 });
 test('generated text travels in recovery backups and a replacement journal clears the old draft',async()=>{
@@ -92,7 +114,7 @@ test('generated text travels in recovery backups and a replacement journal clear
  await createText(p,'A recoverable draft.');const backup=await p.evaluate(()=>JSON.stringify(storedDocument()));
  const replacement=JSON.parse(backup);delete replacement.generatedDraft;replacement.collection.entries=[];replacement.media={};await p.locator('#miniographyDialog .close').click();p.once('dialog',dialog=>dialog.accept());await p.locator('#importFile').setInputFiles({name:'replacement.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(replacement))});await p.waitForFunction(()=>document.getElementById('toast').textContent==='Your collection has been imported.');assert.equal(await p.evaluate(()=>generatedDraft),null);
  // This fixture has no image bytes; remove its illustrative photo before recovery import.
- const recovery=JSON.parse(backup);recovery.collection.entries=recovery.collection.entries.filter(entry=>!entry.filePath&&!entry.tags.some(tag=>tag.startsWith('photo:')));recovery.media={};p.once('dialog',dialog=>dialog.accept());await p.locator('#importFile').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(recovery))});await p.waitForFunction(()=>generatedDraft?.markdown==='A recoverable draft.');await p.evaluate(()=>{document.getElementById('preview').checked=true;story()});await p.locator('#revealGenerate').click();assert.equal(await p.locator('#generationMarkdown').inputValue(),'A recoverable draft.');
+ const recovery=JSON.parse(backup);recovery.collection.entries=recovery.collection.entries.filter(entry=>!entry.filePath&&!entry.tags.some(tag=>tag.startsWith('photo:')));recovery.media={};p.once('dialog',dialog=>dialog.accept());await p.locator('#importFile').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(recovery))});await p.waitForFunction(()=>generatedDraft?.markdown==='A recoverable draft.');await p.evaluate(()=>{document.getElementById('preview').checked=true;story()});await p.locator('#revealGenerate').click();await chooseOpenAI(p);assert.equal(await p.locator('#generationMarkdown').inputValue(),'A recoverable draft.');
  }finally{await p.context().close()}
 });
 test('storage failure keeps text editable and downloadable with a clear warning',async()=>{
@@ -105,8 +127,8 @@ test('saved-text dialog separates local actions from fresh regeneration consent'
  mode='ok';const p=await openPage();try{
  await createText(p,'My saved edit.');const count=calls.length;assert.equal(await p.locator('#miniographyDialog').isVisible(),true);assert.equal(await p.locator('#generationDialog').isVisible(),false);assert.equal(await p.locator('#generationDownload').isVisible(),true);assert.equal(await p.locator('#generationPrint').isVisible(),true);assert.equal(await p.locator('#generationRegenerate').isVisible(),true);
  await p.locator('#generationRegenerate').click();assert.equal(await p.locator('#miniographyDialog').isVisible(),false);assert.equal(await p.locator('#generationDialog').isVisible(),true);assert.equal(await p.locator('#generationAgree').isChecked(),false);assert.equal(await p.locator('#generationSubmit').isDisabled(),true);assert.equal(calls.length,count);
- await p.locator('#generationLocal').click();assert.equal(await p.locator('#miniographyDialog').isVisible(),true);assert.equal(await p.locator('#generationMarkdown').inputValue(),'My saved edit.');assert.equal(calls.length,count);
- await p.locator('#miniographyDialog .close').click();await p.locator('#revealGenerate').click();assert.equal(await p.locator('#miniographyDialog').isVisible(),true);assert.equal(await p.locator('#generationDialog').isVisible(),false);assert.equal(calls.length,count);
+ await cancelGeneration(p);assert.equal(await p.locator('#miniographyDialog').isVisible(),true);assert.equal(await p.locator('#generationMarkdown').inputValue(),'My saved edit.');assert.equal(calls.length,count);
+ await p.locator('#miniographyDialog .close').click();await p.locator('#revealGenerate').click();await chooseOpenAI(p);assert.equal(await p.locator('#miniographyDialog').isVisible(),true);assert.equal(await p.locator('#generationDialog').isVisible(),false);assert.equal(calls.length,count);
  }finally{await p.context().close()}
 });
 
@@ -140,7 +162,7 @@ test('copyable prompt includes edited reflections and writing rules without send
 });
 test('own-model prompt works without an API and its Markdown result saves locally',async()=>{
  const p=await openPage();try{
- await p.locator('#generationLocal').click();await p.route('**/api/generation',route=>route.fulfill({json:{available:false,provider:'OpenAI',model:'gpt-4.1-mini'}}));await p.reload();await p.evaluate(()=>{document.getElementById('preview').checked=true;story();toggleLang()});await p.locator('#revealOwnLlm').click();assert((await p.locator('#ownLlmPrompt').inputValue()).includes('Requested output language: German'));const count=calls.length;
+ await cancelGeneration(p);await p.route('**/api/generation',route=>route.fulfill({json:{available:false,provider:'OpenAI',model:'gpt-4.1-mini'}}));await p.reload();await p.evaluate(()=>{document.getElementById('preview').checked=true;story();toggleLang()});await openOwnFromReveal(p);assert((await p.locator('#ownLlmPrompt').inputValue()).includes('Requested output language: German'));const count=calls.length;
  await p.locator('#ownLlmReturnTitle').click();await p.locator('#ownLlmResult').fill('## Meine Erinnerungen\n\nEin Spaziergang am Nachmittag.');await p.locator('#ownLlmSave').click();assert.equal(await p.locator('#miniographyDialog').isVisible(),true);assert.equal(await p.locator('#generationMarkdown').inputValue(),'## Meine Erinnerungen\n\nEin Spaziergang am Nachmittag.');assert.equal(await p.evaluate(()=>generatedDraft.model),'External AI');assert((await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Ein Spaziergang'));assert.equal(calls.length,count);
  }finally{await p.context().close()}
 });
@@ -158,14 +180,14 @@ test('nested dialogs offer Back and preserve edits while returning to their pare
  await p.locator('#generationOwnLlm').click();await p.locator('#ownLlmBack').click();
  assert.equal(await p.locator('#generationDialog').isVisible(),true);
  assert.equal(await p.locator('#generationPayload').inputValue(),'A reflection to keep while navigating.');
- await p.locator('#generationBack').click();assert.equal(await p.locator('#revealDialog').isVisible(),true);assert.equal(calls.length,count);
- await p.locator('#revealOwnLlm').click();await p.locator('#ownLlmBack').click();assert.equal(await p.locator('#revealDialog').isVisible(),true);
- await p.locator('#revealGenerate').click();await createText(p,'A saved draft.');
+ await p.locator('#generationBack').click();assert.equal(await p.locator('#generationChoiceDialog').isVisible(),true);await choiceBackToReveal(p);assert.equal(calls.length,count);
+ await openOwnFromReveal(p);await p.locator('#ownLlmBack').click();assert.equal(await p.locator('#generationChoiceDialog').isVisible(),true);await choiceBackToReveal(p);
+ await p.locator('#revealGenerate').click();await chooseOpenAI(p);await createText(p,'A saved draft.');
  await p.locator('#generationMarkdown').fill('My edited saved draft.');await p.locator('#generationRegenerate').click();await p.locator('#generationBack').click();
  assert.equal(await p.locator('#generationMarkdown').inputValue(),'My edited saved draft.');
  await p.locator('#savedOwnLlm').click();await p.locator('#ownLlmBack').click();assert.equal(await p.locator('#miniographyDialog').isVisible(),true);
  await p.locator('#savedTextBack').click();assert.equal(await p.locator('#revealDialog').isVisible(),true);
- await p.evaluate(()=>toggleLang());await p.locator('#revealOwnLlm').click();assert.equal(await p.locator('#ownLlmBack').textContent(),'← Zurück');
+ await p.evaluate(()=>toggleLang());await openOwnFromReveal(p);assert.equal(await p.locator('#ownLlmBack').textContent(),'← Zurück');
  }finally{await p.context().close()}
 });
 
