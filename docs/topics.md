@@ -217,7 +217,7 @@ Name, birthday, birthplace and optional free-form places lived are collected whe
 
 ### 24 · A moment for you / Ein Moment für dich
 
-A Christmas greeting and a gift from yourself, followed by options to enjoy Christmas, pass your reflections on as a mini biography, or keep and build on your journal.
+A Christmas greeting and a gift from yourself, followed by options to enjoy Christmas, keep and build on your journal, or pass your reflections on as a mini biography. The entries can be used to create a mini biography at any time.
 
 ## Compatibility and ownership
 
