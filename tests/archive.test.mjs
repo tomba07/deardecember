@@ -473,3 +473,24 @@ test('modal dialogs lock background scrolling and keep their own content scrolla
   assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
+
+test('approachable catalog preserves earlier questions and renamed door associations',async()=>{
+ const p=await page();try{
+  const originalQuestion='What has helped you through a difficult time?';
+  await p.evaluate(question=>{
+   state.entries=[{type:'text',topic:'Through difficult times',question,text:'An earlier answer.',createdAt:'2026-10-01T12:00:00Z',modificationDates:[]}];
+   inferBindings();save();openDoor(17);
+  },originalQuestion);
+  assert.equal(await p.locator('#title').textContent(),'Taking a breather');
+  assert.equal(await p.locator('#question').textContent(),originalQuestion);
+  assert.equal(await p.locator('#answer').inputValue(),'An earlier answer.');
+  await p.reload();await p.evaluate(()=>{document.getElementById('preview').checked=true;openDoor(17)});
+  assert.equal(await p.locator('#question').textContent(),originalQuestion);
+  assert.equal(await p.locator('#answer').inputValue(),'An earlier answer.');
+  const prompts=await p.evaluate(()=>({en:question(17,'en'),de:question(17,'de'),meaning:questionChoices.en[18].includes('What gives your life meaning?'),count:questions.length,deCount:deQuestions.length}));
+  assert.equal(prompts.en,'What helps you unwind after a long day?');
+  assert.equal(prompts.de,'Wie entspannst du dich nach einem langen Tag?');
+  assert.equal(prompts.meaning,true);assert.equal(prompts.count,23);assert.equal(prompts.deCount,23);
+  assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});

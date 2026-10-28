@@ -68,3 +68,33 @@ The current “What matters most” door also offers “What gives your life mea
 - Write English and German versions with the same intent and a natural voice in each language.
 
 The question catalog will flesh out these topics; this document records the agreed names, boundaries and interaction rather than a final list of every prompt.
+
+## Current main questions
+
+The live catalog leads with concrete memories and everyday details. Deeper reflection remains optional, including “What gives your life meaning?”. Revised questions never replace the wording attached to existing entries. Door 24 remains the Christmas reveal. The current names below replace the earlier live names “A proud moment”, “Through difficult times” and “A letter to your younger self”.
+
+| Door | Main question |
+| --- | --- |
+| 1 | What is one of your earliest memories? |
+| 2 | What could you see from your childhood bedroom window? |
+| 3 | What did you love playing after school? |
+| 4 | Who did you spend time with growing up? |
+| 5 | What was usually on the table at a family celebration? |
+| 6 | What clothes or hairstyle did you love as a teenager? |
+| 7 | What did you and your friends do for fun? |
+| 8 | What’s something you learned to do outside school? |
+| 9 | What do you remember about an early trip away from home? |
+| 10 | What hobby have you spent a lot of time on? |
+| 11 | Who introduced you to something you still enjoy? |
+| 12 | What changed in your everyday life when you moved, started something new or changed your routine? |
+| 13 | What’s something you’ve enjoyed making or fixing? |
+| 14 | Which place would you like to return to, and why? |
+| 15 | What’s a small thing you look forward to during the week? |
+| 16 | What’s something you’re particular about—food, tidiness, timing or something else? |
+| 17 | What’s something you learned to do that took a bit of practice? |
+| 18 | What helps you unwind after a long day? |
+| 19 | What do you like to make time for, even in a busy week? |
+| 20 | What would you do with a free afternoon? |
+| 21 | What did you imagine adult life would be like when you were a child? |
+| 22 | What’s something you’d like to try or learn? |
+| 23 | What ordinary thing about life today might surprise someone in 100 years? |

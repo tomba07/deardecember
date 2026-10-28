@@ -1,7 +1,7 @@
 // Original, brief introductions and closing messages for each calendar door.
 const doorMoments={
  en:[
- ['A few beginnings: your name, the places you started out, and an early memory.', 'A beginning, tucked away for another day.'],
+ ['Start with an early memory: a place, a game or something you remember seeing.', 'A beginning, tucked away for another day.'],
  ['A doorstep, a room, a familiar view. Remember somewhere you called home.', 'A little corner of home, kept.'],
  ['The games, treasures and tiny discoveries that filled your childhood.', 'A small treasure for your December.'],
  ['Remember the people who were part of your early everyday world.', 'A familiar face, a little closer.'],
@@ -18,16 +18,16 @@ const doorMoments={
  ['Coffee, a walk, a familiar song: notice a pleasure in an ordinary week.', 'A little everyday joy for December.'],
  ['Your favourite things, familiar habits and small particularities.', 'A small detail that sounds just like you.'],
  ['Something you were pleased to finish, try or learn.', 'A moment you can return to with a smile.'],
- ['Only what you feel like sharing about a difficult time and what helped.', 'Enough for today. There’s no need to write more.'],
+ ['A quiet spot, a favourite programme or whatever helps you switch off.', 'Enough for today. There’s no need to write more.'],
  ['The things you care about, in the words and examples that fit you.', 'A quiet moment to notice what matters to you.'],
  ['Walk through a lovely ordinary day, from its first cup to its last light.', 'May there be more days like that.'],
- ['A few words to an earlier version of yourself, if you feel like it.', 'A little kindness, sent back through time.'],
+ ['How you imagined the future, and the everyday things that changed along the way.', 'A little kindness, sent back through time.'],
  ['Something you are curious about, or a small thing you look forward to.', 'A little room for whatever comes next.'],
  ['Something you would enjoy someone discovering about your life one day.', 'A little hello to someone who may read this years from now.'],
  ['A Christmas wish, your memories to keep, and something to make from them.', 'Merry little moments, kept in your own words.']
  ],
  de:[
- ['Ein paar Anfänge: dein Name, deine ersten Wohnorte und eine frühe Erinnerung.', 'Ein Anfang, für einen anderen Tag aufgehoben.'],
+ ['Beginne mit einer frühen Erinnerung: einem Ort, einem Spiel oder etwas, das du gesehen hast.', 'Ein Anfang, für einen anderen Tag aufgehoben.'],
  ['Eine Haustür, ein Zimmer, ein vertrauter Ausblick. Erinnere dich an ein Zuhause.', 'Ein kleines Stück Zuhause, bewahrt.'],
  ['Die Spiele, Schätze und kleinen Entdeckungen deiner Kindheit.', 'Ein kleiner Schatz für deinen Dezember.'],
  ['Erinnere dich an die Menschen, die zu deinem frühen Alltag gehörten.', 'Ein vertrautes Gesicht, ein wenig näher.'],
@@ -44,10 +44,10 @@ const doorMoments={
  ['Kaffee, ein Spaziergang, ein Lied: etwas Schönes in einer gewöhnlichen Woche.', 'Ein wenig Alltagsfreude für den Dezember.'],
  ['Deine Lieblingsdinge, vertrauten Gewohnheiten und kleinen Eigenheiten.', 'Ein kleines Detail, das nach dir klingt.'],
  ['Etwas, das du gerne geschafft, ausprobiert oder gelernt hast.', 'Ein Moment, zu dem du mit einem Lächeln zurückkehren kannst.'],
- ['Nur so viel, wie du über eine schwere Zeit und das, was half, teilen möchtest.', 'Genug für heute. Du musst nicht mehr aufschreiben.'],
+ ['Ein ruhiger Ort, eine Lieblingssendung oder etwas anderes, bei dem du abschaltest.', 'Genug für heute. Du musst nicht mehr aufschreiben.'],
  ['Was dir wichtig ist — mit den Worten und Beispielen, die zu dir passen.', 'Ein ruhiger Moment für das, was dir wichtig ist.'],
  ['Ein schöner Alltagstag, von der ersten Tasse bis zum letzten Licht.', 'Möge es noch mehr solche Tage geben.'],
- ['Ein paar Worte an dein früheres Ich, wenn du magst.', 'Ein wenig Freundlichkeit, zurück durch die Zeit geschickt.'],
+ ['Wie du dir die Zukunft vorgestellt hast und was sich im Alltag verändert hat.', 'Ein wenig Freundlichkeit, zurück durch die Zeit geschickt.'],
  ['Etwas, das dich neugierig macht oder worauf du dich freust.', 'Ein wenig Platz für das, was noch kommt.'],
  ['Etwas über dein Leben, das jemand eines Tages gerne entdecken könnte.', 'Ein kleiner Gruß an jemanden, der das vielleicht in vielen Jahren liest.'],
  ['Ein Weihnachtsgruß, Erinnerungen zum Aufheben und etwas, das daraus werden kann.', 'Kleine Weihnachtsmomente, in deinen eigenen Worten bewahrt.']

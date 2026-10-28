@@ -6,7 +6,7 @@ const questionChoices={
  ['What was your favourite toy?','What did you collect as a child?'],
  ['What was your first pet like?','Which person from childhood do you remember especially clearly?'],
  ['What was your favourite childhood meal?','Which family tradition would you like to keep?'],
- ['What fashion or hairstyle did you once love?','What did you want to be when you grew up?'],
+ ['What music did you listen to as a teenager?','What did you want to be when you grew up?'],
  ['What small moment captures a friendship?','Who did you most enjoy spending time with after school?'],
  ['What was your favourite subject at school?','What skill have you taught yourself?'],
  ['What was the first country you visited abroad?','Which trip turned out differently than you expected?'],
@@ -17,13 +17,13 @@ const questionChoices={
  ['Where have you felt especially at ease, and why?','Which family holiday do you remember fondly?'],
  ['How do you like your coffee or tea?','What everyday ritual would you not want to give up?'],
  ['Which song can you listen to again and again?','Which possession would you hate to be without?'],
- ['What challenge did you manage to overcome?','What skill are you pleased to have learned?'],
- ['When did an unexpected kindness help you?','What gives you hope during an uncertain time?'],
+ ['What was your first attempt at a new hobby like?','What skill are you pleased to have learned?'],
+ ['What do you like to watch, read or listen to when you relax?','Where do you go when you want a little peace and quiet?'],
  ['What do you think people underestimate in life?','What have you changed your mind about?','What gives your life meaning?'],
  ['What would your ideal free day look like?','What would you love to experience for the first time again?'],
- ['What advice would you give your 18-year-old self?','What would you like to tell yourself as a child?'],
+ ['What did you think the future would look like when you were young?','What everyday thing has changed most since your childhood?'],
  ['Which skill would you like to learn next?','Which adventure have you been putting off?'],
- ['What sentence would you leave your descendants in 500 years?','What makes a good life, in your view?']
+ ['What everyday object would you put in a time capsule?','What makes a good life, in your view?']
  ],
  de:[
  ['Gibt es eine Geschichte hinter deinem Namen?','Welchen Spitznamen hattest du früher?'],
@@ -31,7 +31,7 @@ const questionChoices={
  ['Was war dein liebstes Spielzeug?','Was hast du als Kind gesammelt?'],
  ['Wie war dein erstes Haustier?','Welche Person aus deiner Kindheit ist dir besonders in Erinnerung geblieben?'],
  ['Was war dein Lieblingsessen als Kind?','Welche Familientradition möchtest du bewahren?'],
- ['Welche Mode oder Frisur fandest du damals großartig?','Welchen Beruf wolltest du als Kind haben?'],
+ ['Welche Musik hast du als Teenager gehört?','Welchen Beruf wolltest du als Kind haben?'],
  ['Welcher kleine Moment beschreibt eine Freundschaft?','Mit wem hast du nach der Schule am liebsten Zeit verbracht?'],
  ['Was war dein Lieblingsfach in der Schule?','Welche Fähigkeit hast du dir selbst beigebracht?'],
  ['In welchem Land außerhalb deines Heimatlandes warst du zuerst?','Welche Reise verlief anders als geplant?'],
@@ -42,13 +42,13 @@ const questionChoices={
  ['An welchem Ort fühlst du dich besonders wohl, und warum?','An welchen Familienurlaub denkst du gerne zurück?'],
  ['Wie trinkst du deinen Kaffee oder Tee am liebsten?','Welches alltägliche Ritual möchtest du nicht aufgeben?'],
  ['Welches Lied kannst du immer wieder hören?','Welchen Gegenstand möchtest du nicht missen?'],
- ['Welche Herausforderung hast du geschafft?','Welche erlernte Fähigkeit macht dich stolz?'],
- ['Wann hat dir eine unerwartete Freundlichkeit geholfen?','Was gibt dir in unsicheren Zeiten Hoffnung?'],
+ ['Wie war dein erster Versuch mit einem neuen Hobby?','Welche erlernte Fähigkeit macht dich stolz?'],
+ ['Was schaust, liest oder hörst du gerne zum Entspannen?','Wohin gehst du, wenn du etwas Ruhe möchtest?'],
  ['Was wird im Leben deiner Meinung nach unterschätzt?','Worüber hast du deine Meinung geändert?','Was gibt deinem Leben Sinn?'],
  ['Was wäre dein idealer freier Tag?','Was würdest du gerne noch einmal zum ersten Mal erleben?'],
- ['Welchen Rat würdest du deinem 18-jährigen Ich geben?','Was möchtest du deinem kindlichen Ich sagen?'],
+ ['Wie hast du dir als Kind die Zukunft vorgestellt?','Was hat sich im Alltag seit deiner Kindheit besonders verändert?'],
  ['Welche Fähigkeit würdest du als Nächstes gerne lernen?','Welches Abenteuer schiebst du schon länger auf?'],
- ['Welchen Satz möchtest du deinen Nachfahren in 500 Jahren mitgeben?','Was macht für dich ein gutes Leben aus?']
+ ['Welchen Alltagsgegenstand würdest du in eine Zeitkapsel legen?','Was macht für dich ein gutes Leben aus?']
  ]
 };
 let selectedQuestion=null;
