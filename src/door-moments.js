@@ -70,7 +70,7 @@ function animateDoorOpening(dialog){
  const blocked=[...dialog.children].filter(element=>!element.classList.contains('close')).map(element=>[element,element.inert]);
  for(const [element]of blocked)element.inert=true;
  dialog.classList.add('door-introducing');dialog.append(overlay);overlay.style.height=dialog.clientHeight+'px';
- const finish=(focusContent=false)=>{overlay.remove();dialog.classList.remove('door-introducing','door-clearing');for(const [element,inert]of blocked)element.inert=inert;dialog.removeEventListener('close',onClose);motion.removeEventListener('change',motionChanged);openingCleanups.delete(dialog);if(focusContent&&dialog.open)dialog.querySelector('#calendarFacts:not([hidden]) input, #questionChoices button, #revealDownload')?.focus({preventScroll:true})};
+ const finish=(focusContent=false)=>{overlay.remove();dialog.classList.remove('door-introducing','door-clearing');for(const [element,inert]of blocked)element.inert=inert;dialog.removeEventListener('close',onClose);motion.removeEventListener('change',motionChanged);openingCleanups.delete(dialog);if(focusContent&&dialog.open)dialog.querySelector('#calendarFacts:not([hidden]) input, #questionChoices button, #revealGenerate')?.focus({preventScroll:true})};
  const motionChanged=()=>{if(motion.matches)finish()};
  const onClose=()=>{if(!dialog.open)finish()};
  openingCleanups.set(dialog,finish);dialog.addEventListener('close',onClose);motion.addEventListener('change',motionChanged);

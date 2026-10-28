@@ -177,9 +177,9 @@ test('first visit intro explains local files, supports skip/close/Escape and can
  const context=await browser.newContext({reducedMotion:'reduce'});const p=await context.newPage();try{
   await p.goto(url);assert.equal(await p.title(),'Dear December — A little time for you');assert(!/miniography/i.test(await p.locator('body').innerText()));assert.equal(await p.locator('#introDialog').isVisible(),true);assert((await p.locator('#introTransfer').textContent()).includes('journal file'));assert((await p.locator('#introStorage').textContent()).includes('this browser'));assert(!(await p.locator('#introDialog').innerText()).includes('PDF'));
   await p.locator('#introLanguage').click();assert((await p.locator('#introStorage').textContent()).includes('diesem Browser'));await p.locator('#introStart').click();assert.equal(await p.locator('#introDialog').isVisible(),false);await p.reload();assert.equal(await p.locator('#introDialog').isVisible(),false);
-  await p.locator('#aboutIntro').click();assert.equal(await p.locator('#aboutDialog').isVisible(),true);await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.getElementById('aboutDialog').open);await p.reload();assert.equal(await p.locator('#introDialog').isVisible(),false);
+  await p.locator('#aboutNav').click();assert.equal(await p.locator('#aboutDialog').isVisible(),true);await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.getElementById('aboutDialog').open);await p.reload();assert.equal(await p.locator('#introDialog').isVisible(),false);
   await p.evaluate(()=>showIntro());await p.locator('#introDialog .close').click();assert.equal(await p.locator('#introDialog').isVisible(),false);await p.evaluate(()=>showIntro());await p.locator('#introStart').click();assert.equal(await p.locator('#introDialog').isVisible(),false);
-  await p.setViewportSize({width:390,height:844});await p.locator('#aboutIntro').click();const box=await p.locator('#aboutDialog').boundingBox();assert(box.x>=0&&box.x+box.width<=390);
+  await p.setViewportSize({width:390,height:844});await p.locator('#aboutNav').click();const box=await p.locator('#aboutDialog').boundingBox();assert(box.x>=0&&box.x+box.width<=390);
  }finally{await context.close()}
 });
 

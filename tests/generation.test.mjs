@@ -75,7 +75,7 @@ test('unconfigured server exposes no key and concurrent generation is rejected',
 test('reveal generation opens consent without sending data; archive download stays local',async()=>{
  const p=await openPage();try{
  await cancelGeneration(p);await p.evaluate(()=>{state.entries=state.entries.filter(entry=>entry.type==='text');document.getElementById('revealDialog').close();openDoor(23)});const count=calls.length;assert.equal(await p.locator('#revealGenerate').isEnabled(),true);
- const event=p.waitForEvent('download');await p.locator('#revealDownload').click();const download=await event;assert.equal(download.suggestedFilename(),'dear-december-backup.zip');assert.equal(calls.length,count);
+ await p.locator('#revealDialog .close').click();assert.equal(await p.locator('#revealDownload').count(),0);assert.equal(await p.locator('#footerDownload').textContent(),'Export data');const event=p.waitForEvent('download');await p.locator('#footerDownload').click();const download=await event;assert.equal(download.suggestedFilename(),'dear-december-backup.zip');assert.equal(calls.length,count);await p.evaluate(()=>story());
  await p.locator('#revealGenerate').click();await chooseOpenAI(p);assert.equal(await p.locator('#generationDialog').isVisible(),true);assert.equal(await p.locator('#generationAgree').isChecked(),false);assert.equal(calls.length,count);
  }finally{await p.context().close()}
 });
