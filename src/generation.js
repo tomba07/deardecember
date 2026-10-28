@@ -8,7 +8,7 @@ dialog.innerHTML=`<button class="close" aria-label="Close generation">×</button
 <details id="generationInputDetails"><summary>Review and edit what gets sent</summary><p class="hint">This copy is sent to OpenAI. Remove or change anything you like here; your original journal stays unchanged.</p><label for="generationPayload">Text to send</label><textarea id="generationPayload" spellcheck="true" maxlength="450000"></textarea><button type="button" id="generationResetInput">Reset from my journal</button></details>
 <p id="generationReplace" class="hint" hidden>Regenerating replaces your saved text and edits. Download your current Markdown first if you want to keep it.</p>
 <label class="generation-check"><input type="checkbox" id="generationAgree"> I agree to send this journal data to OpenAI.</label>
-<button class="primary" id="generationSubmit" disabled>Generate my text</button> <button id="generationLocal">Cancel</button><button id="generationOwnLlm">Use my own AI instead</button>
+<button class="primary" id="generationSubmit" disabled>Generate my text</button> <button id="generationLocal">Cancel</button>
 <div id="generationLoading" class="generation-loading" role="status" aria-live="polite" hidden><span class="generation-spinner" aria-hidden="true"></span><span id="generationLoadingText">Creating your text…</span></div>
 <p id="generationStatus" role="status" aria-live="polite"></p>`;
 const textDialog=document.createElement('dialog');textDialog.id='miniographyDialog';
@@ -47,7 +47,7 @@ $('biographyDetailsContinue').onclick=()=>{
  commitAndSave();factsDialog.close();openGenerationChoice();
 };
 const choiceDialog=document.createElement('dialog');choiceDialog.id='generationChoiceDialog';choiceDialog.setAttribute('aria-labelledby','generationChoiceTitle');
-choiceDialog.innerHTML=`<button class="close" aria-label="Close">×</button><button type="button" class="dialog-back" id="generationChoiceBack">← Back</button><h2 id="generationChoiceTitle"></h2><p id="generationChoiceIntro"></p><div class="generation-methods"><section><h3>OpenAI</h3><p id="generationChoiceOpenAiText"></p><button class="primary" id="generationChoiceOpenAi">Use OpenAI</button><p class="hint" id="generationChoiceUnavailable"></p></section><section><h3 id="generationChoiceOwnTitle"></h3><p id="generationChoiceOwnText"></p><button id="generationChoiceOwn"></button></section></div>`;
+choiceDialog.innerHTML=`<button class="close" aria-label="Close">×</button><button type="button" class="dialog-back" id="generationChoiceBack">← Back</button><h2 id="generationChoiceTitle"></h2><p id="generationChoiceIntro"></p><div class="generation-methods"><section><h3>OpenAI</h3><p id="generationChoiceOpenAiText"></p><button class="primary" id="generationChoiceOpenAi">Use OpenAI</button><p class="hint" id="generationChoiceUnavailable"></p></section><section><h3 id="generationChoiceOwnTitle"></h3><p id="generationChoiceOwnText"></p><button class="primary" id="generationChoiceOwn"></button></section></div>`;
 document.body.append(choiceDialog);
 function openGenerationChoice(){
  if(!keepsakeRevealed&&!developmentCalendar())return;
@@ -221,7 +221,7 @@ $('ownLlmSave').onclick=()=>{
   persistGeneratedDraft();ownDialog.close();refreshSavedGeneration();openSavedText();
  }catch(error){$('ownLlmStatus').textContent=error.message}
 };
-$('generationOwnLlm').onclick=()=>openOwnLlm('generation');$('savedOwnLlm').onclick=()=>openOwnLlm('saved');
+$('savedOwnLlm').onclick=()=>openOwnLlm('saved');
 
 window.applyAccountCopy?.();
 

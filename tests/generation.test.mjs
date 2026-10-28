@@ -155,9 +155,9 @@ test('generation and saved-text headings use the familiar mini biography name',a
 
 test('copyable prompt includes edited reflections and writing rules without sending them to an API',async()=>{
  const p=await openPage();try{
- const original=await p.evaluate(()=>JSON.stringify(state)),count=calls.length;await showInputEditor(p);await p.locator('#generationPayload').fill('Only share my love of afternoon walks.');await p.locator('#generationOwnLlm').click();assert.equal(await p.locator('#ownLlmDialog').isVisible(),true);const prompt=await p.locator('#ownLlmPrompt').inputValue();assert(prompt.includes('Do not invent'));assert(prompt.includes('Only share my love of afternoon walks.'));assert(!prompt.includes('Alex'));assert(!prompt.includes('private-filename'));assert(prompt.includes('Requested output language: English'));assert((await p.locator('#ownLlmLocalHint').textContent()).includes('Local LLMs'));
+ const original=await p.evaluate(()=>JSON.stringify(state)),count=calls.length;await p.locator('#generationBack').click();await p.locator('#generationChoiceOwn').click();await p.locator('#ownLlmSourceTitle').click();await p.locator('#ownLlmSource').fill('Only share my love of afternoon walks.');assert.equal(await p.locator('#ownLlmDialog').isVisible(),true);const prompt=await p.locator('#ownLlmPrompt').inputValue();assert(prompt.includes('Do not invent'));assert(prompt.includes('Only share my love of afternoon walks.'));assert(!prompt.includes('Alex'));assert(!prompt.includes('private-filename'));assert(prompt.includes('Requested output language: English'));assert((await p.locator('#ownLlmLocalHint').textContent()).includes('Local LLMs'));
  const event=p.waitForEvent('download');await p.locator('#ownLlmDownload').click();const download=await event;const {readFile}=await import('node:fs/promises');assert.equal(download.suggestedFilename(),'mini-biography-prompt.txt');assert.equal(await readFile(await download.path(),'utf8'),prompt);assert.equal(calls.length,count);assert.equal(await p.evaluate(()=>JSON.stringify(state)),original);
- await p.locator('#ownLlmDialog .close').click();assert.equal(await p.locator('#generationDialog').isVisible(),true);assert.equal(await p.locator('#generationPayload').inputValue(),'Only share my love of afternoon walks.');assert.equal(await p.locator('#generationAgree').isChecked(),false);
+ await p.locator('#ownLlmDialog .close').click();assert.equal(await p.locator('#generationChoiceDialog').isVisible(),true);assert.equal(await p.locator('#generationAgree').isChecked(),false);
  }finally{await p.context().close()}
 });
 test('own-model prompt works without an API and its Markdown result saves locally',async()=>{
@@ -168,7 +168,7 @@ test('own-model prompt works without an API and its Markdown result saves locall
 });
 test('clipboard copies the complete own-model prompt and has a manual fallback',async()=>{
  const p=await openPage();try{
- await p.locator('#generationOwnLlm').click();let copied='';await p.exposeFunction('capturePrompt',value=>{copied=value});await p.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>window.capturePrompt(value)}}));await p.locator('#ownLlmCopy').click();assert.equal(copied,await p.locator('#ownLlmPrompt').inputValue());
+ await p.locator('#generationBack').click();await p.locator('#generationChoiceOwn').click();let copied='';await p.exposeFunction('capturePrompt',value=>{copied=value});await p.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>window.capturePrompt(value)}}));await p.locator('#ownLlmCopy').click();assert.equal(copied,await p.locator('#ownLlmPrompt').inputValue());
  await p.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied')}}}));await p.locator('#ownLlmCopy').click();assert((await p.locator('#ownLlmStatus').textContent()).includes('manually'));assert.equal(await p.locator('#ownLlmPrompt').isVisible(),true);
  }finally{await p.context().close()}
 });
@@ -177,10 +177,11 @@ test('nested dialogs offer Back and preserve edits while returning to their pare
  mode='ok';const p=await openPage();try{
  const count=calls.length;
  await p.locator('#generationInputDetails>summary').click();await p.locator('#generationPayload').fill('A reflection to keep while navigating.');
- await p.locator('#generationOwnLlm').click();await p.locator('#ownLlmBack').click();
- assert.equal(await p.locator('#generationDialog').isVisible(),true);
  assert.equal(await p.locator('#generationPayload').inputValue(),'A reflection to keep while navigating.');
- await p.locator('#generationBack').click();assert.equal(await p.locator('#generationChoiceDialog').isVisible(),true);await choiceBackToReveal(p);assert.equal(calls.length,count);
+ assert.equal(await p.locator('#generationOwnLlm').count(),0);
+ await p.locator('#generationBack').click();assert.equal(await p.locator('#generationChoiceDialog').isVisible(),true);
+ assert.equal(await p.locator('#generationChoiceOwn').getAttribute('class'),'primary');
+ assert.equal(await p.locator('#generationChoiceOpenAi').getAttribute('class'),'primary');await choiceBackToReveal(p);assert.equal(calls.length,count);
  await openOwnFromReveal(p);await p.locator('#ownLlmBack').click();assert.equal(await p.locator('#generationChoiceDialog').isVisible(),true);await choiceBackToReveal(p);
  await p.locator('#revealGenerate').click();await chooseOpenAI(p);await createText(p,'A saved draft.');
  await p.locator('#generationMarkdown').fill('My edited saved draft.');await p.locator('#generationRegenerate').click();await p.locator('#generationBack').click();
