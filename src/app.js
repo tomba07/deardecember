@@ -45,12 +45,12 @@ function startCalendarClock(){
 }
 function doorComplete(index){
  if(index===23)return keepsakeRevealed;
- return dayEntries(index).some(entry=>entry.text.trim())||(index===0&&Object.values(state.profile).some(value=>typeof value==='string'&&value.trim()));
+ return dayEntries(index).some(entry=>entry.text.trim());
 }
 function doorStatus(index){
  if(!unlocked(index))return 'locked';
  if(doorComplete(index))return 'completed';
- if(openedDoors.includes(index)||dayEntries(index).some(entry=>entry.text.trim())||(index===0&&Object.values(state.profile).some(value=>value?.trim())))return 'pending';
+ if(openedDoors.includes(index)||dayEntries(index).some(entry=>entry.text.trim()))return 'pending';
  return 'unopened';
 }
 function render(){
@@ -117,7 +117,7 @@ function openDoor(index){
  $('aboutDialog').close();if(!openedDoors.includes(index)){openedDoors.push(index);save()}if(index===23){story(true);return}
  commitAndSave();current=index;selectedQuestion=dayEntries(index).find(entry=>entry.text.trim())||null;choosingQuestion=selectedQuestion===null;
  $('dayLabel').textContent=`${lang==='de'?'TÜR':'DOOR'} ${String(index+1).padStart(2,'0')}`;$('title').textContent=(lang==='de'?deThemes:themes)[index];
- $('answer').placeholder=lang==='de'?'Fang einfach an. Jedes kleine Detail zählt.':'Start anywhere. A little detail can hold a whole memory…';renderCalendarFacts();renderQuestionChoices();renderPhotos();renderDoorIntroduction(index);if(!editor.open)editor.showModal();animateDoorOpening(editor);
+ $('answer').placeholder=lang==='de'?'Fang einfach an. Jedes kleine Detail zählt.':'Start anywhere. A little detail can hold a whole memory…';renderQuestionChoices();renderPhotos();renderDoorIntroduction(index);if(!editor.open)editor.showModal();animateDoorOpening(editor);
 }
 $('answer').oninput=()=>writeQuestionAnswer($('answer').value);
 $('answer').onblur=()=>commitAndSave();
@@ -158,7 +158,7 @@ function story(reveal=false){
  keepsakeRevealed=true;commitAndSave();applyWelcomeCopy();$('revealName').textContent=state.profile.name||(lang==='de'?'dich':'you');
  if(!$('revealDialog').open){$('revealDialog').showModal();animateDoorOpening($('revealDialog'))}
 }
-function downloadRevealJournal(){if(!keepsakeRevealed)return;commitAndSave();if(factsComplete())exportArchive();else exportDraftBackup()}
+function downloadRevealJournal(){if(!keepsakeRevealed)return;exportDraftBackup()}
 let editingEntry=null;
 function renderCollectionEntries(){
  $('collectionEntries').replaceChildren();state.entries.forEach((entry,index)=>{
@@ -199,7 +199,7 @@ function preparePrintStory(collection=state,assets=media){
 async function printStory(){const sheet=preparePrintStory();await Promise.all([...sheet.querySelectorAll('img')].map(image=>image.decode().catch(()=>{})));window.print()}
 function applyLanguage(){
  document.documentElement.lang=lang;$('language').textContent=lang==='de'?'DE / EN':'EN / DE';$('calendarTitle').textContent=lang==='de'?'Dein Dezember voller Erinnerungen':'Your December of memories';applyWelcomeCopy();render();
- if(editor.open){renderDoorIntroduction(current);$('title').textContent=(lang==='de'?deThemes:themes)[current];renderCalendarFacts();renderQuestionChoices();renderPhotos()}
+ if(editor.open){renderDoorIntroduction(current);$('title').textContent=(lang==='de'?deThemes:themes)[current];renderQuestionChoices();renderPhotos()}
 }
 function toggleLang(){commitEdits();lang=lang==='en'?'de':'en';state.language=lang;save();applyLanguage()}
 function downloadBlob(blob,name){const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000)}

@@ -1,7 +1,7 @@
-function renderCalendarFacts(){
- $('calendarFacts').hidden=current!==0;if(current!==0)return;
- $('factsTitle').textContent=lang==='de'?'Ein paar Fakten zum Anfang':'A few facts to begin';
- $('factsHint').textContent=lang==='de'?'Hier gehören die Grundlagen deiner Geschichte hin. Du kannst dieses Türchen jederzeit wieder öffnen und etwas ergänzen oder ändern.':'Keep the basics of your story here. You can come back to this door to add or change them.';
+function renderBiographyFacts(){
+ $('calendarFacts').hidden=false;
+ $('factsTitle').textContent=lang==='de'?'Ein paar Angaben zu dir':'A few details about you';
+ $('factsHint').textContent=lang==='de'?'Diese Angaben helfen, deinen Text einzuordnen. Ergänze nur, was du aufnehmen möchtest.':'These details give your text some context. Add only what you’d like to include.';
  $('factNameLabel').textContent=lang==='de'?'Dein Name':'Your name';$('factBirthdayLabel').textContent=lang==='de'?'Geburtsdatum':'Birthday';$('factBirthplaceLabel').textContent=lang==='de'?'Geburtsort':'Birthplace';$('birthplace').placeholder=lang==='de'?'Stadt / Region, Land':'City / region, country';
  $('name').value=state.profile.name;$('birthday').type=lang==='de'?'text':'date';$('birthday').placeholder=lang==='de'?'TT/MM/JJJJ':'';$('birthday').inputMode=lang==='de'?'numeric':'';$('birthday').value=lang==='de'?numericBirthday(state.profile.dateOfBirth):state.profile.dateOfBirth||'';$('birthplace').value=state.profile.placeOfBirth||'';$('birthday').max=new Date().toLocaleDateString('en-CA');renderResidences();renderFactsError();
 }

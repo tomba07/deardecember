@@ -6,14 +6,13 @@ This is the agreed content plan for the 24 named doors. The sequence moves from 
 
 Implementation status: the app currently uses an earlier set of 23 memory topics plus a story-reveal door. The list below is agreed, but has not yet been applied to the app. In particular, the planned door 24 includes a real question as well as the story reveal.
 
-## Basic facts in the calendar
+## Basic details when creating a mini biography
 
-The first door, “Your beginnings”, includes the basic facts as part of the calendar experience. There is no separate profile page or popup:
+Door 1 starts with a reflection, just like the other memory doors. Name, birthday, birthplace and optional free-form places lived are collected when someone chooses to create a mini biography, before choosing an AI method. These details are optional context for the text and can be edited when returning to the creation flow. Previously recorded details are retained.
 
-- Door 1 offers name, full birthday and birthplace. The generic archive schema does not require personal facts. Other doors can be answered before these facts are complete.
-- Places lived is an optional free-form text field. A hint suggests places and approximate years.
+Basic details do not count toward completing door 1. Each memory door is completed by saving a reflection. Backups include the journal regardless of whether personal details have been provided.
 
-The facts record where and when; the questions invite memories about what those places and experiences felt like. People do not need to repeat facts in a written answer. For reuse, these facts are ordinary tagged text records (`person:name`, `person:date-of-birth`, `person:place-of-birth`, `person:places-lived`), with no separate profile object.
+The archive stores these details as generic tagged text records (`person:name`, `person:date-of-birth`, `person:place-of-birth`, `person:places-lived`), with no separate profile object.
 
 ## Topics
 

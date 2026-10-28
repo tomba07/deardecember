@@ -25,8 +25,27 @@ $('generationPayload').oninput=()=>{sourceEdited=true;resetGenerationConsent();$
 $('generationResetInput').onclick=()=>{refreshPreview();$('generationStatus').textContent='Restored a fresh copy from your journal.'};
 function openGeneration(){
  if(!keepsakeRevealed&&!developmentCalendar())return;
- if(generatedDraft)openSavedText();else openGenerationChoice();
+ if(generatedDraft)openSavedText();else openBiographyDetails();
 }
+const factsDialog=document.createElement('dialog');factsDialog.id='biographyDetailsDialog';factsDialog.setAttribute('aria-labelledby','factsTitle');
+factsDialog.innerHTML=`<button class="close" aria-label="Close">×</button><button type="button" class="dialog-back" id="biographyDetailsBack">← Back</button><button class="primary" id="biographyDetailsContinue">Continue</button>`;
+factsDialog.insertBefore($('calendarFacts'),factsDialog.querySelector('#biographyDetailsContinue'));
+document.body.append(factsDialog);
+function openBiographyDetails(){
+ if(!keepsakeRevealed&&!developmentCalendar())return;
+ updateDialogBackLabels();renderBiographyFacts();
+ $('biographyDetailsContinue').textContent=lang==='de'?'Weiter':'Continue';
+ $('revealDialog').close();textDialog.close();
+ if(!factsDialog.open)factsDialog.showModal();
+}
+function closeBiographyDetails(){commitAndSave();factsDialog.close();story()}
+$('biographyDetailsBack').onclick=closeBiographyDetails;
+factsDialog.querySelector('.close').onclick=closeBiographyDetails;
+factsDialog.addEventListener('cancel',event=>{event.preventDefault();closeBiographyDetails()});
+$('biographyDetailsContinue').onclick=()=>{
+ if($('birthday').value&&!validBirthday()){renderFactsError();$('birthday').focus();return}
+ commitAndSave();factsDialog.close();openGenerationChoice();
+};
 const choiceDialog=document.createElement('dialog');choiceDialog.id='generationChoiceDialog';choiceDialog.setAttribute('aria-labelledby','generationChoiceTitle');
 choiceDialog.innerHTML=`<button class="close" aria-label="Close">×</button><button type="button" class="dialog-back" id="generationChoiceBack">← Back</button><h2 id="generationChoiceTitle"></h2><p id="generationChoiceIntro"></p><div class="generation-methods"><section><h3>OpenAI</h3><p id="generationChoiceOpenAiText"></p><button class="primary" id="generationChoiceOpenAi">Use OpenAI</button><p class="hint" id="generationChoiceUnavailable"></p></section><section><h3 id="generationChoiceOwnTitle"></h3><p id="generationChoiceOwnText"></p><button id="generationChoiceOwn"></button></section></div>`;
 document.body.append(choiceDialog);
@@ -41,7 +60,7 @@ function openGenerationChoice(){
  $('revealDialog').close();textDialog.close();dialog.close();
  if(!choiceDialog.open)choiceDialog.showModal();
 }
-function closeGenerationChoice(){choiceDialog.close();if(generatedDraft)openSavedText();else story()}
+function closeGenerationChoice(){choiceDialog.close();if(generatedDraft)openSavedText();else openBiographyDetails()}
 $('generationChoiceBack').onclick=closeGenerationChoice;
 choiceDialog.querySelector('.close').onclick=closeGenerationChoice;
 choiceDialog.addEventListener('cancel',event=>{event.preventDefault();closeGenerationChoice()});
