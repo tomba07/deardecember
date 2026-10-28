@@ -53,11 +53,10 @@ const doorMoments={
  ['Ein Weihnachtsgruß, Erinnerungen zum Aufheben und etwas, das daraus werden kann.', 'Kleine Weihnachtsmomente, in deinen eigenen Worten bewahrt.']
  ]
 };
-let doorMomentTimer;
 function renderDoorIntroduction(index){$('doorDescription').textContent=doorMoments[lang][index][0]}
 const openingCleanups=new WeakMap();
 function animateDoorOpening(dialog){
- $('doorMoment').hidden=true;clearTimeout(doorMomentTimer);openingCleanups.get(dialog)?.();
+ openingCleanups.get(dialog)?.();
  dialog.classList.add('door-opening');
  const motion=matchMedia('(prefers-reduced-motion: reduce)');if(motion.matches)return;
  dialog.scrollTop=0;
@@ -80,10 +79,4 @@ function animateDoorOpening(dialog){
  overlay.addEventListener('animationend',event=>{if(event.target===overlay&&event.animationName==='door-overlay-away')finish(true)});
 }
 
-function showDoorMoment(index,hasContent=true){
- const notice=$('doorMoment');notice.querySelector('button').setAttribute('aria-label',lang==='de'?'Nachricht schließen':'Dismiss message');$('doorMomentSymbol').textContent=symbols[index];
- $('doorMomentText').textContent=hasContent?doorMoments[lang][index][1]:(lang==='de'?'Auch eine kleine Pause zählt. Komm wieder, wann du magst.':'A little pause counts too. Come back whenever you like.');
- notice.hidden=false;clearTimeout(doorMomentTimer);doorMomentTimer=setTimeout(()=>{notice.hidden=true},6500);
-}
-function closeDoorReveal(){$('revealDialog').close();showDoorMoment(23)}
-$('revealDialog').addEventListener('cancel',()=>showDoorMoment(23));
+function closeDoorReveal(){$('revealDialog').close()}

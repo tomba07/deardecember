@@ -122,7 +122,7 @@ function openDoor(index){
 $('answer').oninput=()=>writeQuestionAnswer($('answer').value);
 $('answer').onblur=()=>commitAndSave();
 editor.addEventListener('close',()=>commitAndSave());
-function saveAndCloseDoor(){const saved=commitAndSave();editor.close();const door=$('grid').children[current];door?.focus({preventScroll:true});door?.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});if(saved)showDoorMoment(current,doorComplete(current))}
+function saveAndCloseDoor(){commitAndSave();editor.close();const door=$('grid').children[current];door?.focus({preventScroll:true});door?.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}
 
 function selectedEntry(){return selectedQuestion===null?null:entryForChoice(current,selectedQuestion)}
 function attachedPhotos(entry){if(!entry)return [];const result=[];for(let index=state.entries.indexOf(entry)+1;state.entries[index]?.type==='photo';index++)result.push(state.entries[index]);return result}
