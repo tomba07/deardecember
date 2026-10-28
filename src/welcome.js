@@ -1,7 +1,7 @@
 const welcomeCopy={
  en:{
-  introEyebrow:'WELCOME TO DEAR DECEMBER',introTitle:'Small moments. A little reflection.',introLanguage:'Deutsch',
-  introIdea:'An advent calendar for the mind: a little time to pause, reflect and journal during this time of year. Each door offers questions about your life, with small moments as a starting point. Follow a memory, a thought or whatever feels worth writing down.',
+  introEyebrow:'WELCOME TO DEAR DECEMBER',introTitle:'Small moments. A little reflection.',introLanguage:'Deutsch',introPause:'A little time for yourself.',introNotice:'Small moments worth remembering.',introKeep:'Your words. Yours to keep.',introDetails:'How it works & where your words are saved',
+  introIdea:'An advent calendar for the mind. Behind each door, a few questions invite you to reflect and write about your life — as much or as little as you like.',
   introStorageTitle:'Your journal stays with you.',introStorage:'Your entries are saved in this browser, without an account. There is no automatic upload or device sync.',
   introTransfer:'“Download my journal” saves your writing and photos together in one journal file. Keep it as a backup, or use “Open an existing journal” on another device to continue there.',
   introOwnership:'Your information belongs to you. No advertising or central collection of your entries. Keep a downloaded copy before clearing browser data.',introSkip:'Skip intro',introStart:'Get started →',aboutIntro:'About Dear December',aboutNav:'About',
@@ -19,8 +19,8 @@ const welcomeCopy={
   journalTop:'Dear',journalBottom:'THOUGHTS & MEMORIES',seal:'a little time<br>for <em>you</em>'
  },
  de:{
-  introEyebrow:'WILLKOMMEN BEI DEAR DECEMBER',introTitle:'Kleine Momente. Ein wenig Zeit zum Nachdenken.',introLanguage:'English',
-  introIdea:'Ein Adventskalender für den Kopf: ein wenig Zeit, um in dieser Jahreszeit innezuhalten, nachzudenken und zu schreiben. Jedes Türchen bietet Fragen zu deinem Leben, mit kleinen Momenten als Einstieg. Folge einer Erinnerung, einem Gedanken oder dem, was du festhalten möchtest.',
+  introEyebrow:'WILLKOMMEN BEI DEAR DECEMBER',introTitle:'Kleine Momente. Ein wenig Zeit zum Nachdenken.',introLanguage:'English',introPause:'Ein wenig Zeit für dich.',introNotice:'Kleine Momente zum Erinnern.',introKeep:'Deine Worte bleiben deine.',introDetails:'So funktioniert’s & hier bleiben deine Worte',
+  introIdea:'Ein Adventskalender für den Kopf. Hinter jedem Türchen laden dich ein paar Fragen ein, über dein Leben nachzudenken und zu schreiben — so viel oder so wenig du möchtest.',
   introStorageTitle:'Dein Tagebuch bleibt bei dir.',introStorage:'Deine Einträge bleiben in diesem Browser, ohne Konto. Es gibt keinen automatischen Upload oder Geräteabgleich.',
   introTransfer:'Mit „Mein Tagebuch herunterladen“ speicherst du Texte und Fotos zusammen in einer Tagebuchdatei. Behalte sie als Sicherung oder nutze auf einem anderen Gerät „Vorhandenes Tagebuch öffnen“, um dort weiterzuschreiben.',
   introOwnership:'Deine Informationen gehören dir. Keine Werbung und keine zentrale Sammlung deiner Einträge. Lade eine Kopie herunter, bevor du Browserdaten löschst.',introSkip:'Einführung überspringen',introStart:'Los geht’s →',aboutIntro:'Über Dear December',aboutNav:'Über',
