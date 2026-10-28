@@ -25,8 +25,28 @@ $('generationPayload').oninput=()=>{sourceEdited=true;resetGenerationConsent();$
 $('generationResetInput').onclick=()=>{refreshPreview();$('generationStatus').textContent='Restored a fresh copy from your journal.'};
 function openGeneration(){
  if(!keepsakeRevealed&&!developmentCalendar())return;
- if(generatedDraft)openSavedText();else openGenerationConsent();
+ if(generatedDraft)openSavedText();else openGenerationChoice();
 }
+const choiceDialog=document.createElement('dialog');choiceDialog.id='generationChoiceDialog';choiceDialog.setAttribute('aria-labelledby','generationChoiceTitle');
+choiceDialog.innerHTML=`<button class="close" aria-label="Close">×</button><button type="button" class="dialog-back" id="generationChoiceBack">← Back</button><h2 id="generationChoiceTitle"></h2><p id="generationChoiceIntro"></p><div class="generation-methods"><section><h3>OpenAI</h3><p id="generationChoiceOpenAiText"></p><button class="primary" id="generationChoiceOpenAi">Use OpenAI</button><p class="hint" id="generationChoiceUnavailable"></p></section><section><h3 id="generationChoiceOwnTitle"></h3><p id="generationChoiceOwnText"></p><button id="generationChoiceOwn"></button></section></div>`;
+document.body.append(choiceDialog);
+function openGenerationChoice(){
+ if(!keepsakeRevealed&&!developmentCalendar())return;
+ updateDialogBackLabels();
+ const de=lang==='de';
+ const copy=de?{generationChoiceTitle:'Deine Mini-Biografie erstellen',generationChoiceIntro:'Wähle, wie du aus deinen Einträgen einen Text machen möchtest.',generationChoiceOpenAiText:'Hier erstellen lassen. Vor dem Senden kannst du deine Angaben prüfen und bearbeiten.',generationChoiceOpenAi:'Mit OpenAI erstellen',generationChoiceOwnTitle:'Deine eigene KI',generationChoiceOwnText:'Nimm den Prompt und deine Gedanken mit zu deiner bevorzugten KI. Auch ein lokales Modell ist möglich.',generationChoiceOwn:'Prompt mitnehmen'}:{generationChoiceTitle:'Create your mini biography',generationChoiceIntro:'Choose how you’d like to turn your entries into a text.',generationChoiceOpenAiText:'Generate it here. You can review and edit what gets sent before agreeing.',generationChoiceOpenAi:'Use OpenAI',generationChoiceOwnTitle:'Your own AI',generationChoiceOwnText:'Take the prompt and your reflections to your preferred AI. A local model works too.',generationChoiceOwn:'Get the prompt'};
+ for(const [id,text]of Object.entries(copy))$(id).textContent=text;
+ $('generationChoiceOpenAi').disabled=!generationConfig?.available;
+ $('generationChoiceUnavailable').textContent=generationConfig?.available?'':(de?'Hier derzeit nicht eingerichtet.':'Not currently configured here.');
+ $('revealDialog').close();textDialog.close();dialog.close();
+ if(!choiceDialog.open)choiceDialog.showModal();
+}
+function closeGenerationChoice(){choiceDialog.close();if(generatedDraft)openSavedText();else story()}
+$('generationChoiceBack').onclick=closeGenerationChoice;
+choiceDialog.querySelector('.close').onclick=closeGenerationChoice;
+choiceDialog.addEventListener('cancel',event=>{event.preventDefault();closeGenerationChoice()});
+$('generationChoiceOpenAi').onclick=()=>{choiceDialog.close();openGenerationConsent()};
+$('generationChoiceOwn').onclick=()=>{choiceDialog.close();openOwnLlm('choice')};
 function updateDialogBackLabels(){for(const button of document.querySelectorAll('.dialog-back'))button.textContent=lang==='de'?'← Zurück':'← Back'}
 function openGenerationConsent(){
  updateDialogBackLabels();
@@ -48,7 +68,7 @@ function openSavedText(){
  if(!textDialog.open)textDialog.showModal();
 }
 $('generationAgree').onchange=()=>{$('generationSubmit').disabled=!$('generationAgree').checked||!generationConfig?.available||generating};
-function closeGeneration(){controller?.abort();dialog.close();if(generatedDraft)openSavedText();else story()}
+function closeGeneration(){controller?.abort();dialog.close();if(generatedDraft)openSavedText();else openGenerationChoice()}
 function closeSavedText(){textDialog.close();story()}
 $('generationBack').onclick=closeGeneration;
 dialog.querySelector('.close').onclick=closeGeneration;$('generationLocal').onclick=closeGeneration;
@@ -111,13 +131,13 @@ refreshSavedGeneration();
 loadGenerationConfig();
 
 function refreshRevealGeneration(){
- const available=Boolean(generationConfig?.available||generatedDraft);
+ const available=true;
  $('revealGenerate').disabled=!available;
- $('revealGenerate').textContent=generatedDraft?(lang==='de'?'Meinen erstellten Text öffnen ↗':'Open my saved text ↗'):(lang==='de'?'Meinen Text erstellen ↗':'Create my text ↗');
+ $('revealGenerate').textContent=generatedDraft?(lang==='de'?'Meinen erstellten Text öffnen ↗':'Open my saved text ↗'):(lang==='de'?'Mini-Biografie erstellen':'Create a mini biography');
  $('revealGenerationHint').textContent=generatedDraft?(window.accountPersistence?.enabled?(lang==='de'?'Dein Text wird in deinem Konto gespeichert. Du kannst ihn bearbeiten, herunterladen und drucken.':'Your text is saved to your account. You can edit, download and print it.'):(lang==='de'?'Dein Text ist lokal gespeichert. Du kannst ihn bearbeiten, herunterladen und drucken.':'Your text is saved locally. You can edit, download and print it.')):available?'':(lang==='de'?'Die integrierte KI-Erstellung ist noch nicht eingerichtet. Du kannst trotzdem deine eigene KI nutzen.':'Built-in generation is not set up here. You can still use your own AI.');
 }
 window.refreshRevealGeneration=refreshRevealGeneration;
-$('revealGenerate').onclick=()=>{if(!generationConfig?.available&&!generatedDraft)return;$('revealDialog').close();openGeneration()};
+$('revealGenerate').onclick=()=>{$('revealDialog').close();openGeneration()};
 refreshRevealGeneration();
 
 // A fully local alternative: take the same writing instructions to any chosen model.
@@ -140,7 +160,7 @@ function openOwnLlm(origin='reveal'){
  $('ownLlmSave').textContent=lang==='de'?(generatedDraft?'Meinen Text ersetzen':'Meinen Text speichern'):(generatedDraft?'Replace my saved text':'Save my text');
  dialog.close();textDialog.close();$('revealDialog').close();resetGenerationConsent();ownDialog.showModal();
 }
-function closeOwnLlm(){ownDialog.close();if(ownOrigin==='generation')dialog.showModal();else if(ownOrigin==='saved'&&generatedDraft)openSavedText();else story()}
+function closeOwnLlm(){ownDialog.close();if(ownOrigin==='generation')dialog.showModal();else if(ownOrigin==='choice')openGenerationChoice();else if(ownOrigin==='saved'&&generatedDraft)openSavedText();else story()}
 $('ownLlmBack').onclick=closeOwnLlm;
 ownDialog.querySelector('.close').onclick=closeOwnLlm;ownDialog.addEventListener('cancel',event=>{event.preventDefault();closeOwnLlm()});
 $('ownLlmSource').oninput=()=>{refreshOwnPrompt();$('ownLlmStatus').textContent=''};
@@ -158,7 +178,7 @@ $('ownLlmSave').onclick=()=>{
   persistGeneratedDraft();ownDialog.close();refreshSavedGeneration();openSavedText();
  }catch(error){$('ownLlmStatus').textContent=error.message}
 };
-$('revealOwnLlm').onclick=()=>openOwnLlm();$('generationOwnLlm').onclick=()=>openOwnLlm('generation');$('savedOwnLlm').onclick=()=>openOwnLlm('saved');
+$('generationOwnLlm').onclick=()=>openOwnLlm('generation');$('savedOwnLlm').onclick=()=>openOwnLlm('saved');
 
 window.applyAccountCopy?.();
 
