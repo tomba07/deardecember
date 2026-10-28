@@ -1,100 +1,228 @@
 # The 24 doors of Dear December
 
-The calendar is one starting experience for the broader [project purpose and principles](project-principles.md). Its questions should invite ordinary facts and memories without asking people to prove that their lives are impressive.
+The calendar follows a loose timeline: childhood, teenage years, independence and adventures, life today, then what lies ahead. It invites concrete everyday details without requiring an intimate or comprehensive life history. People can answer from another period when that fits better.
 
-This is the agreed content plan for the 24 named doors. The sequence moves from concrete memories to everyday personality, reflection and the future. It is the editorial reference for question writing and future catalog changes.
+Each memory door offers three questions and a free-memory option. One reflection per door is enough. Returning opens the saved answer for editing; “Save & close” returns to the calendar. Childhood fears have a neutral bedtime alternative. Adventures need not involve travel. Deeper reflection, including “What gives your life meaning?”, is optional.
 
-Implementation status: the app currently uses an earlier set of 23 memory topics plus a story-reveal door. The list below is agreed, but has not yet been applied to the app. In particular, the planned door 24 includes a real question as well as the story reveal.
+Name, birthday, birthplace and optional free-form places lived are collected when creating a mini biography, not in door 1. All are optional. Door 24 remains the Christmas reveal and requires all 23 memory doors to be completed.
 
-## Basic details when creating a mini biography
+## Questions
 
-Door 1 starts with a reflection, just like the other memory doors. Name, birthday, birthplace and optional free-form places lived are collected when someone chooses to create a mini biography, before choosing an AI method. These details are optional context for the text and can be edited when returning to the creation flow. Previously recorded details are retained.
+### 01 · Your beginnings / Deine Anfänge
 
-Basic details do not count toward completing door 1. Each memory door is completed by saving a reflection. Backups include the journal regardless of whether personal details have been provided.
+- Where did you grow up?
+  German: Wo bist du aufgewachsen?
+- What is one of your earliest memories?
+  German: Was ist eine deiner frühesten Erinnerungen?
+- What have you heard about the place where you were born?
+  German: Was wurde dir über deinen Geburtsort erzählt?
 
-The archive stores these details as generic tagged text records (`person:name`, `person:date-of-birth`, `person:place-of-birth`, `person:places-lived`), with no separate profile object.
+### 02 · A place called home / Ein Ort namens Zuhause
 
-## Topics
+- What was your home like growing up?
+  German: Wie sah dein Zuhause als Kind aus?
+- What could you see from your window?
+  German: Was konntest du aus deinem Fenster sehen?
+- What shops or landmarks were near your home?
+  German: Welche Geschäfte oder besonderen Orte waren in der Nähe?
 
-| Door | Name | What it captures |
-| --- | --- | --- |
-| 1 | Your beginnings | Family stories about your arrival, your name and your earliest memories. |
-| 2 | A place called home | Childhood homes, neighbourhoods, favourite corners and the feeling of belonging. |
-| 3 | Childhood treasures | Toys, games, collections and small things that once meant everything. |
-| 4 | Your younger world | What you did after school, childhood adventures and how you imagined adulthood. |
-| 5 | Around the table | Favourite foods, family meals, recipes and tastes that bring memories back. |
-| 6 | Little traditions | Celebrations, holidays and rituals you inherited, changed or created. |
-| 7 | School days | Subjects, teachers, classmates and moments of learning or mischief. |
-| 8 | The people who shaped you | Family, role models, mentors and people whose influence stayed with you. |
-| 9 | Friendship | How friendships began, shared experiences and what makes someone your person. |
-| 10 | Love and connection | People you care about, ways you show affection and moments of feeling understood. Romantic stories are optional. |
-| 11 | The soundtrack of your life | Favourite music, first concerts and songs tied to people or moments. |
-| 12 | Stories that stayed with you | Books, films, television, art and words you keep returning to. |
-| 13 | Finding your own way | First independence, early jobs, first earnings and learning to make your own choices. |
-| 14 | The work of your hands | Work, making, caring, volunteering and contributions that matter to you. |
-| 15 | Beyond the familiar | Travel, adventures, unexpected encounters and experiences of somewhere new. |
-| 16 | Things you love doing | Hobbies, sports, skills and activities that make you forget the time. |
-| 17 | An ordinary day | Coffee, routines, small pleasures and what a good everyday life looks like. |
-| 18 | Your particular ways | Habits, quirks, preferences, humour and details people would recognise as yours. |
-| 19 | Moments that changed something | Decisions, fresh starts, surprises and gradual changes in direction. |
-| 20 | Finding your footing | Challenges, mistakes, sources of support and things you learned along the way. |
-| 21 | What matters to you | Values, changing opinions, hopes and your understanding of a good life. |
-| 22 | A word to your younger self | Advice, reassurance and things you now see differently. |
-| 23 | Still to come | Curiosity, unfinished dreams, skills to learn and experiences you look forward to. |
-| 24 | A little of you, kept | A message for future generations and a chance to read, edit and save your mini biography. |
+### 03 · Childhood treasures / Kindheitsschätze
 
-## Questions and interaction
+- What did you love playing with as a child?
+  German: Womit hast du als Kind am liebsten gespielt?
+- Did you collect anything?
+  German: Hast du etwas gesammelt?
+- Which childhood book, film or game do you remember?
+  German: An welches Buch, welchen Film oder welches Spiel aus deiner Kindheit erinnerst du dich?
 
-Each door keeps its name and offers three distinct entry points: a quick detail, a concrete memory and a reflective question. These are editorial guidelines, not difficulty levels to display. A free-memory option lets people write something of their own.
+### 04 · Your younger world / Deine Welt als Kind
 
-Unopened calendar doors show numbers and decoration without topic names; clicking an available door reveals its name and question picker. Opened doors retain their topic labels when revisited.
+- What did you do after school?
+  German: Was hast du nach der Schule gemacht?
+- Where did you play outside?
+  German: Wo hast du draußen gespielt?
+- What did a usual afternoon look like when you were a child?
+  German: Wie sah ein gewöhnlicher Nachmittag als Kind aus?
 
-Each door holds one reflection. On the first visit, choose a question and write your answer. Returning to the door opens that answer for editing. You can skip a door or return later; a short answer counts. Entries created with earlier versions remain available under About → Manage original entries.
+### 05 · Things that seemed scary / Was damals unheimlich war
 
-“Save & close” returns to the calendar. It does not open the next door. Door 24 offers a final message as well as the story reveal. Before December 24, people read and edit entries through their individual doors. The final door introduces the combined mini biography with a personal reveal and PDF option; both remain available afterward. The welcome explanation focuses on journaling and reflection.
+- Were you afraid of anything as a child?
+  German: Hattest du als Kind vor etwas Angst?
+- Was there something that turned out to be less scary than expected?
+  German: War etwas am Ende weniger unheimlich als gedacht?
+- What made your room feel cosy at bedtime?
+  German: Was hat dein Zimmer abends gemütlich gemacht?
 
-The current “What matters most” door also offers “What gives your life meaning?” (“Was gibt deinem Leben Sinn?”) as an optional question.
+### 06 · Around the table / Rund um den Tisch
 
-## Question-writing guidelines
+- What was your favourite meal growing up?
+  German: Was war dein Lieblingsessen als Kind?
+- What do you like eating now?
+  German: Was isst du heute gerne?
+- What food reminds you of a particular person?
+  German: Welches Essen erinnert dich an einen bestimmten Menschen?
 
-- Capture the essence of a person through ordinary details and specific memories. Avoid demanding a comprehensive or impressive biography.
-- Future generations may be especially curious about everyday routines, objects, food, humour and local life. Invite those details without requiring advice, moral lessons or profound reflections.
-- Prefer “a moment you remember fondly” to ranking an entire life with “your greatest” or “your best”.
-- Include different kinds of lives. Work includes unpaid care and contributions; connection includes people beyond romantic partners.
-- Do not presume marriage, children, pets, formal education, paid employment or international travel. Offer an entry point people can relate to without those experiences.
-- Keep painful or intimate stories optional. Romance, embarrassment and distress are different kinds of material and should not be bundled into one category.
-- Avoid overlapping prompts across doors. Use each topic's stated focus to decide where a question belongs.
-- Keep original question wording with the answer in the archive. Revising a catalog question must not rewrite existing entries.
-- Write English and German versions with the same intent and a natural voice in each language.
+### 07 · Little traditions / Kleine Traditionen
 
-The question catalog will flesh out these topics; this document records the agreed names, boundaries and interaction rather than a final list of every prompt.
+- How did you celebrate birthdays growing up?
+  German: Wie habt ihr früher Geburtstage gefeiert?
+- What did you usually do during the holidays?
+  German: Was habt ihr an Feiertagen meistens gemacht?
+- Is there a little tradition you still enjoy?
+  German: Welche kleine Tradition magst du bis heute?
 
-## Current main questions
+### 08 · School days / Schulzeit
 
-The live catalog leads with concrete memories and everyday details. Deeper reflection remains optional, including “What gives your life meaning?”. Revised questions never replace the wording attached to existing entries. Door 24 remains the Christmas reveal. The current names below replace the earlier live names “A proud moment”, “Through difficult times” and “A letter to your younger self”.
+- What was a usual school day like?
+  German: Wie sah ein gewöhnlicher Schultag aus?
+- What subject did you enjoy?
+  German: Welches Schulfach mochtest du?
+- What do you remember about your journey to school?
+  German: Woran erinnerst du dich bei deinem Schulweg?
 
-| Door | Main question |
-| --- | --- |
-| 1 | What is one of your earliest memories? |
-| 2 | What could you see from your childhood bedroom window? |
-| 3 | What did you love playing after school? |
-| 4 | Who did you spend time with growing up? |
-| 5 | What was usually on the table at a family celebration? |
-| 6 | What clothes or hairstyle did you love as a teenager? |
-| 7 | What did you and your friends do for fun? |
-| 8 | What’s something you learned to do outside school? |
-| 9 | What do you remember about an early trip away from home? |
-| 10 | What hobby have you spent a lot of time on? |
-| 11 | Who introduced you to something you still enjoy? |
-| 12 | What changed in your everyday life when you moved, started something new or changed your routine? |
-| 13 | What’s something you’ve enjoyed making or fixing? |
-| 14 | Which place would you like to return to, and why? |
-| 15 | What’s a small thing you look forward to during the week? |
-| 16 | What’s something you’re particular about—food, tidiness, timing or something else? |
-| 17 | What’s something you learned to do that took a bit of practice? |
-| 18 | What helps you unwind after a long day? |
-| 19 | What do you like to make time for, even in a busy week? |
-| 20 | What would you do with a free afternoon? |
-| 21 | What did you imagine adult life would be like when you were a child? |
-| 22 | What’s something you’d like to try or learn? |
-| 23 | What ordinary thing about life today might surprise someone in 100 years? |
+### 09 · Childhood friends / Kindheitsfreunde
+
+- Who did you spend time with as a child?
+  German: Mit wem hast du als Kind viel Zeit verbracht?
+- What did you and your friends do together?
+  German: Was habt ihr im Freundeskreis zusammen gemacht?
+- Where did you usually meet?
+  German: Wo habt ihr euch meistens getroffen?
+
+### 10 · Your teenage years / Deine Jugend
+
+- What did you do at weekends as a teenager?
+  German: Was hast du als Teenager am Wochenende gemacht?
+- What music did you listen to?
+  German: Welche Musik hast du gehört?
+- What clothes or hairstyle did you like?
+  German: Welche Kleidung oder Frisur mochtest du?
+
+### 11 · Finding your own way / Dein eigener Weg
+
+- What was your first job like?
+  German: Wie war dein erster Job?
+- What did you buy with your own money?
+  German: Was hast du dir von deinem eigenen Geld gekauft?
+- What did you enjoy doing on your own for the first time?
+  German: Was hast du zum ersten Mal gerne allein gemacht?
+
+### 12 · Beyond the familiar / Über das Vertraute hinaus
+
+- What’s the biggest adventure you’ve experienced? What happened?
+  German: Was war dein größtes Abenteuer? Was ist passiert?
+- What do you remember about a trip somewhere unfamiliar?
+  German: Woran erinnerst du dich bei einer Reise an einen unbekannten Ort?
+- What was something new you tried close to home?
+  German: Was hast du in deiner Nähe Neues ausprobiert?
+
+### 13 · Places along the way / Orte auf deinem Weg
+
+- Where have you lived since childhood?
+  German: Wo hast du seit deiner Kindheit gelebt?
+- What was everyday life like in one of those places?
+  German: Wie sah der Alltag an einem dieser Orte aus?
+- Which place would you like to visit again?
+  German: Welchen Ort würdest du gerne wieder besuchen?
+
+### 14 · People along the way / Menschen auf deinem Weg
+
+- How did you meet someone you spend time with today?
+  German: Wie hast du jemanden kennengelernt, mit dem du heute Zeit verbringst?
+- What do you usually do when you meet friends?
+  German: Was macht ihr meistens, wenn ihr euch im Freundeskreis trefft?
+- How do you keep in touch with people who live elsewhere?
+  German: Wie hältst du Kontakt zu Menschen, die weiter weg wohnen?
+
+### 15 · Making and doing / Machen und Ausprobieren
+
+- What have you enjoyed making, working on or learning?
+  German: Was hast du gerne gemacht, erarbeitet oder gelernt?
+- What hobby have you spent a lot of time on?
+  German: Mit welchem Hobby hast du viel Zeit verbracht?
+- What’s something you learned to do that took practice?
+  German: Was hast du gelernt, wofür du üben musstest?
+
+### 16 · Your favourites / Deine Favoriten
+
+- What films or books do you return to?
+  German: Welche Filme oder Bücher schaust oder liest du immer wieder?
+- What music do you enjoy listening to?
+  German: Welche Musik hörst du gerne?
+- What meal could you happily eat every week?
+  German: Welches Gericht könntest du jede Woche essen?
+
+### 17 · An ordinary weekday / Ein gewöhnlicher Wochentag
+
+- What does a usual weekday look like now?
+  German: Wie sieht ein gewöhnlicher Wochentag bei dir heute aus?
+- What do you usually do first in the morning?
+  German: Was machst du morgens meistens als Erstes?
+- What does a typical evening at home look like?
+  German: Wie sieht ein typischer Abend zu Hause aus?
+
+### 18 · When the weekend comes / Wenn das Wochenende kommt
+
+- How do you usually spend your weekends?
+  German: Wie verbringst du meistens deine Wochenenden?
+- What would your ideal Saturday look like?
+  German: Wie sähe dein idealer Samstag aus?
+- What helps you unwind when you have some time off?
+  German: Wie entspannst du dich, wenn du frei hast?
+
+### 19 · What interests you now / Was dich gerade interessiert
+
+- What are you interested in at the moment?
+  German: Was interessiert dich gerade?
+- What are you reading, watching or playing?
+  German: Was liest, schaust oder spielst du im Moment?
+- What are you making, growing or learning?
+  German: Was machst, pflanzt oder lernst du gerade?
+
+### 20 · Your particular ways / Deine Eigenheiten
+
+- What habits or preferences would someone who knows you recognise?
+  German: Welche Gewohnheiten oder Vorlieben würde jemand wiedererkennen, der dich kennt?
+- How do you take your coffee or tea?
+  German: Wie trinkst du deinen Kaffee oder Tee?
+- What do you always take with you when leaving home?
+  German: Was nimmst du immer mit, wenn du das Haus verlässt?
+
+### 21 · Moments to remember / Momente zum Erinnern
+
+- What’s a moment in your life you remember especially fondly?
+  German: An welchen Moment in deinem Leben denkst du besonders gerne zurück?
+- What’s a small moment that still makes you laugh?
+  German: Welche kleine Erinnerung bringt dich noch immer zum Lachen?
+- What’s a recent day you’d like to remember?
+  German: Welchen Tag aus letzter Zeit möchtest du dir merken?
+
+### 22 · What matters today / Was dir heute wichtig ist
+
+- What do you like making time for these days?
+  German: Wofür nimmst du dir heute gerne Zeit?
+- What’s something you’ve changed your mind about?
+  German: Worüber hast du deine Meinung geändert?
+- What gives your life meaning?
+  German: Was gibt deinem Leben Sinn?
+
+### 23 · Still to come / Was noch kommt
+
+- What would you like to try or learn?
+  German: Was würdest du gerne ausprobieren oder lernen?
+- Is there a place you’d like to visit?
+  German: Welchen Ort würdest du gerne besuchen?
+- What are you looking forward to?
+  German: Worauf freust du dich?
+
+### 24 · A moment for you / Ein Moment für dich
+
+A Christmas greeting and a gift from yourself, followed by options to enjoy Christmas, pass your reflections on as a mini biography, or keep and build on your journal.
+
+## Compatibility and ownership
+
+The app records `dear-december:catalog:timeline-v1` alongside a `dear-december:door:N` plain tag. This versions the calendar association, not the open archive schema. Unversioned earlier door tags and known earlier topic names map to their nearest matching timeline topic. Several old topics can map to the same new door; all entries remain stored, with additional older entries accessible through About → Manage original entries. Original answers, question wording, topic wording, dates, links, photos and unrelated tags are preserved. Only calendar association tags change. New timeline topics may be unanswered after migration; answers are never invented to fill them.
+
+Opened-door metadata is mapped once using the document’s `calendarCatalog` marker. The server preserves that marker. Backups retain the generic records and their versioned calendar tags; opened-door metadata is not part of the portable content schema.
+
+Questions should offer different kinds of lives an entry point, avoid assuming marriage, children, travel or paid work, and invite details without asking for advice or profound conclusions. Sharing always remains a choice. See [purpose and principles](project-principles.md) and the [open archive format](archive-format.md).

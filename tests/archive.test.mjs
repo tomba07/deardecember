@@ -19,9 +19,9 @@ test('canonical entries, one edit date per commit, reload, profile and original 
  const p=await page();try{
   const birthdays=await p.evaluate(()=>{const original=state.profile.dateOfBirth;const results=['2015-01-01','2015-02-30','2999-01-01'].map(date=>{state.profile.dateOfBirth=date;return validBirthday()});state.profile.dateOfBirth=original;return results});assert.deepEqual(birthdays,[true,false,false]);
   await p.evaluate(()=>openDoor(2));assert.equal(await p.locator('#answer').isVisible(),false);
-  await answer(p,1,'A wooden train.');let doc=await collection(p);assert.equal(doc.entries.length,1);assert.equal(doc.entries[0].question,'What was your favourite toy?');assert.deepEqual(doc.entries[0].modificationDates,[]);const created=doc.entries[0].createdAt;
+  await answer(p,1,'A wooden train.');let doc=await collection(p);assert.equal(doc.entries.length,1);assert.equal(doc.entries[0].question,'Did you collect anything?');assert.deepEqual(doc.entries[0].modificationDates,[]);const created=doc.entries[0].createdAt;
   await p.locator('#answer').fill('A wooden train from my grandfather.');await p.locator('#answer').press('End');assert.equal((await collection(p)).entries[0].modificationDates.length,0);await p.getByRole('button',{name:'Save & close',exact:true}).click();doc=await collection(p);assert.equal(doc.entries[0].createdAt,created);assert.equal(doc.entries[0].modificationDates.length,1);assert(Date.parse(doc.entries[0].modificationDates[0])>Date.parse(created));
-  await p.reload();doc=await collection(p);assert.equal(doc.entries[0].modificationDates.length,1);assert.equal(doc.entries[0].text,'A wooden train from my grandfather.');await p.evaluate(()=>{toggleLang();document.getElementById('preview').checked=true;openDoor(2)});assert((await p.locator('#question').textContent()).includes('What was your favourite toy?'));assert.equal(await p.locator('#questionChoices button[data-choice="1"]').count(),0);assert.equal((await collection(p)).entries[0].question,'What was your favourite toy?');assert.deepEqual(p.errors,[]);
+  await p.reload();doc=await collection(p);assert.equal(doc.entries[0].modificationDates.length,1);assert.equal(doc.entries[0].text,'A wooden train from my grandfather.');await p.evaluate(()=>{toggleLang();document.getElementById('preview').checked=true;openDoor(2)});assert((await p.locator('#question').textContent()).includes('Did you collect anything?'));assert.equal(await p.locator('#questionChoices button[data-choice="1"]').count(),0);assert.equal((await collection(p)).entries[0].question,'Did you collect anything?');assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
 
@@ -390,7 +390,7 @@ test('generic tagged records preserve labels, IDs and linked context through edi
  const saved=await p.evaluate(()=>JSON.parse(localStorage.getItem(DOCUMENT_KEY)).collection);
  assert.equal(saved.profile,undefined);assert(saved.entries.every(entry=>Array.isArray(entry.tags)&&!('type'in entry)&&!('question'in entry)));
  assert.equal(saved.entries.find(entry=>entry.id==='reflection').text,'A red wooden train.');
- assert.deepEqual(saved.entries.find(entry=>entry.id==='reflection').tags,manifest.entries[1].tags);
+ assert.deepEqual(saved.entries.find(entry=>entry.id==='reflection').tags,[...manifest.entries[1].tags,'dear-december:catalog:timeline-v1']);
  assert.deepEqual(saved.entries.find(entry=>entry.id==='prompt'),manifest.entries[2]);assert.deepEqual(saved.entries.find(entry=>entry.id==='context'),manifest.entries[4]);
  const roundtrip=await p.evaluate(async()=>{const before=taggedManifest(state);const blob=await createArchive(before,media);const result=await readArchive(await blob.arrayBuffer());return {before,after:taggedManifest(result.collection)}});
  assert.deepEqual(roundtrip.after,roundtrip.before);assert.equal(roundtrip.before.entries.find(entry=>entry.id==='name').createdAt,undefined);assert.deepEqual(p.errors,[]);
@@ -481,16 +481,59 @@ test('approachable catalog preserves earlier questions and renamed door associat
    state.entries=[{type:'text',topic:'Through difficult times',question,text:'An earlier answer.',createdAt:'2026-10-01T12:00:00Z',modificationDates:[]}];
    inferBindings();save();openDoor(17);
   },originalQuestion);
-  assert.equal(await p.locator('#title').textContent(),'Taking a breather');
+  assert.equal(await p.locator('#title').textContent(),'When the weekend comes');
   assert.equal(await p.locator('#question').textContent(),originalQuestion);
   assert.equal(await p.locator('#answer').inputValue(),'An earlier answer.');
   await p.reload();await p.evaluate(()=>{document.getElementById('preview').checked=true;openDoor(17)});
   assert.equal(await p.locator('#question').textContent(),originalQuestion);
   assert.equal(await p.locator('#answer').inputValue(),'An earlier answer.');
-  const prompts=await p.evaluate(()=>({en:question(17,'en'),de:question(17,'de'),meaning:questionChoices.en[18].includes('What gives your life meaning?'),count:questions.length,deCount:deQuestions.length}));
-  assert.equal(prompts.en,'What helps you unwind after a long day?');
-  assert.equal(prompts.de,'Wie entspannst du dich nach einem langen Tag?');
+  const prompts=await p.evaluate(()=>({en:question(17,'en'),de:question(17,'de'),meaning:questionChoices.en[21].includes('What gives your life meaning?'),count:questions.length,deCount:deQuestions.length}));
+  assert.equal(prompts.en,'How do you usually spend your weekends?');
+  assert.equal(prompts.de,'Wie verbringst du meistens deine Wochenenden?');
   assert.equal(prompts.meaning,true);assert.equal(prompts.count,23);assert.equal(prompts.deCount,23);
   assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
+
+
+test('timeline migrates legacy numbered records once while retaining content and linked photos',async()=>{
+ const p=await page();try{
+  const result=await p.evaluate(()=>{
+   const entries=[];
+   for(let day=0;day<23;day++){
+    entries.push({id:`r${day}`,tags:['reflection','external:keep',`dear-december:door:${day+1}`],text:`Earlier answer ${day}`,createdAt:'2026-10-01T12:00:00Z',modificationDates:[]});
+    entries.push({id:`q${day}`,tags:['question'],text:`Earlier question ${day}?`,relatedTo:[`r${day}`]});
+    entries.push({id:`t${day}`,tags:['topic'],text:legacyThemes[day],relatedTo:[`r${day}`]});
+   }
+   entries.push({id:'photo',tags:['photo','external:photo'],filePath:'media/old.png',relatedTo:['r4'],createdAt:'2026-10-01T12:00:00Z',modificationDates:[]});
+   entries.push({id:'caption',tags:['photo:caption'],text:'An original caption.',relatedTo:['photo']});
+   const collection={formatVersion:1,language:'en',entries};
+   restoreDocument({collection,openedDoors:[4,6,18],media:{}});inferBindings();
+   const days=state.entries.filter(entry=>entry.type==='text').map(entry=>entryBinding(entry).day);
+   const snapshot=storedDocument();validateCollection(snapshot.collection);
+   const opened=[...openedDoors];restoreDocument(snapshot);inferBindings();
+   const again=storedDocument();
+   return {before:collection,after:snapshot.collection,again:again.collection,days,map:legacyDoorMap.slice(0,23),opened,openedAgain:openedDoors,marker:snapshot.calendarCatalog};
+  });
+  assert.deepEqual(result.days,result.map);assert.equal(result.marker,'timeline-v1');
+  assert.deepEqual(result.opened,[6,8,21]);assert.deepEqual(result.openedAgain,result.opened);
+  for(const before of result.before.entries){const after=result.after.entries.find(item=>item.id===before.id);assert(after);
+   assert.deepEqual({...after,tags:before.tags},before);
+   if(before.id.startsWith('r')){assert(after.tags.includes('external:keep'));assert(after.tags.includes('dear-december:catalog:timeline-v1'));}
+  }
+  assert.deepEqual(result.again,result.after);
+  await p.reload();assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
+
+test('timeline catalog offers all doors in both languages and sample answers use current questions',async()=>{
+ const p=await page();try{
+  const catalog=await p.evaluate(()=>({themes:themes.length,deThemes:deThemes.length,questions:questions.length,deQuestions:deQuestions.length,choices:questionChoices.en.map(a=>a.length),deChoices:questionChoices.de.map(a=>a.length),descriptions:doorDescriptions.en.length,deDescriptions:doorDescriptions.de.length}));
+  assert.deepEqual(catalog,{themes:24,deThemes:24,questions:23,deQuestions:23,choices:Array(23).fill(2),deChoices:Array(23).fill(2),descriptions:24,deDescriptions:24});
+  await p.evaluate(()=>{openDoor(4)});assert.equal(await p.locator('#title').textContent(),'Things that seemed scary');
+  assert((await p.locator('#questionChoices').textContent()).includes('What made your room feel cosy at bedtime?'));
+  await p.evaluate(()=>{editor.close();startSimulation()});
+  const sample=await p.evaluate(()=>({count:state.entries.length,complete:earlierDoorsComplete(),matches:state.entries.every((e,i)=>e.question===questions[i])}));
+  assert.deepEqual(sample,{count:23,complete:true,matches:true});assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });

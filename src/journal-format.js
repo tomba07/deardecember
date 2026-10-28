@@ -22,7 +22,10 @@ function taggedManifest(collection){
   const tags=[...(base?.tags||(entry.type==='photo'?['photo']:['reflection']))];
   // Calendar association is an app-specific plain tag, not a schema field.
   const binding=typeof entryBinding==='function'?entryBinding(entry):{};
-  if(Number.isInteger(binding.day)&&!tags.some(tag=>tag.startsWith('dear-december:door:')))tags.push(`dear-december:door:${binding.day+1}`);
+  if(Number.isInteger(binding.day)&&typeof CALENDAR_CATALOG!=='undefined'){
+   for(let index=tags.length-1;index>=0;index--)if(/^dear-december:(door:[0-9]+|catalog:.*)$/.test(tags[index]))tags.splice(index,1);
+   tags.push(`dear-december:door:${binding.day+1}`,`dear-december:catalog:${CALENDAR_CATALOG}`);
+  }else if(Number.isInteger(binding.day)&&!tags.some(tag=>tag.startsWith('dear-december:door:')))tags.push(`dear-december:door:${binding.day+1}`);
   const primaryRecord=put(base,{id,tags,...primary,...dates,...(entry.type==='photo'&&!base?.relatedTo&&lastTextId?{relatedTo:[lastTextId]}:{})});if(entry.type==='text')lastTextId=id;
   const updatedAux=[];
   const values=entry.type==='photo'?{'photo:context':entry.description,'photo:caption':entry.caption,'photo:taken-at':entry.takenAt}:{question:entry.question,topic:entry.topic};

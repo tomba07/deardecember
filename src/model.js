@@ -27,7 +27,7 @@ function readGeneratedDraft(value){
  if(!value||typeof value.markdown!=='string'||value.markdown.length>100000)return null;
  return {markdown:value.markdown,model:typeof value.model==='string'?value.model.slice(0,200):'',generatedAt:typeof value.generatedAt==='string'?value.generatedAt:'',updatedAt:typeof value.updatedAt==='string'?value.updatedAt:'',source:value.source&&typeof value.source==='object'?value.source:null,journalSource:value.journalSource&&typeof value.journalSource==='object'?value.journalSource:null};
 }
-function storedDocument(){return {collection:taggedManifest(state),media,generatedDraft,keepsakeRevealed,openedDoors,bindings:state.entries.map(entry=>entryBinding(entry)),pending:state.entries.map(entry=>pendingEdits.get(entry)||null)}}
+function storedDocument(){return {calendarCatalog:typeof CALENDAR_CATALOG==='undefined'?null:CALENDAR_CATALOG,collection:taggedManifest(state),media,generatedDraft,keepsakeRevealed,openedDoors,bindings:state.entries.map(entry=>entryBinding(entry)),pending:state.entries.map(entry=>pendingEdits.get(entry)||null)}}
 function persistDocument(document=storedDocument()){
  if(isSimulation||resettingDevelopmentData)return;
  if(window.accountPersistence?.enabled){window.accountPersistence.queue(document);return}
@@ -35,7 +35,7 @@ function persistDocument(document=storedDocument()){
 }
 function restoreDocument(document){
  generatedDraft=readGeneratedDraft(document.generatedDraft);
- state=calendarCollection(document.collection);keepsakeRevealed=Boolean(document.keepsakeRevealed);openedDoors=Array.isArray(document.openedDoors)?document.openedDoors.filter(day=>Number.isInteger(day)&&day>=0&&day<24):[];media=Object.assign(Object.create(null),document.media||{});entryBindings=new WeakMap();pendingEdits=new Map();
+ state=calendarCollection(document.collection);keepsakeRevealed=Boolean(document.keepsakeRevealed);openedDoors=Array.isArray(document.openedDoors)?document.openedDoors.filter(day=>Number.isInteger(day)&&day>=0&&day<24):[];media=Object.assign(Object.create(null),document.media||{});if(typeof CALENDAR_CATALOG!=='undefined'&&document.calendarCatalog!==CALENDAR_CATALOG)openedDoors=[...new Set(openedDoors.map(day=>legacyDoorMap[day]))];entryBindings=new WeakMap();pendingEdits=new Map();
  state.entries.forEach((entry,index)=>{bindEntry(entry,document.bindings?.[index]||{});if(document.pending?.[index])pendingEdits.set(entry,document.pending[index])});
  window.refreshSavedGeneration?.();
 }
@@ -43,7 +43,7 @@ function initializeSavedDocument(){
 try{
  const saved=JSON.parse(localStorage.getItem(DOCUMENT_KEY)||'null');
  if(saved){
-  validateDraftCollection(saved.collection);restoreDocument(saved);commitEdits();persistDocument();
+  validateDraftCollection(saved.collection);restoreDocument(saved);commitEdits();
  }
 }catch(error){console.warn('Could not restore the saved collection; its storage has been left intact.',error)}
 

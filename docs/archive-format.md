@@ -79,7 +79,8 @@ These labels are application conventions, not required schema fields. Other apps
 | `photo:context` | Photo context text, linked to a file record. Never automatically printed or rewritten as autobiography. |
 | `photo:caption` | Literal printed label, linked to a file record. |
 | `photo:taken-at` | Known capture date/timestamp as text, linked to a file record. Approximate dates belong in context. |
-| `dear-december:door:1` … `dear-december:door:23` | Stable calendar association for a reflection, independent of prompt wording or language. |
+| `dear-december:door:1` … `dear-december:door:23` | Calendar association within a catalog, independent of prompt wording or language. |
+| `dear-december:catalog:timeline-v1` | Timeline catalog version for interpreting the numbered door. Earlier unversioned associations are mapped as documented in [topics](topics.md). |
 
 When multiple facts share a recognized label, the calendar displays the first and preserves the remaining records. Unknown labels on displayed records survive edits. Context records the calendar does not interpret are retained. The UI uses a calendar-specific view internally; the persisted collection and new exported manifests use the generic tagged structure.
 

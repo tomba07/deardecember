@@ -1,54 +1,192 @@
 // Alternative prompts per named door, alongside its original question.
 const questionChoices={
- en:[
- ['Is there a story behind your name?','What nickname did you have growing up?'],
- ['What was your favourite place as a child?','What does home mean to you today?'],
- ['What was your favourite toy?','What did you collect as a child?'],
- ['What was your first pet like?','Which person from childhood do you remember especially clearly?'],
- ['What was your favourite childhood meal?','Which family tradition would you like to keep?'],
- ['What music did you listen to as a teenager?','What did you want to be when you grew up?'],
- ['What small moment captures a friendship?','Who did you most enjoy spending time with after school?'],
- ['What was your favourite subject at school?','What skill have you taught yourself?'],
- ['What was the first country you visited abroad?','Which trip turned out differently than you expected?'],
- ['What hobby makes you lose track of time?','What instrument or sport have you enjoyed trying?'],
- ['Who was an early role model?','What unexpected encounter has stayed with you?'],
- ['Which decision changed more than you expected?','What opportunity would you like to try again?'],
- ['What was your first paid job?','What did you buy with your first earnings?'],
- ['Where have you felt especially at ease, and why?','Which family holiday do you remember fondly?'],
- ['How do you like your coffee or tea?','What everyday ritual would you not want to give up?'],
- ['Which song can you listen to again and again?','Which possession would you hate to be without?'],
- ['What was your first attempt at a new hobby like?','What skill are you pleased to have learned?'],
- ['What do you like to watch, read or listen to when you relax?','Where do you go when you want a little peace and quiet?'],
- ['What do you think people underestimate in life?','What have you changed your mind about?','What gives your life meaning?'],
- ['What would your ideal free day look like?','What would you love to experience for the first time again?'],
- ['What did you think the future would look like when you were young?','What everyday thing has changed most since your childhood?'],
- ['Which skill would you like to learn next?','Which adventure have you been putting off?'],
- ['What everyday object would you put in a time capsule?','What makes a good life, in your view?']
+ "en": [
+  [
+   "What is one of your earliest memories?",
+   "What have you heard about the place where you were born?"
+  ],
+  [
+   "What could you see from your window?",
+   "What shops or landmarks were near your home?"
+  ],
+  [
+   "Did you collect anything?",
+   "Which childhood book, film or game do you remember?"
+  ],
+  [
+   "Where did you play outside?",
+   "What did a usual afternoon look like when you were a child?"
+  ],
+  [
+   "Was there something that turned out to be less scary than expected?",
+   "What made your room feel cosy at bedtime?"
+  ],
+  [
+   "What do you like eating now?",
+   "What food reminds you of a particular person?"
+  ],
+  [
+   "What did you usually do during the holidays?",
+   "Is there a little tradition you still enjoy?"
+  ],
+  [
+   "What subject did you enjoy?",
+   "What do you remember about your journey to school?"
+  ],
+  [
+   "What did you and your friends do together?",
+   "Where did you usually meet?"
+  ],
+  [
+   "What music did you listen to?",
+   "What clothes or hairstyle did you like?"
+  ],
+  [
+   "What did you buy with your own money?",
+   "What did you enjoy doing on your own for the first time?"
+  ],
+  [
+   "What do you remember about a trip somewhere unfamiliar?",
+   "What was something new you tried close to home?"
+  ],
+  [
+   "What was everyday life like in one of those places?",
+   "Which place would you like to visit again?"
+  ],
+  [
+   "What do you usually do when you meet friends?",
+   "How do you keep in touch with people who live elsewhere?"
+  ],
+  [
+   "What hobby have you spent a lot of time on?",
+   "What’s something you learned to do that took practice?"
+  ],
+  [
+   "What music do you enjoy listening to?",
+   "What meal could you happily eat every week?"
+  ],
+  [
+   "What do you usually do first in the morning?",
+   "What does a typical evening at home look like?"
+  ],
+  [
+   "What would your ideal Saturday look like?",
+   "What helps you unwind when you have some time off?"
+  ],
+  [
+   "What are you reading, watching or playing?",
+   "What are you making, growing or learning?"
+  ],
+  [
+   "How do you take your coffee or tea?",
+   "What do you always take with you when leaving home?"
+  ],
+  [
+   "What’s a small moment that still makes you laugh?",
+   "What’s a recent day you’d like to remember?"
+  ],
+  [
+   "What’s something you’ve changed your mind about?",
+   "What gives your life meaning?"
+  ],
+  [
+   "Is there a place you’d like to visit?",
+   "What are you looking forward to?"
+  ]
  ],
- de:[
- ['Gibt es eine Geschichte hinter deinem Namen?','Welchen Spitznamen hattest du früher?'],
- ['Was war dein Lieblingsort als Kind?','Was bedeutet Zuhause heute für dich?'],
- ['Was war dein liebstes Spielzeug?','Was hast du als Kind gesammelt?'],
- ['Wie war dein erstes Haustier?','Welche Person aus deiner Kindheit ist dir besonders in Erinnerung geblieben?'],
- ['Was war dein Lieblingsessen als Kind?','Welche Familientradition möchtest du bewahren?'],
- ['Welche Musik hast du als Teenager gehört?','Welchen Beruf wolltest du als Kind haben?'],
- ['Welcher kleine Moment beschreibt eine Freundschaft?','Mit wem hast du nach der Schule am liebsten Zeit verbracht?'],
- ['Was war dein Lieblingsfach in der Schule?','Welche Fähigkeit hast du dir selbst beigebracht?'],
- ['In welchem Land außerhalb deines Heimatlandes warst du zuerst?','Welche Reise verlief anders als geplant?'],
- ['Bei welchem Hobby vergisst du die Zeit?','Welches Instrument oder welche Sportart hast du gerne ausprobiert?'],
- ['Wer war dein erstes großes Vorbild?','Welche unerwartete Begegnung ist dir in Erinnerung geblieben?'],
- ['Welche Entscheidung hat mehr verändert, als du dachtest?','Welche Gelegenheit würdest du gerne noch einmal ergreifen?'],
- ['Was war dein erster bezahlter Job?','Was hast du von deinem ersten selbst verdienten Geld gekauft?'],
- ['An welchem Ort fühlst du dich besonders wohl, und warum?','An welchen Familienurlaub denkst du gerne zurück?'],
- ['Wie trinkst du deinen Kaffee oder Tee am liebsten?','Welches alltägliche Ritual möchtest du nicht aufgeben?'],
- ['Welches Lied kannst du immer wieder hören?','Welchen Gegenstand möchtest du nicht missen?'],
- ['Wie war dein erster Versuch mit einem neuen Hobby?','Welche erlernte Fähigkeit macht dich stolz?'],
- ['Was schaust, liest oder hörst du gerne zum Entspannen?','Wohin gehst du, wenn du etwas Ruhe möchtest?'],
- ['Was wird im Leben deiner Meinung nach unterschätzt?','Worüber hast du deine Meinung geändert?','Was gibt deinem Leben Sinn?'],
- ['Was wäre dein idealer freier Tag?','Was würdest du gerne noch einmal zum ersten Mal erleben?'],
- ['Wie hast du dir als Kind die Zukunft vorgestellt?','Was hat sich im Alltag seit deiner Kindheit besonders verändert?'],
- ['Welche Fähigkeit würdest du als Nächstes gerne lernen?','Welches Abenteuer schiebst du schon länger auf?'],
- ['Welchen Alltagsgegenstand würdest du in eine Zeitkapsel legen?','Was macht für dich ein gutes Leben aus?']
+ "de": [
+  [
+   "Was ist eine deiner frühesten Erinnerungen?",
+   "Was wurde dir über deinen Geburtsort erzählt?"
+  ],
+  [
+   "Was konntest du aus deinem Fenster sehen?",
+   "Welche Geschäfte oder besonderen Orte waren in der Nähe?"
+  ],
+  [
+   "Hast du etwas gesammelt?",
+   "An welches Buch, welchen Film oder welches Spiel aus deiner Kindheit erinnerst du dich?"
+  ],
+  [
+   "Wo hast du draußen gespielt?",
+   "Wie sah ein gewöhnlicher Nachmittag als Kind aus?"
+  ],
+  [
+   "War etwas am Ende weniger unheimlich als gedacht?",
+   "Was hat dein Zimmer abends gemütlich gemacht?"
+  ],
+  [
+   "Was isst du heute gerne?",
+   "Welches Essen erinnert dich an einen bestimmten Menschen?"
+  ],
+  [
+   "Was habt ihr an Feiertagen meistens gemacht?",
+   "Welche kleine Tradition magst du bis heute?"
+  ],
+  [
+   "Welches Schulfach mochtest du?",
+   "Woran erinnerst du dich bei deinem Schulweg?"
+  ],
+  [
+   "Was habt ihr im Freundeskreis zusammen gemacht?",
+   "Wo habt ihr euch meistens getroffen?"
+  ],
+  [
+   "Welche Musik hast du gehört?",
+   "Welche Kleidung oder Frisur mochtest du?"
+  ],
+  [
+   "Was hast du dir von deinem eigenen Geld gekauft?",
+   "Was hast du zum ersten Mal gerne allein gemacht?"
+  ],
+  [
+   "Woran erinnerst du dich bei einer Reise an einen unbekannten Ort?",
+   "Was hast du in deiner Nähe Neues ausprobiert?"
+  ],
+  [
+   "Wie sah der Alltag an einem dieser Orte aus?",
+   "Welchen Ort würdest du gerne wieder besuchen?"
+  ],
+  [
+   "Was macht ihr meistens, wenn ihr euch im Freundeskreis trefft?",
+   "Wie hältst du Kontakt zu Menschen, die weiter weg wohnen?"
+  ],
+  [
+   "Mit welchem Hobby hast du viel Zeit verbracht?",
+   "Was hast du gelernt, wofür du üben musstest?"
+  ],
+  [
+   "Welche Musik hörst du gerne?",
+   "Welches Gericht könntest du jede Woche essen?"
+  ],
+  [
+   "Was machst du morgens meistens als Erstes?",
+   "Wie sieht ein typischer Abend zu Hause aus?"
+  ],
+  [
+   "Wie sähe dein idealer Samstag aus?",
+   "Wie entspannst du dich, wenn du frei hast?"
+  ],
+  [
+   "Was liest, schaust oder spielst du im Moment?",
+   "Was machst, pflanzt oder lernst du gerade?"
+  ],
+  [
+   "Wie trinkst du deinen Kaffee oder Tee?",
+   "Was nimmst du immer mit, wenn du das Haus verlässt?"
+  ],
+  [
+   "Welche kleine Erinnerung bringt dich noch immer zum Lachen?",
+   "Welchen Tag aus letzter Zeit möchtest du dir merken?"
+  ],
+  [
+   "Worüber hast du deine Meinung geändert?",
+   "Was gibt deinem Leben Sinn?"
+  ],
+  [
+   "Welchen Ort würdest du gerne besuchen?",
+   "Worauf freust du dich?"
+  ]
  ]
 };
 let selectedQuestion=null;

@@ -13,5 +13,5 @@ export function validateDocument(value){
   const draft=value.generatedDraft;if(typeof draft.markdown!=='string'||draft.markdown.length>100000)throw Object.assign(Error('Invalid generated text.'),{status:400});
   generatedDraft={markdown:draft.markdown,model:typeof draft.model==='string'?draft.model.slice(0,200):'',generatedAt:typeof draft.generatedAt==='string'?draft.generatedAt:'',updatedAt:typeof draft.updatedAt==='string'?draft.updatedAt:'',source:draft.source&&typeof draft.source==='object'?draft.source:null,journalSource:draft.journalSource&&typeof draft.journalSource==='object'?draft.journalSource:null};
  }
- return {collection:value.collection,generatedDraft,keepsakeRevealed:value.keepsakeRevealed===true,openedDoors:Array.isArray(value.openedDoors)?[...new Set(value.openedDoors.filter(day=>Number.isInteger(day)&&day>=0&&day<24))]:[]};
+ return {calendarCatalog:value.calendarCatalog==='timeline-v1'?'timeline-v1':null,collection:value.collection,generatedDraft,keepsakeRevealed:value.keepsakeRevealed===true,openedDoors:Array.isArray(value.openedDoors)?[...new Set(value.openedDoors.filter(day=>Number.isInteger(day)&&day>=0&&day<24))]:[]};
 }
