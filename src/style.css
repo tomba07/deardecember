@@ -153,3 +153,10 @@ footer{flex-direction:column;align-items:center;justify-content:center;gap:22px;
 #generationChoiceDialog{width:min(600px,calc(100vw - 32px));box-sizing:border-box}.generation-methods{display:grid;gap:20px;margin-top:24px}.generation-methods section{padding:20px;border:1px solid var(--line);border-radius:12px}.generation-methods h3{margin:0 0 10px;font:24px Georgia,serif}.generation-methods p{font-size:13px;line-height:1.7}.generation-methods .hint:empty{display:none}
 
 #biographyDetailsDialog{width:min(600px,calc(100vw - 32px));box-sizing:border-box}#biographyDetailsDialog #factsTitle{font:32px/1.2 Georgia,serif;margin:20px 0 12px}#biographyDetailsDialog #factsHint{line-height:1.7}#biographyDetailsContinue{margin-top:20px}
+
+/* Keep the calendar still while any modal is open, including nested flows. */
+@media screen{
+ html{scrollbar-gutter:stable}
+ html:has(dialog:modal),body:has(dialog:modal){overflow:hidden;overscroll-behavior:none}
+ dialog:modal{overscroll-behavior:contain}
+}

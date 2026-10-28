@@ -449,3 +449,27 @@ test('tapping a door introduction reveals Continue early without opening the con
   assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
+
+
+test('modal dialogs lock background scrolling and keep their own content scrollable',async()=>{
+ const p=await page();try{
+  await p.setViewportSize({width:390,height:600});
+  await p.evaluate(()=>window.scrollTo(0,300));
+  const original=await p.evaluate(()=>window.scrollY);
+  await p.evaluate(()=>showAbout());
+  assert.equal(await p.evaluate(()=>getComputedStyle(document.documentElement).overflowY),'hidden');
+  await p.mouse.move(5,300);await p.mouse.wheel(0,500);await p.waitForTimeout(150);
+  assert.equal(await p.evaluate(()=>window.scrollY),original);
+  const bounds=await p.locator('#aboutDialog').boundingBox();
+  await p.mouse.move(bounds.x+bounds.width/2,bounds.y+bounds.height/2);await p.mouse.wheel(0,400);await p.waitForTimeout(150);
+  assert((await p.locator('#aboutDialog').evaluate(el=>el.scrollTop))>0);
+  await p.evaluate(()=>{document.getElementById('introDialog').showModal();document.getElementById('aboutDialog').close()});
+  assert.equal(await p.evaluate(()=>getComputedStyle(document.documentElement).overflowY),'hidden');
+  await p.evaluate(()=>dismissIntro());
+  assert.notEqual(await p.evaluate(()=>getComputedStyle(document.documentElement).overflowY),'hidden');
+  assert.equal(await p.evaluate(()=>window.scrollY),original);
+  await p.mouse.move(5,300);await p.mouse.wheel(0,400);await p.waitForTimeout(150);
+  assert((await p.evaluate(()=>window.scrollY))>original);
+  assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
