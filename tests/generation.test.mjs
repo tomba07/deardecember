@@ -105,8 +105,8 @@ test('generated Markdown and edits survive reload and can be downloaded without 
 });
 test('simulation isolates generated text and restores the saved personal draft',async()=>{
  mode='ok';const p=await openPage();try{
- await createText(p,'Personal draft.');await p.locator('#miniographyDialog .close').click();await p.evaluate(()=>startSimulation());assert.equal(await p.evaluate(()=>generatedDraft),null);assert((await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Personal draft.'));
- await p.evaluate(()=>openDoor(23));await p.locator('#revealGenerate').click();await chooseOpenAI(p);await createText(p,'Sample draft.');assert((await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Personal draft.'));assert(!(await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Sample draft.'));await p.evaluate(()=>endSimulation());await p.evaluate(()=>story());await p.locator('#revealGenerate').click();await chooseOpenAI(p);assert.equal(await p.locator('#generationMarkdown').inputValue(),'Personal draft.');
+ await createText(p,'Personal draft.');await p.locator('#miniographyDialog .close').click();await p.evaluate(()=>startSimulation());assert.equal(await p.evaluate(()=>generatedDraft.model),'Simulated sample draft');assert((await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Personal draft.'));
+ await p.evaluate(()=>openDoor(23));await p.locator('#revealGenerate').click();await chooseOpenAI(p);await p.locator('#generationRegenerate').click();await createText(p,'Sample draft.');assert((await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Personal draft.'));assert(!(await p.evaluate(()=>localStorage.getItem(DOCUMENT_KEY))).includes('Sample draft.'));await p.evaluate(()=>endSimulation());await p.evaluate(()=>story());await p.locator('#revealGenerate').click();await chooseOpenAI(p);assert.equal(await p.locator('#generationMarkdown').inputValue(),'Personal draft.');
  }finally{await p.context().close()}
 });
 test('generated text travels in recovery backups and a replacement journal clears the old draft',async()=>{

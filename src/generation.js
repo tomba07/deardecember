@@ -230,3 +230,20 @@ window.clearPrivateGeneration=()=>{
  for(const id of ['generationPayload','generationMarkdown','ownLlmSource','ownLlmPrompt','ownLlmResult'])$(id).value='';
  $('generationPreview').replaceChildren();resetGenerationConsent();
 };
+
+// A ready-made draft makes the developer sample's PDF flow available without an API.
+window.prepareSimulationDraft=()=>{
+ if(!isSimulation)return;
+ const groups=[
+  ['Growing up',[0,1,2,3,4]],
+  ['Food, traditions and school days',[5,6,7,8,9]],
+  ['Finding my own way',[10,11,12,13,14]],
+  ['Everyday life',[15,16,17,18,19]],
+  ['Memories and what comes next',[20,21,22]]
+ ];
+ const markdown=groups.map(([title,days])=>'## '+title+'\n\n'+days.map(day=>simulationMemories[day]).join('\n\n')).join('\n\n');
+ const now=new Date().toISOString(),source=generationSource(state);
+ generatedDraft={markdown,model:'Simulated sample draft',generatedAt:now,updatedAt:now,source:structuredClone(source),journalSource:structuredClone(source)};
+ refreshSavedGeneration();
+};
+if(isSimulation&&!generatedDraft)window.prepareSimulationDraft();

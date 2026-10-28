@@ -100,3 +100,20 @@ test('saved biography reminder downloads a PDF directly and simulation does not 
   assert.deepEqual(p.errors,[]);
  }finally{await p.context().close()}
 });
+
+
+test('sample journal includes an editable draft and downloads its PDF without any generation request',async()=>{
+ const p=await page();try{
+  let generationRequests=0;p.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/generate'))generationRequests++});
+  await p.evaluate(()=>startSimulation());
+  assert.equal(await p.evaluate(()=>generatedDraft.model),'Simulated sample draft');
+  await p.evaluate(()=>openDoor(23));await p.locator('#revealGenerate').click();
+  assert.equal(await p.locator('#miniographyDialog').isVisible(),true);
+  assert.equal(await p.locator('#generationStale').isVisible(),false);
+  assert((await p.locator('#generationMarkdown').inputValue()).includes('## Growing up'));
+  const download=p.waitForEvent('download');await p.locator('#generationPrint').click();
+  assert.equal((await download).suggestedFilename(),'my-mini-biography.pdf');assert.equal(generationRequests,0);
+  await p.evaluate(()=>endSimulation());assert.equal(await p.evaluate(()=>generatedDraft),null);
+  assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});

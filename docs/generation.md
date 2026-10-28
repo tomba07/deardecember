@@ -148,3 +148,5 @@ Reproduce the actual app export sample with `node examples/book-layout/export-ap
 Opening door 24 enables a prominent card on the calendar. Before a draft exists it opens the mini biography creation flow; after a draft is saved it offers Open & edit and a direct local PDF download. It never appears before the Christmas reveal. Dialogs opened from the card return to the calendar when closed; those opened from door 24 return to that door.
 
 Hide dismisses the card using a `biographyCardHidden` document preference, separate from the portable journal records. It is saved locally or in the signed-in account, restored on reload, and isolated from developer simulations. Account sign-out clears the reminder along with the private view. Door 24 retains the same creation and saved-text actions after hiding the card.
+
+The developer sample journal includes a ready-made, editable sample mini biography with chapter headings. Open door 24 and select the saved text to download its A5 PDF without an API request. Its source snapshot matches the sample entries, and exiting the simulation restores the personal draft and preferences unchanged.
