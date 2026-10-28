@@ -54,6 +54,8 @@ Each door holds one reflection. On the first visit, choose a question and write 
 
 “Save & close” returns to the calendar. It does not open the next door. Door 24 offers a final message as well as the story reveal. Before December 24, people read and edit entries through their individual doors. The final door introduces the combined mini biography with a personal reveal and PDF option; both remain available afterward. The welcome explanation focuses on journaling and reflection.
 
+The current “What matters most” door also offers “What gives your life meaning?” (“Was gibt deinem Leben Sinn?”) as an optional question.
+
 ## Question-writing guidelines
 
 - Capture the essence of a person through ordinary details and specific memories. Avoid demanding a comprehensive or impressive biography.

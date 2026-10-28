@@ -1,4 +1,4 @@
-// Two alternative prompts per named door, alongside its original question.
+// Alternative prompts per named door, alongside its original question.
 const questionChoices={
  en:[
  ['Is there a story behind your name?','What nickname did you have growing up?'],
@@ -19,7 +19,7 @@ const questionChoices={
  ['Which song can you listen to again and again?','Which possession would you hate to be without?'],
  ['What challenge did you manage to overcome?','What skill are you pleased to have learned?'],
  ['When did an unexpected kindness help you?','What gives you hope during an uncertain time?'],
- ['What do you think people underestimate in life?','What have you changed your mind about?'],
+ ['What do you think people underestimate in life?','What have you changed your mind about?','What gives your life meaning?'],
  ['What would your ideal free day look like?','What would you love to experience for the first time again?'],
  ['What advice would you give your 18-year-old self?','What would you like to tell yourself as a child?'],
  ['Which skill would you like to learn next?','Which adventure have you been putting off?'],
@@ -44,7 +44,7 @@ const questionChoices={
  ['Welches Lied kannst du immer wieder hören?','Welchen Gegenstand möchtest du nicht missen?'],
  ['Welche Herausforderung hast du geschafft?','Welche erlernte Fähigkeit macht dich stolz?'],
  ['Wann hat dir eine unerwartete Freundlichkeit geholfen?','Was gibt dir in unsicheren Zeiten Hoffnung?'],
- ['Was wird im Leben deiner Meinung nach unterschätzt?','Worüber hast du deine Meinung geändert?'],
+ ['Was wird im Leben deiner Meinung nach unterschätzt?','Worüber hast du deine Meinung geändert?','Was gibt deinem Leben Sinn?'],
  ['Was wäre dein idealer freier Tag?','Was würdest du gerne noch einmal zum ersten Mal erleben?'],
  ['Welchen Rat würdest du deinem 18-jährigen Ich geben?','Was möchtest du deinem kindlichen Ich sagen?'],
  ['Welche Fähigkeit würdest du als Nächstes gerne lernen?','Welches Abenteuer schiebst du schon länger auf?'],
@@ -54,7 +54,7 @@ const questionChoices={
 let selectedQuestion=null;
 let choosingQuestion=true;
 function choicePrompt(day,index,language=lang){
- return index===0?question(day,language):index===3?(language==='de'?'Eine eigene Erinnerung':'A memory of your own'):questionChoices[language][day][index-1];
+ return index===0?question(day,language):index===3?(language==='de'?'Eine eigene Erinnerung':'A memory of your own'):questionChoices[language][day][index>3?index-2:index-1];
 }
 function questionAnswer(day,index){return entryForChoice(day,index)?.text||''}
 function writeQuestionAnswer(value){
@@ -78,12 +78,12 @@ function renderQuestionChoices(){
 
 function renderAvailableQuestions(){
  const container=$('questionChoices');
- const choices=choosingQuestion?[0,1,2,3]:[];
+ const choices=choosingQuestion?[0,...questionChoices[lang][current].map((_,index)=>index<2?index+1:index+2),3]:[];
  for(const button of [...container.children])if(!choices.includes(Number(button.dataset.choice)))button.remove();
  for(const index of choices){
   if(container.querySelector(`[data-choice="${index}"]`))continue;
   const button=document.createElement('button');button.type='button';button.dataset.choice=index;
   button.textContent=choicePrompt(current,index);
-  button.onclick=()=>{commitAndSave();selectedQuestion=index;choosingQuestion=false;renderQuestionChoices();renderPhotos();$('answer').focus();editor.scrollTop=0};const next=[...container.children].find(item=>Number(item.dataset.choice)>index);container.insertBefore(button,next||null);
+  button.onclick=()=>{commitAndSave();selectedQuestion=index;choosingQuestion=false;renderQuestionChoices();renderPhotos();$('answer').focus();editor.scrollTop=0};const next=[...container.children].find(item=>choices.indexOf(Number(item.dataset.choice))>choices.indexOf(index));container.insertBefore(button,next||null);
  }
 }

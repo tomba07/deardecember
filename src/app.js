@@ -90,6 +90,7 @@ function inferBindings(){
     if(entry.question===question(index,language)||entry.question===primary||entry.question?.startsWith(primary+' '))candidate=0;
     else if(entry.question===questionChoices[language][index][0])candidate=1;
     else if(entry.question===questionChoices[language][index][1])candidate=2;
+    else {const alternative=questionChoices[language][index].indexOf(entry.question);if(alternative>=2)candidate=alternative+2;}
     if(candidate!==null&&(day<0||day===index)){day=index;choice=candidate;break}
    }
    if(choice!==null)break;
