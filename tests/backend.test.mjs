@@ -34,10 +34,10 @@ test('verified login, private ownership, revision conflicts and persistent photo
  const upload=await fetch(url+'/api/journal/assets?path=media/photo.png',{method:'POST',headers:{Origin:url,Cookie:cookieA,'Content-Type':'image/png','X-Journal-Account':a.id},body:bytes});assert.equal(upload.status,201);const asset=await upload.json();
  assert.equal((await fetch(url+'/api/journal/assets/'+asset.id,{headers:{Cookie:cookieB,'X-Journal-Account':b.id}})).status,404);
  assert.deepEqual(Buffer.from(await(await fetch(url+'/api/journal/assets/'+asset.id,{headers:{Cookie:cookieA,'X-Journal-Account':a.id}})).arrayBuffer()),bytes);
- const doc=document();doc.calendarCatalog='timeline-v1';doc.collection.entries.push({id:'photo',tags:['photo'],filePath:'media/photo.png',relatedTo:['memory']});
+ const doc=document();doc.calendarCatalog='timeline-v1';doc.biographyCardHidden=true;doc.collection.entries.push({id:'photo',tags:['photo'],filePath:'media/photo.png',relatedTo:['memory']});
  const save=await json('/api/journal',{revision:0,document:doc},cookieA,'PUT',a.id);assert.equal(save.status,200);assert.equal((await save.json()).revision,1);
  assert.equal((await json('/api/journal',{revision:0,document:document()},cookieA,'PUT',a.id)).status,409);
- const mine=await(await json('/api/journal',undefined,cookieA,'GET',a.id)).json();assert.equal(mine.document.calendarCatalog,'timeline-v1');assert.equal(mine.document.generatedDraft.markdown,doc.generatedDraft.markdown);assert.equal(mine.document.collection.entries[1].text,'Walking by the river.');
+ const mine=await(await json('/api/journal',undefined,cookieA,'GET',a.id)).json();assert.equal(mine.document.calendarCatalog,'timeline-v1');assert.equal(mine.document.biographyCardHidden,true);assert.equal(mine.document.generatedDraft.markdown,doc.generatedDraft.markdown);assert.equal(mine.document.collection.entries[1].text,'Walking by the river.');
  assert.equal((await(await json('/api/journal',undefined,cookieB,'GET',b.id)).json()).document.collection.entries.length,0);
  assert.equal((await json('/api/journal',{revision:0,document:doc},cookieB,'PUT',b.id)).status,400);
  const bad={...doc,collection:{...doc.collection,entries:[...doc.collection.entries,{...doc.collection.entries[0]}]}};assert.equal((await json('/api/journal',{revision:1,document:bad},cookieA,'PUT',a.id)).status,400);

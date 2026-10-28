@@ -16,7 +16,7 @@
   state=emptyCollection();media=Object.create(null);generatedDraft=null;selectedQuestion=null;choosingQuestion=true;editingEntry=null;
   for(const id of ['answer','entryText','entryDescription','entryCaption','name','birthday','birthplace','residences','accountPassword','accountDeletePassword'])if(el(id))el(id).value='';
   for(const id of ['photos','questionChoices','collectionEntries','question','entryEditorTitle','revealName','accountIdentity'])el(id)?.replaceChildren();
-  window.clearPrivateGeneration?.();keepsakeRevealed=false;openedDoors=[];pendingEdits=new Map();entryBindings=new WeakMap();isSimulation=false;simulationBackup=null;el('simulationNotice').hidden=true;el('printSheet')?.remove();window.refreshSavedGeneration?.();applyLanguage();
+  window.clearPrivateGeneration?.();keepsakeRevealed=false;biographyCardHidden=false;openedDoors=[];pendingEdits=new Map();entryBindings=new WeakMap();isSimulation=false;simulationBackup=null;el('simulationNotice').hidden=true;el('printSheet')?.remove();window.refreshSavedGeneration?.();applyLanguage();
  }
  window.requireAccount=()=>{if(enabled===false)return false;if(!ready){showAccount(user?'settings':'signin');if(user)message('Your journal is still loading. Please wait.');return true}return false};
  window.accountPersistence={get enabled(){return enabled===true},get signedIn(){return !!user},queue(){if(!ready||isSimulation)return;dirty=true;showStatus(lang==='de'?'Wird gespeichert…':'Saving…');clearTimeout(timer);timer=setTimeout(()=>flush().catch(()=>{}),700)},replace:async document=>{

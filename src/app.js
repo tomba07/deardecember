@@ -57,7 +57,7 @@ function doorStatus(index){
  return 'unopened';
 }
 function render(){
- refreshPrimaryAction();
+ refreshPrimaryAction();window.refreshBiographyCard?.();
  const count=themes.filter((_,day)=>doorComplete(day)).length;
  $('count').textContent=lang==='de'?`${count} von 24 Erinnerungen gesammelt`:`${count} of 24 memories collected`;$('bar').style.width=count/24*100+'%';$('grid').replaceChildren();
  themes.forEach((_,index)=>{
@@ -225,7 +225,7 @@ $('importFile').onchange=async event=>{
   const document={...incoming,bindings:[],pending:[]};
   // A failed storage write must leave both the active and persisted collection intact.
   if(window.accountPersistence?.enabled)await window.accountPersistence.replace(document);else localStorage.setItem(DOCUMENT_KEY,JSON.stringify(document));
-  generatedDraft=readGeneratedDraft(incoming.generatedDraft);window.refreshSavedGeneration?.();state=incoming.collection;media=incoming.media;pendingEdits=new Map();keepsakeRevealed=false;openedDoors=[];inferBindings();
+  generatedDraft=readGeneratedDraft(incoming.generatedDraft);window.refreshSavedGeneration?.();state=incoming.collection;media=incoming.media;pendingEdits=new Map();keepsakeRevealed=false;biographyCardHidden=false;openedDoors=[];inferBindings();
   if(isSimulation){isSimulation=false;simulationBackup=null;$('simulationNotice').hidden=true}
   lang=state.language.toLowerCase().startsWith('de')?'de':'en';editor.close();$('revealDialog').close();$('aboutDialog').close();$('entryDialog').close();applyLanguage();save();toast('Your collection has been imported.');
  }catch(error){toast(`Import failed: ${error.message}`)}finally{importingArchive=false}

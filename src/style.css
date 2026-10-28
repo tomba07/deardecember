@@ -160,3 +160,5 @@ footer{flex-direction:column;align-items:center;justify-content:center;gap:22px;
  html:has(dialog:modal),body:has(dialog:modal){overflow:hidden;overscroll-behavior:none}
  dialog:modal{overscroll-behavior:contain}
 }
+
+.biography-card{margin:0 0 32px;padding:28px;border:1px solid #a8b29e;border-radius:12px;background:#f1f1e8}.biography-card[hidden],#biographyCardPdf[hidden]{display:none}.biography-card h3{font:32px/1.2 Georgia,serif;margin:0 0 12px}.biography-card p{max-width:650px;line-height:1.75}.biography-card-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:20px}#biographyCardHide{margin-left:auto;text-decoration:underline;text-underline-offset:3px;font-size:12px}#biographyCardStatus:empty{display:none}@media(max-width:600px){.biography-card{padding:22px 20px}.biography-card h3{font-size:27px}.biography-card-actions{gap:12px}}

@@ -1,6 +1,6 @@
 import {renderMarkdown} from './markdown.js';
 import {generationSource,generationSourceText,miniBiographyPrompt,validateGenerationSource,validateGeneratedMarkdown} from './generation-core.js';
-let generationConfig=null,preview=null,sourceEdited=false,generating=false,controller=null;
+let generationConfig=null,preview=null,sourceEdited=false,generating=false,controller=null,generationOrigin='reveal';
 const dialog=document.createElement('dialog');dialog.id='generationDialog';
 dialog.innerHTML=`<button class="close" aria-label="Close generation">×</button><button type="button" class="dialog-back" id="generationBack">← Back</button><h2 id="generationTitle">Create your mini biography</h2>
 <p>Make a short, editable text from your entries. This sends your writing and photo context to <strong>OpenAI</strong>. Photos stay on your device. API usage is billed to the configured key.</p>
@@ -38,7 +38,7 @@ function openBiographyDetails(){
  $('revealDialog').close();textDialog.close();
  if(!factsDialog.open)factsDialog.showModal();
 }
-function closeBiographyDetails(){commitAndSave();factsDialog.close();story()}
+function closeBiographyDetails(){commitAndSave();factsDialog.close();if(generationOrigin!=='card')story()}
 $('biographyDetailsBack').onclick=closeBiographyDetails;
 factsDialog.querySelector('.close').onclick=closeBiographyDetails;
 factsDialog.addEventListener('cancel',event=>{event.preventDefault();closeBiographyDetails()});
@@ -89,7 +89,7 @@ function openSavedText(){
 }
 $('generationAgree').onchange=()=>{$('generationSubmit').disabled=!$('generationAgree').checked||!generationConfig?.available||generating};
 function closeGeneration(){controller?.abort();dialog.close();if(generatedDraft)openSavedText();else openGenerationChoice()}
-function closeSavedText(){textDialog.close();story()}
+function closeSavedText(){textDialog.close();if(generationOrigin!=='card')story()}
 $('generationBack').onclick=closeGeneration;
 dialog.querySelector('.close').onclick=closeGeneration;$('generationLocal').onclick=closeGeneration;
 dialog.addEventListener('cancel',event=>{event.preventDefault();closeGeneration()});
@@ -127,12 +127,14 @@ $('generationDownload').onclick=()=>{
  if(!generatedDraft)return;
  downloadBlob(new Blob([generatedDraft.markdown],{type:'text/markdown;charset=utf-8'}),'my-mini-biography.md');
 };
-$('generationPrint').onclick=async()=>{
- if(!generatedDraft)return;
- const button=$('generationPrint'),activeDocument=state,draft=generatedDraft;
+let exportingPdf=false;
+async function downloadGeneratedPdf(button=$('generationPrint'),status=$('generationStorage')){
+ if(!generatedDraft||exportingPdf)return;
+ exportingPdf=true;
+ const activeDocument=state,draft=generatedDraft;
  button.disabled=true;button.setAttribute('aria-busy','true');
  button.textContent=lang==='de'?'PDF wird erstellt…':'Preparing PDF…';
- $('generationStorage').textContent='';
+ status.textContent='';
  try{
   commitAndSave();const photoContexts={};
   for(const entry of state.entries){if(entry.type!=='photo')continue;const links=formatEntryContexts.get(entry)?.record?.relatedTo||[];const anchor=state.entries.find(candidate=>candidate.type==='text'&&links.includes(formatEntryContexts.get(candidate)?.id));if(anchor)photoContexts[entry.filePath]=structuredClone(anchor)}
@@ -140,16 +142,32 @@ $('generationPrint').onclick=async()=>{
   const {createBookPdf}=await import('./book-pdf.js');const blob=await createBookPdf(snapshot);
   if(state!==activeDocument||generatedDraft!==draft)throw Error('The journal changed. Reopen your text and try again.');
   downloadBlob(blob,'my-mini-biography.pdf');
- }catch(error){if(state===activeDocument)$('generationStorage').textContent=error.message}
- finally{button.disabled=false;button.removeAttribute('aria-busy');button.textContent=lang==='de'?'PDF herunterladen':'Download PDF'}
-};
+ }catch(error){if(state===activeDocument)status.textContent=error.message}
+ finally{exportingPdf=false;button.disabled=false;button.removeAttribute('aria-busy');button.textContent=lang==='de'?'PDF herunterladen':'Download PDF';refreshBiographyCard()}
+}
+$('generationPrint').onclick=()=>downloadGeneratedPdf();
 function persistGeneratedDraft(){
  const saved=save();$('generationStorage').textContent=window.accountPersistence?.enabled&&!isSimulation?'Saving to your account…':saved?(isSimulation?'Sample text is temporary; download it to keep it.':''):'Could not save in this browser. Download your Markdown now to keep these edits.';
 }
+function refreshBiographyCard(){
+ const card=$('biographyCard');card.hidden=!keepsakeRevealed||biographyCardHidden;
+ if(card.hidden)return;
+ const de=lang==='de',saved=Boolean(generatedDraft);
+ $('biographyCardTitle').textContent=saved?(de?'Deine Mini-Biografie':'Your mini biography'):(de?'Mach etwas aus deinen Gedanken.':'Make something from your reflections.');
+ $('biographyCardText').textContent=saved?(de?'Lies und bearbeite deinen Text oder lade ihn als PDF herunter.':'Read, edit or download the text you’ve created.'):(de?'Mach aus deinen Einträgen eine kurze Mini-Biografie, wann immer du möchtest.':'Turn your entries into a short mini biography, whenever you’re ready.');
+ $('biographyCardOpen').textContent=saved?(de?'Öffnen & bearbeiten':'Open & edit'):(de?'Mini-Biografie erstellen':'Create a mini biography');
+ $('biographyCardPdf').hidden=!saved;$('biographyCardPdf').disabled=exportingPdf;
+ $('biographyCardPdf').textContent=exportingPdf?(de?'PDF wird erstellt…':'Preparing PDF…'):(de?'PDF herunterladen':'Download PDF');
+ $('biographyCardHide').textContent=de?'Ausblenden':'Hide';
+}
+window.refreshBiographyCard=refreshBiographyCard;
+$('biographyCardOpen').onclick=()=>{generationOrigin='card';openGeneration()};
+$('biographyCardPdf').onclick=()=>downloadGeneratedPdf($('biographyCardPdf'),$('biographyCardStatus'));
+$('biographyCardHide').onclick=()=>{biographyCardHidden=true;save();refreshBiographyCard();$('calendarTitle').setAttribute('tabindex','-1');$('calendarTitle').focus({preventScroll:true})};
 function refreshSavedGeneration(){
  if(!generatedDraft){$('generationResult').hidden=true;textDialog.close();if(dialog.open)dialog.close()}else if(textDialog.open)renderDraft();
  $('generationRegenerate').disabled=!generationConfig?.available||generating;
- refreshRevealGeneration();
+ refreshRevealGeneration();refreshBiographyCard();
 }
 window.refreshSavedGeneration=refreshSavedGeneration;
 refreshSavedGeneration();
@@ -162,7 +180,7 @@ function refreshRevealGeneration(){
  $('revealGenerationHint').textContent=generatedDraft?(window.accountPersistence?.enabled?(lang==='de'?'Dein Text wird in deinem Konto gespeichert. Du kannst ihn bearbeiten, herunterladen und drucken.':'Your text is saved to your account. You can edit, download and print it.'):(lang==='de'?'Dein Text ist lokal gespeichert. Du kannst ihn bearbeiten, herunterladen und drucken.':'Your text is saved locally. You can edit, download and print it.')):available?'':(lang==='de'?'Die integrierte KI-Erstellung ist noch nicht eingerichtet. Du kannst trotzdem deine eigene KI nutzen.':'Built-in generation is not set up here. You can still use your own AI.');
 }
 window.refreshRevealGeneration=refreshRevealGeneration;
-$('revealGenerate').onclick=()=>{$('revealDialog').close();openGeneration()};
+$('revealGenerate').onclick=()=>{generationOrigin='reveal';$('revealDialog').close();openGeneration()};
 refreshRevealGeneration();
 
 // A fully local alternative: take the same writing instructions to any chosen model.
@@ -208,7 +226,7 @@ $('generationOwnLlm').onclick=()=>openOwnLlm('generation');$('savedOwnLlm').oncl
 window.applyAccountCopy?.();
 
 window.clearPrivateGeneration=()=>{
- controller?.abort();preview=null;sourceEdited=false;ownDocument=null;ownJournalSource=null;
+ controller?.abort();generationOrigin='reveal';preview=null;sourceEdited=false;ownDocument=null;ownJournalSource=null;$('biographyCardStatus').textContent='';
  for(const id of ['generationPayload','generationMarkdown','ownLlmSource','ownLlmPrompt','ownLlmResult'])$(id).value='';
  $('generationPreview').replaceChildren();resetGenerationConsent();
 };

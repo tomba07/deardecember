@@ -141,3 +141,10 @@ Only the sanitized Markdown’s text is composed. Headings, paragraphs, lists, q
 Missing or unreadable photos stop export with a visible error instead of silently dropping images. Unsupported characters also produce an explicit error; the typeface covers the app’s English and German text but is not a universal-script font. Saved Markdown remains the source, and original entries and photos are unchanged. The implementation is in `src/book-layout.js` and `src/book-pdf.js`; `scripts/generate-pdf-runtime.mjs` produces the browser-only dependency bundle at build time.
 
 Reproduce the actual app export sample with `node examples/book-layout/export-app-sample.mjs`. It clicks the saved-text dialog’s Download PDF button with a clearly labelled sample draft and stock photo. The earlier Python proof remains a visual reference, not the application renderer.
+
+
+## Calendar reminder after the reveal
+
+Opening door 24 enables a prominent card on the calendar. Before a draft exists it opens the mini biography creation flow; after a draft is saved it offers Open & edit and a direct local PDF download. It never appears before the Christmas reveal. Dialogs opened from the card return to the calendar when closed; those opened from door 24 return to that door.
+
+Hide dismisses the card using a `biographyCardHidden` document preference, separate from the portable journal records. It is saved locally or in the signed-in account, restored on reload, and isolated from developer simulations. Account sign-out clears the reminder along with the private view. Door 24 retains the same creation and saved-text actions after hiding the card.

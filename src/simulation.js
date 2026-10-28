@@ -30,7 +30,7 @@ function startSimulation(){
  if(simulationBackup)return;
  $('revealDialog').close();$('aboutDialog').close();editor.close();commitAndSave();simulationBackup={document:structuredClone(storedDocument()),preview:$('preview').checked,lang};
  state={formatVersion:1,language:'en',isSample:true,profile:{name:'Alex Morgan',dateOfBirth:'1988-04-12',placeOfBirth:'Brookfield, Germany',placesLived:'Brookfield, Germany · 1988–1991\nSeabrook, United Kingdom · 1991–1994\nOakridge, Germany · from 1994'},entries:[]};
- media=Object.create(null);entryBindings=new WeakMap();pendingEdits=new Map();isSimulation=true;generatedDraft=null;window.refreshSavedGeneration?.();keepsakeRevealed=false;openedDoors=[];lang='en';
+ media=Object.create(null);entryBindings=new WeakMap();pendingEdits=new Map();isSimulation=true;generatedDraft=null;window.refreshSavedGeneration?.();keepsakeRevealed=false;biographyCardHidden=false;openedDoors=[];lang='en';
  simulationMemories.forEach((answer,day)=>addTextEntry(answer,{topic:themes[day],question:question(day),binding:{day,choice:0}}));commitEdits();
  $('preview').checked=true;$('simulationNotice').hidden=false;applyLanguage();
 }

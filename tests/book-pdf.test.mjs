@@ -61,3 +61,42 @@ test('PDF preserves hard breaks, avoids guessing photo matches and reports unrea
   assert.equal(result.text,'First line\nSecond line');assert.equal(result.match,null);assert(result.error.includes('photo is missing'));
  }finally{await p.context().close()}
 });
+
+
+test('biography reminder appears after door 24, survives hiding, and remains available through the door',async()=>{
+ const p=await page();try{
+  assert.equal(await p.locator('#biographyCard').isVisible(),false);
+  await p.evaluate(()=>{document.getElementById('preview').checked=true;for(let day=0;day<23;day++)addTextEntry('A short memory.',{topic:themes[day],question:questions[day],binding:{day,choice:0}});save()});
+  assert.equal(await p.locator('#biographyCard').isVisible(),false);
+  await p.evaluate(()=>openDoor(23));await p.locator('#revealDialog .close').click();
+  assert.equal(await p.locator('#biographyCard').isVisible(),true);
+  assert.equal(await p.locator('#biographyCardPdf').isVisible(),false);
+  await p.locator('#biographyCardOpen').click();assert.equal(await p.locator('#biographyDetailsDialog').isVisible(),true);
+  await p.locator('#biographyDetailsBack').click();assert.equal(await p.locator('dialog[open]').count(),0);
+  await p.locator('#biographyCardHide').click();assert.equal(await p.locator('#biographyCard').isVisible(),false);
+  await p.reload();await p.waitForFunction(()=>typeof window.refreshBiographyCard==='function');
+  assert.equal(await p.locator('#biographyCard').isVisible(),false);
+  assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem(DOCUMENT_KEY)).biographyCardHidden),true);
+  await p.evaluate(()=>{document.getElementById('preview').checked=true;openDoor(23)});assert.equal(await p.locator('#revealGenerate').isEnabled(),true);
+  await p.locator('#revealGenerate').click();assert.equal(await p.locator('#biographyDetailsDialog').isVisible(),true);
+  await p.locator('#biographyDetailsBack').click();assert.equal(await p.locator('#revealDialog').isVisible(),true);
+ }finally{await p.context().close()}
+});
+
+test('saved biography reminder downloads a PDF directly and simulation does not overwrite its hide preference',async()=>{
+ const p=await page();try{
+  await p.setViewportSize({width:390,height:844});
+  await p.evaluate(()=>{document.getElementById('preview').checked=true;for(let day=0;day<23;day++)addTextEntry('A memory.',{topic:themes[day],question:questions[day],binding:{day,choice:0}});generatedDraft={markdown:'## A small memory\n\nI remember the beach.',model:'Test',generatedAt:new Date().toISOString()};keepsakeRevealed=true;save();window.refreshSavedGeneration()});
+  assert.equal(await p.locator('#biographyCardOpen').textContent(),'Open & edit');
+  const download=p.waitForEvent('download');await p.locator('#biographyCardPdf').click();assert.equal((await download).suggestedFilename(),'my-mini-biography.pdf');
+  assert.equal(await p.locator('dialog[open]').count(),0);
+  await p.locator('#biographyCardOpen').click();assert.equal(await p.locator('#miniographyDialog').isVisible(),true);
+  await p.locator('#savedTextBack').click();assert.equal(await p.locator('dialog[open]').count(),0);
+  const bounds=await p.locator('#biographyCard').boundingBox();assert(bounds.x>=0&&bounds.x+bounds.width<=390);
+  await p.evaluate(()=>toggleLang());assert.equal(await p.locator('#biographyCardHide').textContent(),'Ausblenden');
+  await p.locator('#biographyCardHide').click();
+  await p.evaluate(()=>{startSimulation();endSimulation()});assert.equal(await p.evaluate(()=>biographyCardHidden),true);
+  assert.equal(await p.locator('#biographyCard').isVisible(),false);
+  assert.deepEqual(p.errors,[]);
+ }finally{await p.context().close()}
+});
