@@ -8,7 +8,7 @@ import sharp from 'sharp';
 import {openDatabase} from './database.mjs';
 import {createAuth,sendProductionEmail} from './auth.mjs';
 import {validateDocument} from './validation.mjs';
-const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon'};
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon','.ttf':'font/ttf'};
 const imageTypes={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp'};
 sharp.cache({memory:16});sharp.concurrency(1);
 const fail=(status,message)=>Object.assign(Error(message),{status});

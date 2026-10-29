@@ -102,3 +102,12 @@ test('a newer server revision never silently overwrites unsaved browser edits',a
   await page.locator('#accountNav').click();page.once('dialog',dialog=>dialog.accept());await page.locator('#accountReload').click();await page.waitForFunction(()=>document.getElementById('accountSaveStatus').textContent==='Saved to your account');assert.equal(await page.evaluate(()=>state.entries[0].text),'Walking by the river.');
  }finally{await context.close()}
 });
+
+
+test('public book fonts are served for browser-local PDF generation',async()=>{
+ for(const file of ['SourceSerif4-Regular.ttf','SourceSerif4-It.ttf']){
+  const response=await fetch(url+'/fonts/'+file);
+  assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'font/ttf');
+  const bytes=Buffer.from(await response.arrayBuffer());assert(bytes.length>10000);assert.equal(bytes.readUInt32BE(0),0x00010000);
+ }
+});
